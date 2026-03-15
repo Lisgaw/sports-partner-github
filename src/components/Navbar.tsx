@@ -199,7 +199,7 @@ export default function Navbar() {
           <div className="flex items-center gap-1.5 md:gap-3">
             {session ? (
               <>
-                <Link href="/aktivitelerim" className="hidden sm:inline-flex relative p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400" aria-label="Aktivitelerim" title="Aktivitelerim">
+                <Link href="/aktivitelerim" className="inline-flex relative p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400" aria-label="Aktivitelerim" title="Aktivitelerim">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                   </svg>
@@ -209,7 +209,7 @@ export default function Navbar() {
                     </span>
                   )}
                 </Link>
-                <Link href="/mesajlar" className="hidden sm:inline-flex relative p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400" aria-label={t("messages")}>
+                <Link href="/mesajlar" className="inline-flex relative p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400" aria-label={t("messages")}>
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
@@ -274,41 +274,63 @@ export default function Navbar() {
                   {moreOpen && (
                     <>
                       <div className="fixed inset-0 z-[88] bg-black/40 backdrop-blur-sm" onClick={() => setMoreOpen(false)} />
-                      <div className="fixed inset-x-0 bottom-0 z-[89] max-h-[82vh] overflow-y-auto rounded-t-[28px] border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900">
-                        <div className="mx-auto mt-3 h-1.5 w-14 rounded-full bg-gray-300 dark:bg-gray-700" />
-                        <div className="px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-4">
-                          <div className="flex items-center justify-between gap-3">
+                      <div className="fixed inset-x-0 bottom-0 z-[89] max-h-[85vh] overflow-y-auto rounded-t-[28px] bg-white shadow-2xl dark:bg-gray-900" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
+                        {/* Handle bar */}
+                        <div className="mx-auto mt-3 mb-1 h-1.5 w-14 rounded-full bg-gray-300 dark:bg-gray-700" />
+
+                        <div className="px-5 pt-3">
+                          {/* Profile row */}
+                          <div className="flex items-center justify-between gap-3 pb-4 border-b border-gray-100 dark:border-gray-800">
                             <div className="flex items-center gap-3 min-w-0">
-                              <img src={session.user?.image || "/icons/avatar.svg"} alt="Profil" className="h-11 w-11 rounded-2xl border border-emerald-200 object-cover shadow-sm dark:border-emerald-700" />
+                              <img src={session.user?.image || "/icons/avatar.svg"} alt="Profil" className="h-12 w-12 rounded-2xl border-2 border-emerald-200 object-cover shadow-sm dark:border-emerald-700" />
                               <div className="min-w-0">
-                                <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{session.user?.name}</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Mobil hızlı erişim</p>
+                                <p className="truncate text-sm font-bold text-gray-900 dark:text-gray-100">{session.user?.name}</p>
+                                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">SporPartner</p>
                               </div>
                             </div>
                             <button
                               onClick={() => setMoreOpen(false)}
-                              className="rounded-xl p-2 text-gray-500 transition hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                              className="rounded-xl p-2 text-gray-400 transition hover:bg-gray-100 dark:hover:bg-gray-800"
                               aria-label={t("close")}
                             >
                               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
                           </div>
 
+                          {/* Quick action grid */}
                           <div className="mt-4 grid grid-cols-4 gap-2">
                             {[
-                              { href: "/mesajlar", icon: "💬", label: "Mesajlar" },
-                              { href: "/aktivitelerim", icon: "📌", label: "Aktivite" },
-                              { href: "/ayarlar", icon: "⚙️", label: "Ayarlar" },
-                              { action: () => { toggleDarkMode(); setMoreOpen(false); }, icon: "🌓", label: "Tema" },
+                              { href: "/harita", icon: (
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                                  <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" strokeLinecap="round" strokeLinejoin="round" />
+                                  <polyline points="9 3 9 18" strokeLinecap="round" />
+                                  <polyline points="15 6 15 21" strokeLinecap="round" />
+                                </svg>
+                              ), label: "Harita" },
+                              { href: "/topluluklar", icon: (
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                              ), label: "Topluluk" },
+                              { href: "/ayarlar", icon: (
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><circle cx="12" cy="12" r="3" />
+                                </svg>
+                              ), label: "Ayarlar" },
+                              { action: () => { toggleDarkMode(); setMoreOpen(false); }, icon: (
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                                </svg>
+                              ), label: "Tema" },
                             ].map((item) => (
                               item.href ? (
                                 <Link
                                   key={item.label}
                                   href={item.href}
                                   onClick={() => setMoreOpen(false)}
-                                  className="rounded-2xl bg-gray-50 px-2 py-3 text-center text-xs font-semibold text-gray-700 transition hover:bg-emerald-50 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                                  className="flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-gray-50 px-2 py-3 text-xs font-semibold text-gray-600 transition hover:bg-emerald-50 hover:text-emerald-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400"
                                 >
-                                  <span className="mb-1 block text-lg">{item.icon}</span>
+                                  <span className="text-gray-500 dark:text-gray-400">{item.icon}</span>
                                   {item.label}
                                 </Link>
                               ) : (
@@ -316,40 +338,51 @@ export default function Navbar() {
                                   key={item.label}
                                   type="button"
                                   onClick={item.action}
-                                  className="rounded-2xl bg-gray-50 px-2 py-3 text-center text-xs font-semibold text-gray-700 transition hover:bg-emerald-50 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                                  className="flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-gray-50 px-2 py-3 text-xs font-semibold text-gray-600 transition hover:bg-emerald-50 hover:text-emerald-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400"
                                 >
-                                  <span className="mb-1 block text-lg">{item.icon}</span>
+                                  <span className="text-gray-500 dark:text-gray-400">{item.icon}</span>
                                   {item.label}
                                 </button>
                               )
                             ))}
                           </div>
 
-                          <div className="mt-5">
-                            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Dil</p>
-                            <LanguageSwitcher mode="full" onSelect={() => setMoreOpen(false)} />
-                          </div>
-
-                          <div className="mt-5 space-y-1">
+                          {/* Settings list */}
+                          <div className="mt-5 space-y-0.5">
+                            <p className="mb-2 text-xs font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-gray-500 px-1">Hesap</p>
                             {[
                               { href: "/ayarlar/profil", icon: "👤", label: "Profili Düzenle" },
                               { href: "/ayarlar/guvenlik", icon: "🔒", label: "Hesap Güvenliği" },
                               { href: "/ayarlar/profesyonel", icon: "⭐", label: "Profesyonel Hesap" },
                               ...((session.user as any)?.userType === "TRAINER" ? [{ href: "/antrenor/derslerim", icon: "📚", label: "Ders Takibi" }] : []),
                               { href: "/ayarlar/gizlilik", icon: "🛡️", label: "Gizlilik" },
-                              { href: "/topluluklar", icon: "🌐", label: "Topluluklar" },
                             ].map((item) => (
                               <Link
                                 key={item.href}
                                 href={item.href}
                                 onClick={() => setMoreOpen(false)}
-                                className={`flex items-center gap-3 rounded-2xl px-4 py-3 transition ${pathname?.startsWith(item.href) ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300" : "text-gray-800 hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-gray-800"}`}
+                                className={`flex items-center gap-3 rounded-xl px-3 py-3 transition ${pathname?.startsWith(item.href) ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300" : "text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"}`}
                               >
-                                <span className="text-lg">{item.icon}</span>
-                                <span className="text-sm font-medium">{item.label}</span>
+                                <span className="text-base w-6 text-center">{item.icon}</span>
+                                <span className="text-sm font-medium flex-1">{item.label}</span>
+                                <svg className="w-4 h-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                               </Link>
                             ))}
                           </div>
+
+                          {/* Dil seçimi */}
+                          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                            <p className="mb-2 text-xs font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-gray-500 px-1">Dil / Language</p>
+                            <LanguageSwitcher mode="full" onSelect={() => setMoreOpen(false)} />
+                          </div>
+
+                          <button
+                            onClick={() => { signOut(); setMoreOpen(false); }}
+                            className="mt-3 w-full flex items-center gap-3 rounded-xl px-3 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                            <span className="text-sm font-semibold">{t("signOut")}</span>
+                          </button>
                         </div>
                       </div>
                     </>

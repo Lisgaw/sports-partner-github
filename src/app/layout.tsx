@@ -61,7 +61,7 @@ export default async function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100 transition-colors`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col text-gray-900 dark:text-gray-100 transition-colors`}
       >
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>
@@ -69,13 +69,17 @@ export default async function RootLayout({
               İçeriğe atla
             </a>
             <Navbar />
-            <main id="main-content" className="max-w-6xl mx-auto px-4 py-6 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-6">{children}</main>
-            <footer className="hidden md:block border-t border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm mt-8">
-              <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                <span>© {new Date().getFullYear()} SporPartner</span>
+            <main id="main-content" className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-8">{children}</main>
+            <footer className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 mb-[calc(72px+env(safe-area-inset-bottom))] md:mb-0">
+              <div className="max-w-6xl mx-auto px-4 py-3 md:py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 bg-gradient-to-br from-emerald-500 to-teal-600 rounded flex items-center justify-center text-white text-[9px] font-black">SP</span>
+                  <span className="font-medium">© {new Date().getFullYear()} SporPartner</span>
+                </div>
                 <nav className="flex items-center gap-4">
-                  <a href="/gizlilik-politikasi" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition">Gizlilik Politikası</a>
-                  <a href="/kullanim-sartlari" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition">Kullanım Şartları</a>
+                  <a href="/gizlilik-politikasi" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors font-medium">Gizlilik Politikası</a>
+                  <span className="text-gray-300 dark:text-gray-600">•</span>
+                  <a href="/kullanim-sartlari" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors font-medium">Kullanım Şartları</a>
                 </nav>
               </div>
             </footer>

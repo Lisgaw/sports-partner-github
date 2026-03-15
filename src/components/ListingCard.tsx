@@ -189,16 +189,29 @@ export default function ListingCard({ listing }: ListingCardProps) {
     <article
       onClick={() => router.push(`/ilan/${listing.id}`)}
       onKeyDown={(e) => e.key === "Enter" && router.push(`/ilan/${listing.id}`)}
-      className={`rounded-xl border hover:shadow-md transition-all duration-200 cursor-pointer h-full relative group ${
-        isUrgent
+      className={`rounded-xl border hover:shadow-md transition-all duration-200 cursor-pointer h-full relative group overflow-hidden ${
+        listing.status === "MATCHED"
+          ? "bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 border-emerald-300 dark:border-emerald-600 border-l-[4px] border-l-emerald-500 shadow-emerald-100 dark:shadow-emerald-900/20 shadow-md"
+          : isUrgent
           ? "bg-red-50 dark:bg-red-950/30 border-red-300 dark:border-red-700 border-l-[3px] border-l-red-500 ring-1 ring-red-200 dark:ring-red-800"
+          : listing.type === "RIVAL"
+          ? "bg-white dark:bg-gray-800 border-orange-200/80 dark:border-orange-700/30 border-l-[4px] border-l-orange-500 hover:border-orange-300 dark:hover:border-orange-600 hover:shadow-orange-50 dark:hover:shadow-orange-900/10"
+          : listing.type === "PARTNER"
+          ? "bg-white dark:bg-gray-800 border-emerald-200/80 dark:border-emerald-700/30 border-l-[4px] border-l-emerald-500 hover:border-emerald-300 dark:hover:border-emerald-600 hover:shadow-emerald-50 dark:hover:shadow-emerald-900/10"
           : `bg-white dark:bg-gray-800 border-gray-200/80 dark:border-gray-700/60 border-l-[3px] ${typeConfig.accentColor} hover:border-gray-300 dark:hover:border-gray-600`
       }`}
       role="button"
       tabIndex={0}
       aria-label={`${localizedSportName} ${t("title")} ${t("detail")}`}
     >
-      <div className="p-4">
+      {/* MATCHED banner */}
+      {listing.status === "MATCHED" && (
+        <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[11px] font-bold px-3 py-1 flex items-center gap-1.5 z-10">
+          <svg className="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          Eşleşme Tamamlandı
+        </div>
+      )}
+      <div className={`p-4 ${listing.status === "MATCHED" ? "pt-8" : ""}`}>
       {/* Üst etiketler */}
       <div className="flex flex-wrap gap-1.5 mb-2 items-center">
         <span className={`text-sm font-bold px-2.5 py-1 rounded-lg ${
@@ -250,10 +263,9 @@ export default function ListingCard({ listing }: ListingCardProps) {
             🎯 %{listing.compatibilityScore} {t("compatible") || text.compatible}
           </span>
         )}
-        {listing.status && statusLabels[listing.status] && listing.status !== "OPEN" && (
+        {listing.status && listing.status !== "OPEN" && listing.status !== "MATCHED" && statusLabels[listing.status] && (
           <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${statusLabels[listing.status].className}`}>
-            {listing.status === "MATCHED" ? "✅ " : ""}
-            {t(`status.${listing.status}`) || statusLabels[listing.status].label}
+            {statusLabels[listing.status].label}
           </span>
         )}
       </div>
@@ -380,4 +392,3 @@ export default function ListingCard({ listing }: ListingCardProps) {
     </article>
   );
 }
-

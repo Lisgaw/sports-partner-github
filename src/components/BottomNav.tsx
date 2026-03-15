@@ -7,7 +7,6 @@ import { useSession } from "next-auth/react";
 const navItems = [
   { href: "/", icon: HomeIcon, label: "Ana Sayfa" },
   { href: "/arama", icon: SearchIcon, label: "Keşfet" },
-  { href: "/harita", icon: MapIcon, label: "Harita" },
   { href: "/sosyal", icon: SocialIcon, label: "Sosyal" },
 ];
 
@@ -92,8 +91,8 @@ export default function BottomNav() {
       style={{ paddingBottom: "max(env(safe-area-inset-bottom), 8px)" }}
     >
       <div className="mx-auto flex items-stretch h-[72px] max-w-md rounded-2xl border border-gray-200/90 dark:border-gray-700/80 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
-        {/* Sol taraf: Ana Sayfa, Keşfet, Sosyal */}
-        {navItems.map(({ href, icon: Icon, label }) => {
+        {/* Ana Sayfa */}
+        {navItems.slice(0, 2).map(({ href, icon: Icon, label }) => {
           const active = isActive(href);
           return (
             <Link
@@ -114,17 +113,36 @@ export default function BottomNav() {
         })}
 
         {/* Merkez: İlan Oluştur */}
-        {session && (
-          <Link
-            href="/ilan/olustur"
-            className="flex-1 flex flex-col items-center justify-center gap-1 text-[11px] font-semibold min-h-[56px]"
-          >
-            <span className="flex items-center justify-center w-11 h-11 -mt-5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg text-xl font-bold ring-4 ring-white dark:ring-gray-900">
-              +
-            </span>
-            <span className="text-[10px] text-gray-500 dark:text-gray-400">İlan</span>
-          </Link>
-        )}
+        <Link
+          href="/ilan/olustur"
+          className="flex-1 flex flex-col items-center justify-center gap-1 text-[11px] font-semibold min-h-[56px]"
+        >
+          <span className="flex items-center justify-center w-12 h-12 -mt-6 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg text-2xl font-bold ring-4 ring-white dark:ring-gray-900 group-hover:scale-105 transition-transform">
+            +
+          </span>
+          <span className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">İlan</span>
+        </Link>
+
+        {/* Sosyal */}
+        {navItems.slice(2).map(({ href, icon: Icon, label }) => {
+          const active = isActive(href);
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`flex-1 flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition-colors min-h-[56px] ${
+                active
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+              }`}
+            >
+              <span className={`rounded-xl p-1.5 ${active ? "bg-emerald-50 dark:bg-emerald-900/30" : ""}`}>
+                <Icon active={active} />
+              </span>
+              <span>{label}</span>
+            </Link>
+          );
+        })}
 
         {/* Profil tab */}
         <button
