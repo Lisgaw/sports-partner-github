@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useActivityCount } from "@/hooks/useActivityCount";
 import { useSession, signOut } from "next-auth/react";
@@ -18,6 +19,8 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [darkMode, setDarkMode] = useState(false);
+  const [portalMounted, setPortalMounted] = useState(false);
+  useEffect(() => { setPortalMounted(true); }, []);
   const [notifOpen, setNotifOpen] = useState(false);
   const [discoverOpen, setDiscoverOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
@@ -271,7 +274,7 @@ export default function Navbar() {
                       <circle cx="5" cy="12" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="19" cy="12" r="1.5" />
                     </svg>
                   </button>
-                  {moreOpen && (
+                  {portalMounted && moreOpen && createPortal(
                     <>
                       <div className="fixed inset-0 z-[88] bg-black/40 backdrop-blur-sm" onClick={() => setMoreOpen(false)} />
                       <div className="fixed inset-x-0 bottom-0 z-[89] max-h-[85vh] overflow-y-auto rounded-t-[28px] bg-white shadow-2xl dark:bg-gray-900" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
@@ -386,7 +389,7 @@ export default function Navbar() {
                         </div>
                       </div>
                     </>
-                  )}
+                  , document.body)}
                 </div>
               </>
             ) : (

@@ -3,12 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-
-const navItems = [
-  { href: "/", icon: HomeIcon, label: "Ana Sayfa" },
-  { href: "/arama", icon: SearchIcon, label: "Keşfet" },
-  { href: "/sosyal", icon: SocialIcon, label: "Sosyal" },
-];
+import { useTranslations } from "next-intl";
 
 function HomeIcon({ active }: { active: boolean }) {
   return (
@@ -63,6 +58,7 @@ export default function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
+  const t = useTranslations("nav");
 
   const currentPath = pathname ?? "";
   const shouldHide = currentPath.startsWith("/auth") || currentPath.startsWith("/admin");
@@ -84,6 +80,12 @@ export default function BottomNav() {
     }
   };
 
+  const navItems = [
+    { href: "/", icon: HomeIcon, label: t("homePage") },
+    { href: "/arama", icon: SearchIcon, label: t("discover") },
+    { href: "/sosyal", icon: SocialIcon, label: t("bottomSocial") },
+  ];
+
   return (
     <nav
       aria-label="Alt menü"
@@ -91,7 +93,7 @@ export default function BottomNav() {
       style={{ paddingBottom: "max(env(safe-area-inset-bottom), 8px)" }}
     >
       <div className="mx-auto flex items-stretch h-[72px] max-w-md rounded-2xl border border-gray-200/90 dark:border-gray-700/80 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
-        {/* Ana Sayfa */}
+        {/* Ana Sayfa + Keşfet */}
         {navItems.slice(0, 2).map(({ href, icon: Icon, label }) => {
           const active = isActive(href);
           return (
@@ -120,7 +122,7 @@ export default function BottomNav() {
           <span className="flex items-center justify-center w-12 h-12 -mt-6 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg text-2xl font-bold ring-4 ring-white dark:ring-gray-900 group-hover:scale-105 transition-transform">
             +
           </span>
-          <span className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">İlan</span>
+          <span className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">{t("bottomPost")}</span>
         </Link>
 
         {/* Sosyal */}
@@ -153,12 +155,12 @@ export default function BottomNav() {
               ? "text-emerald-600 dark:text-emerald-400"
               : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
           }`}
-          aria-label="Profilim"
+          aria-label={t("bottomProfile")}
         >
           <span className={`rounded-xl p-1.5 ${profileActive ? "bg-emerald-50 dark:bg-emerald-900/30" : ""}`}>
             <ProfileIcon active={profileActive} />
           </span>
-          <span>Profil</span>
+          <span>{t("bottomProfile")}</span>
         </button>
       </div>
     </nav>

@@ -24,7 +24,15 @@
     "toggleMenu": "Menú",
     "noNotifications": "Sin notificaciones",
     "notificationsShowing": "{count} notificaciones mostradas",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "discover": "Descubrir",
+    "venuesDesc": "Instalaciones deportivas",
+    "communitiesDesc": "Grupos, clubes, equipos",
+    "tournamentsDesc": "Torneos activos",
+    "leaderboardDesc": "Clasificaciones y puntos",
+    "bottomSocial": "Social",
+    "bottomProfile": "Perfil",
+    "bottomPost": "Post"
   },
   "common": {
     "loading": "Cargando...",
@@ -158,7 +166,11 @@
     "verifiedBadge": "✓ Verified Pro",
     "followers": "Seguidores",
     "following": "Siguiendo",
-    "streak": { "current": "Racha actual", "longest": "Mejor racha", "days": "días" },
+    "streak": {
+      "current": "Racha actual",
+      "longest": "Mejor racha",
+      "days": "días"
+    },
     "saveSuccess": "Perfil actualizado",
     "saveError": "Error al actualizar",
     "age": "{age} años",

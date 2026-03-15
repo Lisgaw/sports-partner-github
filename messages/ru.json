@@ -24,7 +24,15 @@
     "toggleMenu": "Меню",
     "noNotifications": "Нет уведомлений",
     "notificationsShowing": "Показано {count} уведомлений",
-    "close": "Закрыть"
+    "close": "Закрыть",
+    "discover": "Обзор",
+    "venuesDesc": "Спортивные объекты",
+    "communitiesDesc": "Группы, клубы, команды",
+    "tournamentsDesc": "Активные турниры",
+    "leaderboardDesc": "Рейтинги и очки",
+    "bottomSocial": "Соцсеть",
+    "bottomProfile": "Профиль",
+    "bottomPost": "Пост"
   },
   "common": {
     "loading": "Загрузка...",
@@ -158,7 +166,11 @@
     "verifiedBadge": "✓ Verified Pro",
     "followers": "Подписчики",
     "following": "Подписки",
-    "streak": { "current": "Текущая серия", "longest": "Лучшая серия", "days": "дн." },
+    "streak": {
+      "current": "Текущая серия",
+      "longest": "Лучшая серия",
+      "days": "дн."
+    },
     "saveSuccess": "Профиль обновлён",
     "saveError": "Ошибка обновления",
     "age": "{age} лет",

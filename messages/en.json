@@ -24,13 +24,15 @@
     "leaderboardDesc": "Rankings & Points",
     "discover": "Discover",
     "venueProfile": "My Business Profile",
-    "venueProfile": "My Business Profile",
     "mainNav": "Main Navigation",
     "homePage": "Home Page",
     "toggleMenu": "Toggle menu",
     "noNotifications": "No notifications",
     "notificationsShowing": "{count} notifications shown",
-    "close": "Close"
+    "close": "Close",
+    "bottomSocial": "Social",
+    "bottomProfile": "Profile",
+    "bottomPost": "Post"
   },
   "common": {
     "loading": "Loading...",
@@ -170,7 +172,11 @@
     "verifiedBadge": "✓ Verified Pro",
     "followers": "Followers",
     "following": "Following",
-    "streak": { "current": "Daily Streak", "longest": "Longest Streak", "days": "days" },
+    "streak": {
+      "current": "Daily Streak",
+      "longest": "Longest Streak",
+      "days": "days"
+    },
     "saveSuccess": "Profile updated",
     "saveError": "Update failed",
     "age": "{age} years old",
@@ -187,7 +193,6 @@
     "comment": "Comment",
     "addCommentPlaceholder": "Write a comment...",
     "send": "Send",
-
     "postSuccess": "Post shared!",
     "postError": "Could not create post",
     "noPosts": "No posts yet",

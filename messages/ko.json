@@ -24,7 +24,15 @@
     "toggleMenu": "메뉴",
     "noNotifications": "알림이 없습니다",
     "notificationsShowing": "{count}개의 알림 표시 중",
-    "close": "닫기"
+    "close": "닫기",
+    "discover": "탐색",
+    "venuesDesc": "스포츠 시설 및 구장",
+    "communitiesDesc": "그룹, 클럽, 팀",
+    "tournamentsDesc": "진행 중인 대회",
+    "leaderboardDesc": "순위 및 점수",
+    "bottomSocial": "소셜",
+    "bottomProfile": "프로필",
+    "bottomPost": "게시"
   },
   "common": {
     "loading": "로딩 중...",
@@ -158,7 +166,11 @@
     "verifiedBadge": "✓ Verified Pro",
     "followers": "팔로워",
     "following": "팔로잉",
-    "streak": { "current": "현재 연속 기록", "longest": "최장 연속 기록", "days": "일" },
+    "streak": {
+      "current": "현재 연속 기록",
+      "longest": "최장 연속 기록",
+      "days": "일"
+    },
     "saveSuccess": "프로필이 업데이트되었습니다",
     "saveError": "업데이트 중 오류 발생",
     "age": "{age}세",

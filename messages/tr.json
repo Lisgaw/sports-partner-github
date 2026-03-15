@@ -29,7 +29,10 @@
     "toggleMenu": "Menüyü aç/kapat",
     "noNotifications": "Bildirim yok",
     "notificationsShowing": "{count} bildirim gösteriliyor",
-    "close": "Kapat"
+    "close": "Kapat",
+    "bottomSocial": "Sosyal",
+    "bottomProfile": "Profil",
+    "bottomPost": "İlan"
   },
   "common": {
     "loading": "Yükleniyor...",
@@ -169,7 +172,11 @@
     "verifiedBadge": "✓ Verified Pro",
     "followers": "Takipçi",
     "following": "Takip Edilen",
-    "streak": { "current": "Günlük Seri", "longest": "En Uzun Seri", "days": "gün" },
+    "streak": {
+      "current": "Günlük Seri",
+      "longest": "En Uzun Seri",
+      "days": "gün"
+    },
     "saveSuccess": "Profil güncellendi",
     "saveError": "Güncelleme başarısız",
     "age": "{age} Yaş",
