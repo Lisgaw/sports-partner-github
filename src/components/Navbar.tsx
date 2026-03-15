@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import type { ReactNode } from "react";
+import React from "react";
 
 import { createPortal } from "react-dom";
 import Link from "next/link";
@@ -29,6 +30,9 @@ export default function Navbar() {
   const notifPanelRef = useRef<HTMLDivElement>(null);
   const discoverRef = useRef<HTMLDivElement>(null);
   const moreRef = useRef<HTMLDivElement>(null);
+  const moreSheetRef = useRef<HTMLDivElement>(null);
+  const [langExpanded, setLangExpanded] = useState(false);
+  const [inviteCopied, setInviteCopied] = useState(false);
 
   // Gerçek zamanlı bildirimler — NotificationContext'ten (SSE Providers.tsx'de açık)
   const { notifications, unreadCount, unreadMessages, markAllRead, refresh: refreshNotifs } = useNotifications();
@@ -54,6 +58,7 @@ export default function Navbar() {
       const target = e.target as Node;
       if (notifPanelRef.current && notifPanelRef.current.contains(target)) return;
       if (moreRef.current && moreRef.current.contains(target)) return;
+      if (moreSheetRef.current && moreSheetRef.current.contains(target)) return;
       if (navRef.current && !navRef.current.contains(target)) {
         setNotifOpen(false);
         setDiscoverOpen(false);
@@ -277,7 +282,7 @@ export default function Navbar() {
                   {portalMounted && moreOpen && createPortal(
                     <>
                       <div className="fixed inset-0 z-[88] bg-black/40 backdrop-blur-sm" onClick={() => setMoreOpen(false)} />
-                      <div className="fixed inset-x-0 bottom-0 z-[89] max-h-[85vh] overflow-y-auto rounded-t-[28px] bg-white shadow-2xl dark:bg-gray-900" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
+                      <div ref={moreSheetRef} className="fixed inset-x-0 bottom-0 z-[89] max-h-[90vh] overflow-y-auto rounded-t-[28px] bg-white shadow-2xl dark:bg-gray-900" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
                         {/* Handle bar */}
                         <div className="mx-auto mt-3 mb-1 h-1.5 w-14 rounded-full bg-gray-300 dark:bg-gray-700" />
 
@@ -300,9 +305,9 @@ export default function Navbar() {
                             </button>
                           </div>
 
-                          {/* Quick action grid */}
+                          {/* Hızlı erişim grid — 4 sütun × 2 satır */}
                           <div className="mt-4 grid grid-cols-4 gap-2">
-                            {[
+                            {([
                               { href: "/harita", icon: (
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                                   <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" strokeLinecap="round" strokeLinejoin="round" />
@@ -320,12 +325,32 @@ export default function Navbar() {
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><circle cx="12" cy="12" r="3" />
                                 </svg>
                               ), label: "Ayarlar" },
-                              { action: () => { toggleDarkMode(); setMoreOpen(false); }, icon: (
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                                </svg>
-                              ), label: "Tema" },
-                            ].map((item) => (
+                              { action: () => { toggleDarkMode(); }, icon: (
+                                darkMode ? (
+                                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M12 8a4 4 0 100 8 4 4 0 000-8z" /></svg>
+                                ) : (
+                                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                                )
+                              ), label: darkMode ? "Aydınlık" : "Karanlık" },
+                              { action: () => { setMoreOpen(false); handleOpenNotif(); }, icon: (
+                                <div className="relative">
+                                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                                  {unreadCount > 0 && <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red-500 rounded-full text-white text-[9px] font-bold flex items-center justify-center px-0.5">{unreadCount}</span>}
+                                </div>
+                              ), label: "Bildirimler" },
+                              { action: () => {
+                                  const url = `${window.location.origin}/profil/${(session.user as any)?.username || ""}`;
+                                  navigator.clipboard.writeText(url).then(() => { setInviteCopied(true); setTimeout(() => setInviteCopied(false), 2000); });
+                                }, icon: (
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+                              ), label: inviteCopied ? "Kopyalandı!" : "Davet Et" },
+                              { href: "/turnuvalar", icon: (
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /></svg>
+                              ), label: "Turnuva" },
+                              { href: "/liderlik", icon: (
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                              ), label: "Liderlik" },
+                            ] as Array<{ href?: string; action?: () => void; icon: React.ReactNode; label: string }>).map((item) => (
                               item.href ? (
                                 <Link
                                   key={item.label}
@@ -341,7 +366,9 @@ export default function Navbar() {
                                   key={item.label}
                                   type="button"
                                   onClick={item.action}
-                                  className="flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-gray-50 px-2 py-3 text-xs font-semibold text-gray-600 transition hover:bg-emerald-50 hover:text-emerald-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400"
+                                  className={`flex flex-col items-center justify-center gap-1.5 rounded-2xl px-2 py-3 text-xs font-semibold transition ${
+                                    item.label === "Kopyalandı!" ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300" : "bg-gray-50 text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400"
+                                  }`}
                                 >
                                   <span className="text-gray-500 dark:text-gray-400">{item.icon}</span>
                                   {item.label}
@@ -350,16 +377,16 @@ export default function Navbar() {
                             ))}
                           </div>
 
-                          {/* Settings list */}
+                          {/* Hesap listesi */}
                           <div className="mt-5 space-y-0.5">
                             <p className="mb-2 text-xs font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-gray-500 px-1">Hesap</p>
-                            {[
+                            {([
                               { href: "/ayarlar/profil", icon: "👤", label: "Profili Düzenle" },
                               { href: "/ayarlar/guvenlik", icon: "🔒", label: "Hesap Güvenliği" },
                               { href: "/ayarlar/profesyonel", icon: "⭐", label: "Profesyonel Hesap" },
                               ...((session.user as any)?.userType === "TRAINER" ? [{ href: "/antrenor/derslerim", icon: "📚", label: "Ders Takibi" }] : []),
                               { href: "/ayarlar/gizlilik", icon: "🛡️", label: "Gizlilik" },
-                            ].map((item) => (
+                            ] as Array<{ href: string; icon: string; label: string }>).map((item) => (
                               <Link
                                 key={item.href}
                                 href={item.href}
@@ -373,10 +400,22 @@ export default function Navbar() {
                             ))}
                           </div>
 
-                          {/* Dil seçimi */}
+                          {/* Dil seçimi — açılır */}
                           <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-                            <p className="mb-2 text-xs font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-gray-500 px-1">Dil / Language</p>
-                            <LanguageSwitcher mode="full" onSelect={() => setMoreOpen(false)} />
+                            <button
+                              type="button"
+                              onClick={() => setLangExpanded(v => !v)}
+                              className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800 transition"
+                            >
+                              <span className="text-base w-6 text-center">🌐</span>
+                              <span className="text-sm font-medium flex-1">Dil / Language</span>
+                              <svg className={`w-4 h-4 text-gray-400 transition-transform ${langExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                            </button>
+                            {langExpanded && (
+                              <div className="mt-1 px-1">
+                                <LanguageSwitcher mode="full" onSelect={() => { setLangExpanded(false); setMoreOpen(false); }} />
+                              </div>
+                            )}
                           </div>
 
                           <button
