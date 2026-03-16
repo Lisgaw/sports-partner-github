@@ -79,6 +79,13 @@ export async function GET(
         telegram: true,
         whatsapp: true,
         socialLinksVisibility: true,
+        instagramVisibility: true,
+        tiktokVisibility: true,
+        facebookVisibility: true,
+        twitterXVisibility: true,
+        vkVisibility: true,
+        telegramVisibility: true,
+        whatsappVisibility: true,
         profileVisibility: true,
         whoCanMessage: true,
         whoCanChallenge: true,
@@ -187,16 +194,18 @@ export async function GET(
         trainerProfile: isRestricted ? null : (user.trainerProfile ?? null),
         coverUrl: isRestricted ? null : (user.coverUrl ?? null),
         ...(() => {
-          const slv = user.socialLinksVisibility ?? "EVERYONE";
-          const hideSocial = isRestricted || (!isOwnProfile && (slv === "NOBODY" || (slv === "FOLLOWERS" && !isFollowing)));
+          const canSee = (fieldVisibility: string | null) => {
+            const v = fieldVisibility ?? "EVERYONE";
+            return isOwnProfile || (!isRestricted && (v === "EVERYONE" || (v === "FOLLOWERS" && isFollowing)));
+          };
           return {
-            instagram: hideSocial ? null : (user.instagram ?? null),
-            tiktok: hideSocial ? null : (user.tiktok ?? null),
-            facebook: hideSocial ? null : (user.facebook ?? null),
-            twitterX: hideSocial ? null : (user.twitterX ?? null),
-            vk: hideSocial ? null : (user.vk ?? null),
-            telegram: hideSocial ? null : (user.telegram ?? null),
-            whatsapp: hideSocial ? null : (user.whatsapp ?? null),
+            instagram: canSee(user.instagramVisibility) ? (user.instagram ?? null) : null,
+            tiktok: canSee(user.tiktokVisibility) ? (user.tiktok ?? null) : null,
+            facebook: canSee(user.facebookVisibility) ? (user.facebook ?? null) : null,
+            twitterX: canSee(user.twitterXVisibility) ? (user.twitterX ?? null) : null,
+            vk: canSee(user.vkVisibility) ? (user.vk ?? null) : null,
+            telegram: canSee(user.telegramVisibility) ? (user.telegram ?? null) : null,
+            whatsapp: canSee(user.whatsappVisibility) ? (user.whatsapp ?? null) : null,
           };
         })(),
         clubs: isRestricted ? [] : (user.clubMemberships ?? []).map((m: any) => ({ ...m.club, role: m.role })),

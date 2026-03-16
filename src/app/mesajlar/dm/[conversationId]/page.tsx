@@ -7,6 +7,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import toast from "react-hot-toast";
+import { useTranslations } from "next-intl";
 import { getDirectMessages, sendDirectMessage } from "@/services/api";
 import { useNotifications } from "@/hooks/useNotifications";
 import type { Message } from "@/types";
@@ -21,6 +22,7 @@ export default function DmChatPage({ params }: { params: Promise<{ conversationI
   const { conversationId } = use(params);
   const { data: session, status } = useSession();
   const router = useRouter();
+  const t = useTranslations("messages");
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [partner, setPartner] = useState<PartnerInfo | null>(null);
@@ -73,7 +75,7 @@ export default function DmChatPage({ params }: { params: Promise<{ conversationI
           if (otherMsg) setPartner({ id: otherMsg.senderId, name: otherMsg.sender.name, avatarUrl: otherMsg.sender.avatarUrl });
         }
       })
-      .catch(() => toast.error("Sohbet yüklenemedi"))
+      .catch(() => toast.error(t("convoLoadFailed")))
       .finally(() => setLoading(false));
 
     const handleVisibility = () => {
@@ -108,7 +110,7 @@ export default function DmChatPage({ params }: { params: Promise<{ conversationI
         setContent("");
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Mesaj gönderilemedi");
+      toast.error(err instanceof Error ? err.message : t("messageFailed"));
     } finally {
       setSending(false);
     }
@@ -124,12 +126,12 @@ export default function DmChatPage({ params }: { params: Promise<{ conversationI
         body: JSON.stringify({ reason: reportReason, description: reportDesc || undefined }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Şikayet gönderilemedi");
-      toast.success(data.message || "Şikayetiniz alındı");
+      if (!res.ok) throw new Error(data.error || t("reportFailed"));
+      toast.success(data.message || t("reportReceived"));
       setReportModal(false);
       setReportDesc("");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Hata oluştu");
+      toast.error(err instanceof Error ? err.message : t("connectionError"));
     } finally {
       setReportLoading(false);
     }
@@ -165,7 +167,7 @@ export default function DmChatPage({ params }: { params: Promise<{ conversationI
               <Link href={`/profil/${partner.id}`} className="font-semibold text-gray-800 dark:text-gray-100 hover:underline">
                 {partner.name}
               </Link>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Direkt mesaj</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t("directMessage")}</p>
             </div>
             <button
               onClick={() => setReportModal(true)}
@@ -184,7 +186,7 @@ export default function DmChatPage({ params }: { params: Promise<{ conversationI
       <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 px-4 py-4 space-y-3 border-x border-gray-100 dark:border-gray-700">
         {messages.length === 0 && (
           <p className="text-center text-gray-400 dark:text-gray-500 text-sm py-8">
-            Henüz mesaj yok. İlk mesajı siz gönderin!
+            {t("noMessages")}
           </p>
         )}
         {messages.map((msg) => {
@@ -215,7 +217,7 @@ export default function DmChatPage({ params }: { params: Promise<{ conversationI
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-          placeholder="Mesaj yaz..."
+          placeholder={t("typePlaceholder")}
           maxLength={1000}
           className="flex-1 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-2 text-sm bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none"
         />
@@ -224,7 +226,7 @@ export default function DmChatPage({ params }: { params: Promise<{ conversationI
           disabled={sending || !content.trim()}
           className="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white px-4 py-2 rounded-xl text-sm font-medium transition"
         >
-          {sending ? "..." : "Gönder"}
+          {sending ? "..." : t("send")}
         </button>
       </div>
 
@@ -232,38 +234,38 @@ export default function DmChatPage({ params }: { params: Promise<{ conversationI
       {reportModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setReportModal(false)}>
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">🚩 Kullanıcıyı Şikayet Et</h2>
+            <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">{t("reportUser")}</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sebep</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("reportReason")}</label>
                 <select
                   value={reportReason}
                   onChange={(e) => setReportReason(e.target.value)}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-orange-500 outline-none"
                 >
-                  <option value="SPAM">📧 Spam</option>
-                  <option value="HARASSMENT">😡 Taciz / Zorbalık</option>
-                  <option value="FAKE_PROFILE">🎭 Sahte Profil</option>
-                  <option value="INAPPROPRIATE_CONTENT">⚠️ Uygunsuz İçerik</option>
-                  <option value="SCAM">💸 Dolandırıcılık</option>
-                  <option value="OTHER">🔖 Diğer</option>
+                  <option value="SPAM">{t("reasonSpam")}</option>
+                  <option value="HARASSMENT">{t("reasonHarassment")}</option>
+                  <option value="FAKE_PROFILE">{t("reasonFakeProfile")}</option>
+                  <option value="INAPPROPRIATE_CONTENT">{t("reasonInappropriate")}</option>
+                  <option value="SCAM">{t("reasonScam")}</option>
+                  <option value="OTHER">{t("reasonOther")}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Açıklama (opsiyonel)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t("reportDesc")}</label>
                 <textarea
                   value={reportDesc}
                   onChange={(e) => setReportDesc(e.target.value)}
                   rows={3}
                   maxLength={500}
-                  placeholder="Detaylı bilgi verebilirsiniz..."
+                  placeholder={t("reportDescPh")}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 resize-none focus:ring-2 focus:ring-orange-500 outline-none"
                 />
               </div>
               <div className="flex gap-3 justify-end">
-                <button onClick={() => setReportModal(false)} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition">İptal</button>
+                <button onClick={() => setReportModal(false)} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition">{t("reportCancel")}</button>
                 <button onClick={handleReportUser} disabled={reportLoading} className="px-4 py-2 text-sm text-white bg-orange-600 hover:bg-orange-700 rounded-lg transition disabled:opacity-50">
-                  {reportLoading ? "Gönderiliyor..." : "Gönder"}
+                  {reportLoading ? t("reportSending") : t("reportSend")}
                 </button>
               </div>
             </div>

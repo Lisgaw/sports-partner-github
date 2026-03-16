@@ -1,3 +1,5 @@
+import { useTranslations } from "next-intl";
+
 interface Sport {
   id: string;
   icon: string;
@@ -10,23 +12,22 @@ interface ProfileSportsStripProps {
   preferredStyle?: string | null;
 }
 
-const TIME_LABELS: Record<string, string> = {
-  morning: "🌅 Sabah",
-  evening: "🌙 Akşam",
-  anytime: "⏰ Her Zaman",
-};
-
-const STYLE_LABELS: Record<string, string> = {
-  competitive: "🏆 Rekabetçi",
-  casual: "😊 Eğlenceli",
-  both: "⚡ Her İkisi",
-};
-
 export default function ProfileSportsStrip({
   sports,
   preferredTime,
   preferredStyle,
 }: ProfileSportsStripProps) {
+  const t = useTranslations("profile.sports");
+  const TIME_LABELS: Record<string, string> = {
+    morning: t("morning"),
+    evening: t("evening"),
+    anytime: t("anytime"),
+  };
+  const STYLE_LABELS: Record<string, string> = {
+    competitive: t("competitive"),
+    casual: t("casual"),
+    both: t("both"),
+  };
   const hasContent = preferredTime || preferredStyle || sports.length > 0;
   if (!hasContent) return null;
 

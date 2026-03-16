@@ -7,12 +7,14 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import toast from "react-hot-toast";
+import { useTranslations } from "next-intl";
 import { getConversations } from "@/services/api";
 import type { Conversation } from "@/types";
 
 // NOTE: getConversations now hits /api/conversations which returns both match + direct
 
 export default function MesajlarPage() {
+  const t = useTranslations("messages");
   const { status } = useSession();
   const router = useRouter();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -29,7 +31,7 @@ export default function MesajlarPage() {
       .then((res) => {
         if (res.success && res.data) setConversations(res.data);
       })
-      .catch(() => toast.error("Mesajlar yüklenemedi"))
+      .catch(() => toast.error(t("loadFailed")))
       .finally(() => setLoading(false));
   }, [status, router]);
 
@@ -43,14 +45,14 @@ export default function MesajlarPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">💬 Mesajlar</h1>
+      <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">💬 {t("title")}</h1>
 
       {conversations.length === 0 ? (
         <div className="text-center py-16">
           <span className="text-6xl">💬</span>
-          <p className="mt-4 text-gray-500 dark:text-gray-400 text-lg">Henüz mesajınız yok</p>
+          <p className="mt-4 text-gray-500 dark:text-gray-400 text-lg">{t("noConversations")}</p>
           <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">
-            Eşleşme gerçekleştiğinde veya birine doğrudan mesaj attığınızda buradan görürsünüz
+            {t("noConversationsDesc")}
           </p>
         </div>
       ) : (
@@ -105,16 +107,16 @@ export default function MesajlarPage() {
                       {conv.listing.sport.icon} {conv.listing.sport.name} — {format(new Date(conv.listing.dateTime), "d MMM", { locale: tr })}
                     </p>
                   ) : (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Direkt mesaj</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{t("directMessage")}</p>
                   )}
 
                   {conv.lastMessage ? (
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 truncate">
-                      {conv.lastMessage.isMine ? <span className="text-gray-400 dark:text-gray-500">Sen: </span> : null}
+                      {conv.lastMessage.isMine ? <span className="text-gray-400 dark:text-gray-500">{t("you")}: </span> : null}
                       {conv.lastMessage.content}
                     </p>
                   ) : (
-                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-1 italic">Henüz mesaj yok</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-1 italic">{t("noMessages")}</p>
                   )}
                 </div>
 

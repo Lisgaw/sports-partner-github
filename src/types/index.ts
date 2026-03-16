@@ -348,6 +348,13 @@ export interface ProfileEditForm {
   telegram?: string;
   whatsapp?: string;
   socialLinksVisibility?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
+  instagramVisibility?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
+  tiktokVisibility?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
+  facebookVisibility?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
+  twitterXVisibility?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
+  vkVisibility?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
+  telegramVisibility?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
+  whatsappVisibility?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
   trainerUniversity?: string;
   trainerDepartment?: string;
   trainerGymName?: string;

@@ -59,6 +59,13 @@ export async function GET() {
           telegram: true,
           whatsapp: true,
           socialLinksVisibility: true,
+          instagramVisibility: true,
+          tiktokVisibility: true,
+          facebookVisibility: true,
+          twitterXVisibility: true,
+          vkVisibility: true,
+          telegramVisibility: true,
+          whatsappVisibility: true,
           _count: {
             select: {
               followers: true,
@@ -279,6 +286,27 @@ export async function PUT(request: Request) {
     if ("whatsapp" in parsed.data) updateData.whatsapp = parsed.data.whatsapp ?? null;
     if ("socialLinksVisibility" in parsed.data && parsed.data.socialLinksVisibility !== undefined) {
       updateData.socialLinksVisibility = parsed.data.socialLinksVisibility;
+    }
+    if ("instagramVisibility" in parsed.data && parsed.data.instagramVisibility !== undefined) {
+      updateData.instagramVisibility = parsed.data.instagramVisibility;
+    }
+    if ("tiktokVisibility" in parsed.data && parsed.data.tiktokVisibility !== undefined) {
+      updateData.tiktokVisibility = parsed.data.tiktokVisibility;
+    }
+    if ("facebookVisibility" in parsed.data && parsed.data.facebookVisibility !== undefined) {
+      updateData.facebookVisibility = parsed.data.facebookVisibility;
+    }
+    if ("twitterXVisibility" in parsed.data && parsed.data.twitterXVisibility !== undefined) {
+      updateData.twitterXVisibility = parsed.data.twitterXVisibility;
+    }
+    if ("vkVisibility" in parsed.data && parsed.data.vkVisibility !== undefined) {
+      updateData.vkVisibility = parsed.data.vkVisibility;
+    }
+    if ("telegramVisibility" in parsed.data && parsed.data.telegramVisibility !== undefined) {
+      updateData.telegramVisibility = parsed.data.telegramVisibility;
+    }
+    if ("whatsappVisibility" in parsed.data && parsed.data.whatsappVisibility !== undefined) {
+      updateData.whatsappVisibility = parsed.data.whatsappVisibility;
     }
 
     // Favori sporlar güncelleme

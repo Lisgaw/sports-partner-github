@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 
 type PrivacyLevel = "EVERYONE" | "FOLLOWERS" | "NOBODY";
 
@@ -24,12 +25,6 @@ interface BlockedUser {
   };
 }
 
-const LEVELS: { value: PrivacyLevel; label: string; icon: string; desc: string }[] = [
-  { value: "EVERYONE", label: "Herkes", icon: "🌍", desc: "Tüm kullanıcılar" },
-  { value: "FOLLOWERS", label: "Takipçiler", icon: "👥", desc: "Yalnızca takip edenler" },
-  { value: "NOBODY", label: "Kimse", icon: "🚫", desc: "Kapalı" },
-];
-
 function PrivacySelector({
   label,
   description,
@@ -37,6 +32,7 @@ function PrivacySelector({
   value,
   onChange,
   disabled,
+  t,
 }: {
   label: string;
   description: string;
@@ -44,7 +40,13 @@ function PrivacySelector({
   value: PrivacyLevel;
   onChange: (v: PrivacyLevel) => void;
   disabled?: boolean;
+  t: ReturnType<typeof useTranslations<"settings.privacyPage">>;
 }) {
+  const levels = [
+    { value: "EVERYONE" as PrivacyLevel, icon: "ğŸŒ", label: t("levelEveryone"), desc: t("levelEveryoneDesc") },
+    { value: "FOLLOWERS" as PrivacyLevel, icon: "ğŸ‘¥", label: t("levelFollowers"), desc: t("levelFollowersDesc") },
+    { value: "NOBODY" as PrivacyLevel, icon: "ğŸš«", label: t("levelNobody"), desc: t("levelNobodyDesc") },
+  ];
   return (
     <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl space-y-3">
       <div className="flex items-start gap-3">
@@ -55,7 +57,7 @@ function PrivacySelector({
         </div>
       </div>
       <div className="grid grid-cols-3 gap-2">
-        {LEVELS.map((level) => (
+        {levels.map((level) => (
           <button
             key={level.value}
             type="button"
@@ -117,6 +119,7 @@ interface FollowRequest {
 }
 
 export default function GizlilikPage() {
+  const t = useTranslations("settings.privacyPage");
   const [settings, setSettings] = useState<PrivacySettings>({
     whoCanMessage: "EVERYONE",
     whoCanChallenge: "EVERYONE",
@@ -223,67 +226,71 @@ export default function GizlilikPage() {
 
   return (
     <div className="space-y-5">
-      {/* Başlık */}
+      {/* Header */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6">
         <div className="flex items-center gap-3 mb-1">
-          <span className="text-2xl">🛡️</span>
-          <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">Gizlilik & Güvenlik</h2>
+          <span className="text-2xl">ğŸ›¡ï¸</span>
+          <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">{t("title")}</h2>
         </div>
         <p className="text-sm text-gray-500 dark:text-gray-400 ml-10">
-          Sana kim mesaj yazabilir, kim teklif gönderebilir ve profilini kimler görebilir — hepsini kontrol et.
+          {t("subtitle")}
         </p>
       </div>
 
-      {/* Gizlilik Ayarları */}
+      {/* Privacy Settings */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 space-y-4">
         <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-          Erişim Kontrolleri
+          {t("accessControls")}
         </h3>
 
         <PrivacySelector
-          label="Bana Kim Mesaj Yazabilir?"
-          description="Yeni direkt mesaj konuşması başlatabilecek kişileri belirle"
-          icon="💬"
+          label={t("whoCanMessage")}
+          description={t("whoCanMessageDesc")}
+          icon="ğŸ’¬"
           value={settings.whoCanMessage}
           onChange={(v) => setSettings((s) => ({ ...s, whoCanMessage: v }))}
           disabled={saving}
+          t={t}
         />
 
         <PrivacySelector
-          label="Bana Kim Teklif Gönderebilir?"
-          description="Maç veya partner teklifi gönderebilecek kişileri belirle"
-          icon="⚔️"
+          label={t("whoCanChallenge")}
+          description={t("whoCanChallengeDesc")}
+          icon="âš”ï¸"
           value={settings.whoCanChallenge}
           onChange={(v) => setSettings((s) => ({ ...s, whoCanChallenge: v }))}
           disabled={saving}
+          t={t}
         />
 
         <PrivacySelector
-          label="Profilimi Kimler Görebilir?"
-          description="Profil sayfana kimlerin erişebileceğini belirle"
-          icon="👁️"
+          label={t("profileVisibility")}
+          description={t("profileVisibilityDesc")}
+          icon="ğŸ‘ï¸"
           value={settings.profileVisibility}
           onChange={(v) => setSettings((s) => ({ ...s, profileVisibility: v }))}
           disabled={saving}
+          t={t}
         />
 
         <PrivacySelector
-          label="Sosyal Medya Linklerimi Kimler Görebilir?"
-          description="Telegram, WhatsApp ve diğer sosyal medya bağlantılarını kimlerin göreceğini belirle"
-          icon="🔗"
+          label={t("socialLinksVisibility")}
+          description={t("socialLinksVisibilityDesc")}
+          icon="ğŸ”—"
           value={settings.socialLinksVisibility}
           onChange={(v) => setSettings((s) => ({ ...s, socialLinksVisibility: v }))}
           disabled={saving}
+          t={t}
         />
 
-        {/* Kapalı Profil */}
+        {/* Private Profile */}
         <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
           <div className="flex items-start gap-3">
-            <span className="text-xl mt-0.5">🔒</span>
+            <span className="text-xl mt-0.5">ğŸ”’</span>
             <div>
-              <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">Kapalı Profil</p>
+              <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{t("privateProfile")}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                Açıksa, seni takip etmek isteyenler onay bekler. Sadece onayladıkların takipçin olur.
+                {t("privateProfileDesc")}
               </p>
             </div>
           </div>
@@ -294,14 +301,14 @@ export default function GizlilikPage() {
           />
         </div>
 
-        {/* Liderlik Tablosu */}
+        {/* Leaderboard */}
         <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
           <div className="flex items-start gap-3">
-            <span className="text-xl mt-0.5">🏆</span>
+            <span className="text-xl mt-0.5">ğŸ†</span>
             <div>
-              <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">Liderlik Tablosunda Görün</p>
+              <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{t("leaderboard")}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                Puan tablosuna adını ve istatistiklerini dahil et
+                {t("leaderboardDesc")}
               </p>
             </div>
           </div>
@@ -312,18 +319,18 @@ export default function GizlilikPage() {
           />
         </div>
 
-        {/* Kaydet */}
+        {/* Save */}
         <div className="flex items-center justify-between pt-2">
           {saveStatus === "success" && (
             <span className="text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
-              Kayıt edildi
+              {t("saved")}
             </span>
           )}
           {saveStatus === "error" && (
-            <span className="text-sm text-red-500">Kayıt hatası, tekrar deneyin</span>
+            <span className="text-sm text-red-500">{t("saveError")}</span>
           )}
           {saveStatus === "idle" && <span />}
           <button
@@ -337,16 +344,16 @@ export default function GizlilikPage() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                 </svg>
-                Kaydediliyor…
+                {t("saving")}
               </>
             ) : (
-              "Kaydet"
+              t("save")
             )}
           </button>
         </div>
       </div>
 
-      {/* Bilgi paneli */}
+      {/* Info panel */}
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl p-4 flex gap-3">
         <span className="text-blue-500 mt-0.5">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
@@ -354,36 +361,36 @@ export default function GizlilikPage() {
           </svg>
         </span>
         <div className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-          <p className="font-semibold">Gizlilik ayarları hakkında</p>
+          <p className="font-semibold">{t("infoTitle")}</p>
           <ul className="text-xs text-blue-600 dark:text-blue-400 space-y-0.5 list-disc list-inside">
-            <li><strong>Kapalı Profil</strong>: Takip istekleri onayınızı bekler, onaylamayanlar seni takip edemez.</li>
-            <li><strong>Takipçiler</strong> seçeneği: Yalnızca seni takip eden kullanıcılara izin verir.</li>
-            <li><strong>Kimse</strong> seçeneği: Yeni konuşma veya teklif başlatılmasını tamamen kapatır.</li>
-            <li>Mevcut maç konuşmaları bu ayardan etkilenmez.</li>
+            <li><strong>{t("privateProfile")}</strong>: {t("infoPrivateProfileDesc")}</li>
+            <li><strong>{t("levelFollowers")}</strong>: {t("infoFollowersOptionDesc")}</li>
+            <li><strong>{t("levelNobody")}</strong>: {t("infoNobodyOptionDesc")}</li>
+            <li>{t("infoCurrentConversations")}</li>
           </ul>
         </div>
       </div>
 
-      {/* Takip İstekleri */}
+      {/* Follow Requests */}
       {settings.isPrivateProfile && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                Takip İstekleri
+                {t("followRequests")}
               </h3>
-              <p className="text-xs text-gray-400 mt-0.5">Kapalı profilini takip etmek isteyenler</p>
+              <p className="text-xs text-gray-400 mt-0.5">{t("followRequestsDesc")}</p>
             </div>
             {followRequests.length > 0 && (
               <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-2.5 py-1 rounded-full font-semibold">
-                {followRequests.length} istek
+                {t("requests", { count: followRequests.length })}
               </span>
             )}
           </div>
           {followRequests.length === 0 ? (
             <div className="py-8 text-center bg-gray-50 dark:bg-gray-700/30 rounded-xl">
-              <span className="text-3xl">🔔</span>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Bekleyen takip isteği yok.</p>
+              <span className="text-3xl">ğŸ””</span>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t("noFollowRequests")}</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -395,7 +402,7 @@ export default function GizlilikPage() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{req.user.name}</p>
-                      {req.user.city && <p className="text-xs text-gray-400 truncate">📍 {req.user.city.name}</p>}
+                      {req.user.city && <p className="text-xs text-gray-400 truncate">ğŸ“ {req.user.city.name}</p>}
                     </div>
                   </div>
                   <div className="flex gap-2 shrink-0">
@@ -404,14 +411,14 @@ export default function GizlilikPage() {
                       disabled={processingFollowId === req.followId}
                       className="text-xs font-semibold bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg transition disabled:opacity-50"
                     >
-                      {processingFollowId === req.followId ? "…" : "Kabul Et"}
+                      {processingFollowId === req.followId ? "â€¦" : t("accept")}
                     </button>
                     <button
                       onClick={() => handleFollowRequest(req.followId, "REJECT")}
                       disabled={processingFollowId === req.followId}
                       className="text-xs font-semibold border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-red-300 hover:text-red-500 px-3 py-1.5 rounded-lg transition disabled:opacity-50"
                     >
-                      {processingFollowId === req.followId ? "…" : "Reddet"}
+                      {processingFollowId === req.followId ? "â€¦" : t("reject")}
                     </button>
                   </div>
                 </div>
@@ -421,28 +428,28 @@ export default function GizlilikPage() {
         </div>
       )}
 
-      {/* Engellenen Kullanıcılar */}
+      {/* Blocked Users */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-              Engellenen Kullanıcılar
+              {t("blockedUsers")}
             </h3>
             <p className="text-xs text-gray-400 mt-0.5">
-              Engellediğin kişiler sana mesaj yazamaz ve içeriklerini göremezsin
+              {t("noBlockedUsers")}
             </p>
           </div>
           {blockedUsers.length > 0 && (
             <span className="text-xs bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2.5 py-1 rounded-full font-semibold">
-              {blockedUsers.length} kişi
+              {t("blockedCount", { count: blockedUsers.length })}
             </span>
           )}
         </div>
 
         {blockedUsers.length === 0 ? (
           <div className="py-10 text-center bg-gray-50 dark:bg-gray-700/30 rounded-xl">
-            <span className="text-4xl">🤝</span>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Engellediğin kullanıcı yok.</p>
+            <span className="text-4xl">ğŸ¤</span>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t("noBlockedUsers")}</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -466,7 +473,7 @@ export default function GizlilikPage() {
                           : "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"
                       }`}
                     >
-                      {block.type === "BLOCK" ? "Engellendi" : "Kısıtlandı"}
+                      {block.type === "BLOCK" ? t("blockType") : t("restrictType")}
                     </span>
                   </div>
                 </div>
@@ -475,7 +482,7 @@ export default function GizlilikPage() {
                   disabled={unblockingId === block.blocked.id}
                   className="text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 border border-gray-200 dark:border-gray-600 hover:border-red-300 dark:hover:border-red-700 px-3 py-1.5 rounded-lg transition disabled:opacity-50"
                 >
-                  {unblockingId === block.blocked.id ? "…" : "Engeli Kaldır"}
+                  {unblockingId === block.blocked.id ? "â€¦" : t("unblock")}
                 </button>
               </div>
             ))}
@@ -485,4 +492,3 @@ export default function GizlilikPage() {
     </div>
   );
 }
-

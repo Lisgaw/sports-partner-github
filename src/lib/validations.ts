@@ -300,6 +300,13 @@ export const updateProfileSchema = z
       .optional()
       .nullable(),
     socialLinksVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
+    instagramVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
+    tiktokVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
+    facebookVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
+    twitterXVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
+    vkVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
+    telegramVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
+    whatsappVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
     trainerUniversity: z.string().max(120).optional().nullable(),
     trainerDepartment: z.string().max(120).optional().nullable(),
     trainerGymName: z.string().max(120).optional().nullable(),

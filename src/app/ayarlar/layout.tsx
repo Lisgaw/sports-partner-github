@@ -4,61 +4,53 @@ import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo } from "react";
 import Link from "next/link";
-import { useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function AyarlarLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const locale = useLocale();
-  const isTr = locale === "tr";
   const { status } = useSession();
-
-  const text = {
-    title: isTr ? "Ayarlar" : "Settings",
-    quickTitle: isTr ? "Hızlı Ayarlar" : "Quick Settings",
-    quickDesc: isTr ? "Dil ve hesap bölümlerine mobilde daha rahat eriş." : "Quick mobile access to language and account sections.",
-    backToProfile: isTr ? "← Profilime Dön" : "← Back to Profile",
-  };
+  const t = useTranslations("settings");
 
   const menu = useMemo(() => ([
     {
       href: "/profil",
       icon: "👤",
-      label: isTr ? "Profili Düzenle" : "Edit Profile",
-      desc: isTr ? "Ad, biyografi, konum, fotoğraf" : "Name, bio, location, photo",
+      label: t("profile"),
+      desc: t("editProfileDesc"),
     },
     {
       href: "/ayarlar/guvenlik",
       icon: "🔒",
-      label: isTr ? "Hesap Güvenliği" : "Account Security",
-      desc: isTr ? "Şifre ve e-posta değiştir" : "Change password and email",
+      label: t("security"),
+      desc: t("securityDesc"),
     },
     {
       href: "/ayarlar/profesyonel",
       icon: "⭐",
-      label: isTr ? "Profesyonel Hesap" : "Professional Account",
-      desc: isTr ? "Antrenör başvurusu ve onay durumu" : "Trainer application and approval status",
+      label: t("professional"),
+      desc: t("professionalDesc"),
     },
     {
       href: "/ayarlar/gizlilik",
       icon: "🛡️",
-      label: isTr ? "Gizlilik" : "Privacy",
-      desc: isTr ? "Hesap görünürlüğü, engellenenler" : "Visibility and blocked users",
+      label: t("privacy"),
+      desc: t("privacyDesc"),
     },
     {
       href: "/ayarlar/bildirimler",
       icon: "🔔",
-      label: isTr ? "Bildirimler" : "Notifications",
-      desc: isTr ? "Push bildirim tercihleri" : "Push notification preferences",
+      label: t("notifications"),
+      desc: t("notificationsDesc"),
     },
     {
       href: "/ayarlar/davet",
       icon: "🎁",
-      label: isTr ? "Arkadaşını Davet Et" : "Invite Friends",
-      desc: isTr ? "Davet kodu ile arkadaşını getir" : "Invite your friends with your code",
+      label: t("invite"),
+      desc: t("inviteDesc"),
     },
-  ]), [isTr]);
+  ]), [t]);
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/auth/giris");
@@ -74,12 +66,12 @@ export default function AyarlarLayout({ children }: { children: React.ReactNode 
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8">{text.title}</h1>
+      <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-8">{t("title")}</h1>
       <div className="md:hidden mb-5 rounded-3xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
         <div className="flex items-center justify-between gap-3 mb-3">
           <div>
-            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{text.quickTitle}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{text.quickDesc}</p>
+            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{t("quickTitle")}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{t("quickDesc")}</p>
           </div>
           <LanguageSwitcher />
         </div>
@@ -134,11 +126,11 @@ export default function AyarlarLayout({ children }: { children: React.ReactNode 
             href="/profil"
             className="mt-4 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 px-1"
           >
-            {text.backToProfile}
+            {t("backToProfile")}
           </Link>
         </aside>
 
-        {/* İçerik */}
+        {/* Content */}
         <main className="flex-1 min-w-0">{children}</main>
       </div>
     </div>

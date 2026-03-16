@@ -1,9 +1,12 @@
+import { useTranslations } from "next-intl";
+
 interface ProfileStreakCardProps {
   currentStreak: number;
   longestStreak: number;
 }
 
 export default function ProfileStreakCard({ currentStreak, longestStreak }: ProfileStreakCardProps) {
+  const t = useTranslations("profile.streak");
   const streakEmoji = currentStreak >= 7 ? "🔥" : currentStreak >= 3 ? "⚡" : "✨";
   const weekProgress = currentStreak % 7;
   const filledDots = currentStreak > 0 && weekProgress === 0 ? 7 : weekProgress;
@@ -21,9 +24,9 @@ export default function ProfileStreakCard({ currentStreak, longestStreak }: Prof
           <span className="text-lg select-none">{streakEmoji}</span>
           <div>
             <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-              {currentStreak} gün seri
+              {currentStreak} {t("daySeries")}
             </p>
-            <p className="text-xs text-gray-400">Rekor: {longestStreak} gün</p>
+            <p className="text-xs text-gray-400">{t("record", { days: longestStreak })}</p>
           </div>
         </div>
 
@@ -50,12 +53,12 @@ export default function ProfileStreakCard({ currentStreak, longestStreak }: Prof
               style={{ width: `${Math.min(100, (currentStreak / nextMilestone) * 100)}%` }}
             />
           </div>
-          <span className="text-[10px] text-gray-400 shrink-0">{toNext} gün kaldı</span>
+          <span className="text-[10px] text-gray-400 shrink-0">{t("daysLeft", { days: toNext })}</span>
         </div>
       )}
       {nextMilestone === null && currentStreak >= 30 && (
         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-center">
-          🌋 Efsane seri! {currentStreak} gün kesintisiz
+          {t("legendStreak", { days: currentStreak })}
         </p>
       )}
     </div>

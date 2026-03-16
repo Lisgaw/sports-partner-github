@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 interface ProfileCompletionProps {
   user: {
     name?: string | null;
@@ -23,25 +25,24 @@ interface ProfileCompletionProps {
 
 interface FieldCheck {
   key: string;
-  label: string;
+  tipKey: string;
   weight: number;
   done: boolean;
-  tip: string;
 }
 
 export function getProfileCompletion(props: ProfileCompletionProps) {
   const { user, listings = [], matches = [] } = props;
 
   const fields: FieldCheck[] = [
-    { key: "avatar", label: "Profil Fotoğrafı", weight: 15, done: !!user.avatarUrl, tip: "Fotoğraf ekle" },
-    { key: "bio", label: "Biyografi", weight: 10, done: !!user.bio, tip: "Hakkında yaz" },
-    { key: "sport", label: "Spor Seçimi", weight: 15, done: (user.sports?.length ?? 0) > 0, tip: "Spor dalı seç" },
-    { key: "city", label: "Şehir", weight: 10, done: !!user.cityId, tip: "Şehir belirle" },
-    { key: "phone", label: "Telefon", weight: 10, done: !!user.phone, tip: "Telefon ekle" },
-    { key: "birthDate", label: "Doğum Tarihi", weight: 5, done: !!user.birthDate, tip: "Tarih gir" },
-    { key: "gender", label: "Cinsiyet", weight: 5, done: !!user.gender, tip: "Cinsiyet seç" },
-    { key: "listing", label: "İlk İlan", weight: 15, done: listings.length > 0, tip: "İlan oluştur" },
-    { key: "match", label: "İlk Maç", weight: 15, done: matches.length > 0, tip: "Bir maç yap" },
+    { key: "avatar",    tipKey: "avatarTip",    weight: 15, done: !!user.avatarUrl },
+    { key: "bio",       tipKey: "bioTip",       weight: 10, done: !!user.bio },
+    { key: "sport",     tipKey: "sportTip",     weight: 15, done: (user.sports?.length ?? 0) > 0 },
+    { key: "city",      tipKey: "cityTip",      weight: 10, done: !!user.cityId },
+    { key: "phone",     tipKey: "phoneTip",     weight: 10, done: !!user.phone },
+    { key: "birthDate", tipKey: "birthDateTip", weight: 5,  done: !!user.birthDate },
+    { key: "gender",    tipKey: "genderTip",    weight: 5,  done: !!user.gender },
+    { key: "listing",   tipKey: "listingTip",   weight: 15, done: listings.length > 0 },
+    { key: "match",     tipKey: "matchTip",     weight: 15, done: matches.length > 0 },
   ];
 
   const score = fields.reduce((acc, f) => acc + (f.done ? f.weight : 0), 0);
@@ -51,6 +52,7 @@ export function getProfileCompletion(props: ProfileCompletionProps) {
 }
 
 export default function ProfileCompletionRing({ user, listings, matches }: ProfileCompletionProps) {
+  const t = useTranslations("profile.completion");
   const { score, incomplete } = getProfileCompletion({ user, listings, matches });
 
   if (score >= 100) return null;
@@ -101,10 +103,10 @@ export default function ProfileCompletionRing({ user, listings, matches }: Profi
         {/* Info */}
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-gray-800 dark:text-gray-100 text-sm">
-            Profil Tamamlanma
+            {t("title")}
           </h3>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            {score >= 80 ? "Neredeyse tamam!" : score >= 50 ? "İyi gidiyorsun!" : "Profilini tamamla"}
+            {score >= 80 ? t("nearlyDone") : score >= 50 ? t("doingWell") : t("completeProfile")}
           </p>
           {incomplete.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
@@ -113,7 +115,7 @@ export default function ProfileCompletionRing({ user, listings, matches }: Profi
                   key={f.key}
                   className="text-[10px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded-full"
                 >
-                  {f.tip}
+                  {t(f.tipKey as Parameters<typeof t>[0])}
                 </span>
               ))}
               {incomplete.length > 3 && (

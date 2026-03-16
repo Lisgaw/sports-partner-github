@@ -6,19 +6,14 @@ import { useProfile } from "@/hooks/useProfile";
 import { useSports } from "@/hooks/useLocations";
 import toast from "react-hot-toast";
 import Button from "@/components/ui/Button";
+import { useTranslations } from "next-intl";
 
 const inputClass =
   "w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition";
 const labelClass = "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1";
 
-const LESSON_TYPES = [
-  { id: "birebir", label: "Birebir", icon: "👤", desc: "Bireysel ders" },
-  { id: "grup", label: "Grup", icon: "👥", desc: "Grup dersi" },
-  { id: "cocuk", label: "Çocuk", icon: "🧒", desc: "Çocuklara yönelik" },
-  { id: "performans", label: "Performans", icon: "🏆", desc: "Yüksek performans" },
-];
-
 export default function ProfesyonelPage() {
+  const t = useTranslations("settings.professionalPage");
   const { data, loading } = useProfile();
   const { sports } = useSports();
   const [submitting, setSubmitting] = useState(false);
@@ -63,13 +58,13 @@ export default function ProfesyonelPage() {
       });
       if (!(await res.json()).success) {
         setBadgeVisible(!value);
-        toast.error("Ayar kaydedilemedi");
+        toast.error(t("badgeSaveFailed"));
       } else {
-        toast.success(value ? "Rozet bilgileri herkese açık" : "Rozet bilgileri gizlendi");
+        toast.success(value ? t("badgeVisibleMsg") : t("badgeHiddenMsg"));
       }
     } catch {
       setBadgeVisible(!value);
-      toast.error("Bir hata oluştu");
+      toast.error(t("genericError"));
     } finally {
       setSavingBadge(false);
     }
@@ -85,19 +80,19 @@ export default function ProfesyonelPage() {
   const handleTrainerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!trainerForm.university.trim()) {
-      toast.error("Üniversite adı zorunludur");
+      toast.error(t("universityRequired"));
       return;
     }
     if (!trainerForm.department.trim()) {
-      toast.error("Bölüm adı zorunludur");
+      toast.error(t("departmentRequired"));
       return;
     }
     if (trainerForm.branches.length === 0) {
-      toast.error("En az bir branş seçiniz");
+      toast.error(t("branchRequired"));
       return;
     }
     if (trainerForm.lessonTypes.length === 0) {
-      toast.error("En az bir ders türü seçiniz");
+      toast.error(t("lessonTypeRequired"));
       return;
     }
 
@@ -109,10 +104,10 @@ export default function ProfesyonelPage() {
         body: JSON.stringify({ type: "TRAINER", ...trainerForm }),
       });
       const json = await res.json();
-      if (json.success) toast.success("✅ Antrenör hesabınız aktif edildi! Sayfayı yenileyiniz.");
-      else toast.error(json.error || "Başvuru gönderilemedi");
+      if (json.success) toast.success(t("applicationSent"));
+      else toast.error(json.error || t("applicationFailed"));
     } catch {
-      toast.error("Bir hata oluştu");
+      toast.error(t("genericError"));
     } finally {
       setSubmitting(false);
     }
@@ -132,7 +127,7 @@ export default function ProfesyonelPage() {
         <>
           <div className="flex flex-wrap gap-2">
             <span className="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 text-sm font-semibold px-4 py-2 rounded-full">
-              🏅 Antrenör hesabı aktif <span className="w-2 h-2 bg-green-500 rounded-full" />
+              🏅 {t("activeTitle")} <span className="w-2 h-2 bg-green-500 rounded-full" />
             </span>
           </div>
           <Link
@@ -142,8 +137,8 @@ export default function ProfesyonelPage() {
             <div className="flex items-center gap-3">
               <span className="text-2xl">📚</span>
               <div>
-                <p className="font-semibold text-blue-800 dark:text-blue-300 text-sm">Ders Takibi</p>
-                <p className="text-xs text-blue-600 dark:text-blue-400">Öğrencileri, dersleri ve ödevleri yönet</p>
+                <p className="font-semibold text-blue-800 dark:text-blue-300 text-sm">{t("lessonTracking")}</p>
+                <p className="text-xs text-blue-600 dark:text-blue-400">{t("lessonTrackingDesc")}</p>
               </div>
             </div>
             <span className="text-blue-400 group-hover:translate-x-1 transition-transform">→</span>
@@ -152,14 +147,15 @@ export default function ProfesyonelPage() {
             badgeVisible={badgeVisible}
             saving={savingBadge}
             onChange={handleBadgeVisibilityToggle}
+            t={t}
           />
         </>
       ) : (
         <>
           <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-5">
-            <h2 className="text-base font-semibold text-emerald-800 dark:text-emerald-300 mb-1">Profesyonel Hesaba Yükselt</h2>
+            <h2 className="text-base font-semibold text-emerald-800 dark:text-emerald-300 mb-1">{t("upgradeTitle")}</h2>
             <p className="text-sm text-emerald-700 dark:text-emerald-400">
-              Sporcu hesabın tüm özellikleri korunur. Onaylı antrenör olup ders araçlarına erişebilirsin.
+              {t("upgradeDesc")}
             </p>
           </div>
           <TrainerForm
@@ -171,6 +167,7 @@ export default function ProfesyonelPage() {
             onSubmit={handleTrainerSubmit}
             inputClass={inputClass}
             labelClass={labelClass}
+            t={t}
           />
         </>
       )}
@@ -187,6 +184,7 @@ function TrainerForm({
   onSubmit,
   inputClass,
   labelClass,
+  t,
 }: {
   form: any;
   setForm: any;
@@ -196,44 +194,51 @@ function TrainerForm({
   onSubmit: any;
   inputClass: string;
   labelClass: string;
+  t: ReturnType<typeof useTranslations<"settings.professionalPage">>;
 }) {
+  const LESSON_TYPES = [
+    { id: "birebir", icon: "👤", label: t("lessonType_birebir"), desc: t("lessonType_birebir_desc") },
+    { id: "grup", icon: "👥", label: t("lessonType_grup"), desc: t("lessonType_grup_desc") },
+    { id: "cocuk", icon: "🧒", label: t("lessonType_cocuk"), desc: t("lessonType_cocuk_desc") },
+    { id: "performans", icon: "🏆", label: t("lessonType_performans"), desc: t("lessonType_performans_desc") },
+  ];
   return (
     <form onSubmit={onSubmit} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 space-y-5">
       <div>
-        <h3 className="font-bold text-gray-900 dark:text-gray-100 text-base">Antrenör Başvuru Formu</h3>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Tüm bilgilerinizi eksiksiz doldurunuz.</p>
+        <h3 className="font-bold text-gray-900 dark:text-gray-100 text-base">{t("formTitle")}</h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{t("formSubtitle")}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className={labelClass}>
-            Üniversite Adı <span className="text-red-400">*</span>
+            {t("university")} <span className="text-red-400">*</span>
           </label>
           <input
             type="text"
             value={form.university}
             onChange={(e) => setForm({ ...form, university: e.target.value })}
             className={inputClass}
-            placeholder="Mezun olduğunuz üniversite"
+            placeholder={t("universityPh")}
           />
         </div>
         <div>
           <label className={labelClass}>
-            Bölüm <span className="text-red-400">*</span>
+            {t("department")} <span className="text-red-400">*</span>
           </label>
           <input
             type="text"
             value={form.department}
             onChange={(e) => setForm({ ...form, department: e.target.value })}
             className={inputClass}
-            placeholder="Mezun olduğunuz bölüm"
+            placeholder={t("departmentPh")}
           />
         </div>
       </div>
 
       <div>
         <label className={labelClass}>
-          Branşlarınız <span className="text-red-400">*</span>
+          {t("branches")} <span className="text-red-400">*</span>
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
           {sports.map((s) => {
@@ -265,9 +270,9 @@ function TrainerForm({
 
       <div>
         <label className={labelClass}>
-          Ders Türleri <span className="text-red-400">*</span>
+          {t("lessonTypes")} <span className="text-red-400">*</span>
         </label>
-        <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">Verdiğiniz ders türlerini seçin (birden fazla seçilebilir)</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">{t("lessonTypesDesc")}</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {LESSON_TYPES.map((lessonType) => {
             const selected = form.lessonTypes.includes(lessonType.id);
@@ -285,7 +290,7 @@ function TrainerForm({
                 <span className="text-xl">{lessonType.icon}</span>
                 <span className="text-xs font-semibold">{lessonType.label}</span>
                 <span className="text-[10px] opacity-70">{lessonType.desc}</span>
-                {selected && <span className="text-[10px] text-blue-500 font-bold">✓ Seçildi</span>}
+                {selected && <span className="text-[10px] text-blue-500 font-bold">{t("selected")}</span>}
               </button>
             );
           })}
@@ -301,8 +306,8 @@ function TrainerForm({
             className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
           <div>
-            <span className={labelClass + " !mb-0"}>Öğrencilere Ekipman Sağlıyorum</span>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Dersler için gerekli ekipmanları tarafımdan karşılanacaktır.</p>
+            <span className={labelClass + " !mb-0"}>{t("equipment")}</span>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{t("equipmentDesc")}</p>
           </div>
         </label>
       </div>
@@ -310,18 +315,18 @@ function TrainerForm({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className={labelClass}>
-            Çalıştığınız Salon / Spor Merkezi <span className="text-gray-400 font-normal">(opsiyonel)</span>
+            {t("gymName")} <span className="text-gray-400 font-normal">{t("optional")}</span>
           </label>
           <input
             type="text"
             value={form.gymName}
             onChange={(e) => setForm({ ...form, gymName: e.target.value })}
             className={inputClass}
-            placeholder="Çalıştığınız kurumun adı"
+            placeholder={t("gymNamePh")}
           />
         </div>
         <div>
-          <label className={labelClass}>Deneyim (yıl)</label>
+          <label className={labelClass}>{t("experience")}</label>
           <input
             type="number"
             min={0}
@@ -329,27 +334,27 @@ function TrainerForm({
             value={form.experience}
             onChange={(e) => setForm({ ...form, experience: e.target.value })}
             className={inputClass}
-            placeholder="Deneyim süreniz"
+            placeholder={t("experiencePh")}
           />
         </div>
       </div>
 
       <div>
         <label className={labelClass}>
-          Eğitim & Sertifika Bilgisi <span className="text-gray-400 font-normal">(opsiyonel)</span>
+          {t("certNote")} <span className="text-gray-400 font-normal">{t("optional")}</span>
         </label>
         <textarea
           value={form.certNote}
           onChange={(e) => setForm({ ...form, certNote: e.target.value })}
           className={`${inputClass} resize-none`}
           rows={2}
-          placeholder="Sahip olduğunuz sertifikaları kısaca belirtin (Örn: MHF Antrenör Lisansı, UEFA C Belgesi)"
+          placeholder={t("certNotePh")}
         />
       </div>
 
       <div className="flex justify-end pt-1">
         <Button type="submit" loading={submitting} className="min-w-[160px]">
-          Başvuruyu Gönder
+          {t("submit")}
         </Button>
       </div>
     </form>
@@ -360,21 +365,21 @@ function TrainerBadgeVisibilityCard({
   badgeVisible,
   saving,
   onChange,
+  t,
 }: {
   badgeVisible: boolean;
   saving: boolean;
   onChange: (v: boolean) => void;
+  t: ReturnType<typeof useTranslations<"settings.professionalPage">>;
 }) {
   return (
     <div className="flex items-center justify-between bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 shadow-sm">
       <div className="flex items-start gap-3">
         <span className="text-xl mt-0.5">🏅</span>
         <div>
-          <p className="font-semibold text-gray-800 dark:text-gray-100 text-sm">Antrenör Rozeti Bilgileri</p>
+          <p className="font-semibold text-gray-800 dark:text-gray-100 text-sm">{t("badgeTitle")}</p>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            {badgeVisible
-              ? "Rozetine tıklayan herkes antrenör bilgilerini görebilir"
-              : "Sadece rozet görünür, bilgiler popup'ta gizli"}
+            {badgeVisible ? t("badgeVisible") : t("badgeHidden")}
           </p>
         </div>
       </div>

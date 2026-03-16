@@ -1,7 +1,7 @@
 "use client";
 
 import { differenceInYears } from "date-fns";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 import Button from "@/components/ui/Button";
 import TrainerBadgePopup from "@/components/profile/TrainerBadgePopup";
@@ -41,6 +41,7 @@ export default function ProfileHeaderView({
   onFollowingClick,
 }: ProfileHeaderViewProps) {
   const locale = useLocale();
+  const t = useTranslations("profile.header");
   const lvl = user.userLevel || "BEGINNER";
   const levelCfg = LEVEL_CONFIG[lvl] || LEVEL_CONFIG.BEGINNER;
 
@@ -52,8 +53,8 @@ export default function ProfileHeaderView({
       fd.append("file", file);
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       const json = await res.json();
-      if (json.url) { onUploadSuccess(); toast.success("Kapak fotoğrafı güncellendi"); }
-      else toast.error(json.error || "Yüklenemedi");
+      if (json.url) { onUploadSuccess(); toast.success(t("coverUpdated")); }
+      else toast.error(json.error || t("uploadFailed"));
     } finally { setUploadingCover(false); }
   };
 
@@ -65,8 +66,8 @@ export default function ProfileHeaderView({
       fd.append("file", file);
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       const json = await res.json();
-      if (json.url) { onUploadSuccess(); toast.success("Profil fotoğrafı güncellendi"); }
-      else toast.error(json.error || "Yüklenemedi");
+      if (json.url) { onUploadSuccess(); toast.success(t("avatarUpdated")); }
+      else toast.error(json.error || t("uploadFailed"));
     } finally { setUploadingAvatar(false); }
   };
 
@@ -82,7 +83,7 @@ export default function ProfileHeaderView({
         {/* Cover upload overlay */}
         <label className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition cursor-pointer z-10">
           <span className="text-white text-sm font-semibold bg-black/50 px-4 py-2 rounded-xl opacity-0 group-hover:opacity-100 transition backdrop-blur-sm">
-            {uploadingCover ? "⏳ Yükleniyor..." : "📷 Kapak Değiştir"}
+            {uploadingCover ? t("uploading") : `📷 ${t("uploadCover")}`}
           </span>
           <input type="file" accept="image/*" className="hidden" disabled={uploadingCover}
             onChange={e => { const f = e.target.files?.[0]; if (f) handleCoverUpload(f); }} />
@@ -104,7 +105,7 @@ export default function ProfileHeaderView({
               <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition cursor-pointer">
                 {uploadingAvatar
                   ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  : <span className="text-white text-[10px] font-bold text-center leading-tight">📷<br/>Değiştir</span>
+                  : <span className="text-white text-[10px] font-bold text-center leading-tight">📷<br/>{t("change")}</span>
                 }
                 <input type="file" accept="image/*" className="hidden" disabled={uploadingAvatar}
                   onChange={e => { const f = e.target.files?.[0]; if (f) handleAvatarUpload(f); }} />
@@ -155,7 +156,7 @@ export default function ProfileHeaderView({
               <span>· {GENDER_ICONS[user.gender] || ""}</span>
             )}
             {user.birthDate && (
-              <span>· {differenceInYears(new Date(), new Date(user.birthDate))} yaşında</span>
+              <span>· {differenceInYears(new Date(), new Date(user.birthDate))} {t("age")}</span>
             )}
           </div>
         </div>
@@ -163,14 +164,14 @@ export default function ProfileHeaderView({
         {/* Stats — clean inline row */}
         <div className="flex items-center gap-4 text-sm mb-3">
           <button onClick={onFollowerClick} className="hover:text-emerald-600 transition">
-            <strong className="text-gray-900 dark:text-white">{user._count?.followers || 0}</strong> <span className="text-gray-500 dark:text-gray-400">takipçi</span>
+            <strong className="text-gray-900 dark:text-white">{user._count?.followers || 0}</strong> <span className="text-gray-500 dark:text-gray-400">{t("followers")}</span>
           </button>
           <button onClick={onFollowingClick} className="hover:text-emerald-600 transition">
-            <strong className="text-gray-900 dark:text-white">{user._count?.following || 0}</strong> <span className="text-gray-500 dark:text-gray-400">takip</span>
+            <strong className="text-gray-900 dark:text-white">{user._count?.following || 0}</strong> <span className="text-gray-500 dark:text-gray-400">{t("following")}</span>
           </button>
-          <span><strong className="text-gray-900 dark:text-white">{user.totalMatches || 0}</strong> <span className="text-gray-500 dark:text-gray-400">maç</span></span>
+          <span><strong className="text-gray-900 dark:text-white">{user.totalMatches || 0}</strong> <span className="text-gray-500 dark:text-gray-400">{t("matches")}</span></span>
           {(user.currentStreak || 0) > 0 && (
-            <span className="text-orange-500"><strong>🔥 {user.currentStreak}</strong> <span className="text-gray-500 dark:text-gray-400">seri</span></span>
+            <span className="text-orange-500"><strong>🔥 {user.currentStreak}</strong> <span className="text-gray-500 dark:text-gray-400">{t("streak")}</span></span>
           )}
         </div>
 
@@ -180,7 +181,7 @@ export default function ProfileHeaderView({
             onClick={onEditClick}
             className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border border-emerald-500 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition"
           >
-            ✏️ Profili Düzenle
+            ✏️ {t("editProfile")}
           </button>
         </div>
 

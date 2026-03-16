@@ -74,8 +74,15 @@ model User {
   vk             String?                              // VK URL
   telegram       String?                              // Telegram kullanıcı adı
   whatsapp       String?                              // WhatsApp numarası (uluslararası formatta)
-  // Sosyal Link Gizlilik
-  socialLinksVisibility PrivacyLevel @default(EVERYONE) // Sosyal linkleri kimler görebilir
+  // Sosyal Link Gizlilik (global + per-platform)
+  socialLinksVisibility    PrivacyLevel @default(EVERYONE) // Sosyal linkleri kimler görebilir (global)
+  instagramVisibility      PrivacyLevel @default(EVERYONE)
+  tiktokVisibility         PrivacyLevel @default(EVERYONE)
+  facebookVisibility       PrivacyLevel @default(EVERYONE)
+  twitterXVisibility       PrivacyLevel @default(EVERYONE)
+  vkVisibility             PrivacyLevel @default(EVERYONE)
+  telegramVisibility       PrivacyLevel @default(EVERYONE)
+  whatsappVisibility       PrivacyLevel @default(EVERYONE)
   // Gizlilik Ayarları
   whoCanMessage   PrivacyLevel  @default(EVERYONE)   // Bana kim mesaj yazabilir
   whoCanChallenge PrivacyLevel  @default(EVERYONE)   // Bana kim teklif gönderebilir

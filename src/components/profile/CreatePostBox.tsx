@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { useTranslations } from "next-intl";
 import Button from "@/components/ui/Button";
 
 interface CreatePostBoxProps {
@@ -9,6 +10,7 @@ interface CreatePostBoxProps {
 }
 
 export default function CreatePostBox({ onCreated }: CreatePostBoxProps) {
+  const t = useTranslations("profile.createPost");
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -25,12 +27,12 @@ export default function CreatePostBox({ onCreated }: CreatePostBoxProps) {
       if (res.ok && json.id) {
         onCreated(json);
         setContent("");
-        toast.success("Gönderi paylaşıldı!");
+        toast.success(t("published"));
       } else {
-        toast.error(json.error || "Gönderi oluşturulamadı");
+        toast.error(json.error || t("createFailed"));
       }
     } catch {
-      toast.error("Bağlantı hatası");
+      toast.error(t("connectionError"));
     } finally {
       setSubmitting(false);
     }
@@ -41,7 +43,7 @@ export default function CreatePostBox({ onCreated }: CreatePostBoxProps) {
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="Ne düşünüyorsun? Paylaş..."
+        placeholder={t("placeholder")}
         rows={3}
         className="w-full resize-none bg-transparent text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 outline-none text-sm"
       />
@@ -52,7 +54,7 @@ export default function CreatePostBox({ onCreated }: CreatePostBoxProps) {
           loading={submitting}
           disabled={!content.trim()}
         >
-          Paylaş
+          {t("publish")}
         </Button>
       </div>
     </div>
