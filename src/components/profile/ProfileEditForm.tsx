@@ -1,8 +1,9 @@
 "use client";
 
 import toast from "react-hot-toast";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import Button from "@/components/ui/Button";
+import { localizeSportName } from "@/lib/localized-ui";
 import type { ProfileEditForm } from "@/types";
 
 interface Sport {
@@ -52,6 +53,7 @@ export default function ProfileEditFormPanel({
 }: ProfileEditFormProps) {
   const t = useTranslations("profile.editForm");
   const tProf = useTranslations("settings.professionalPage");
+  const locale = useLocale();
   const inputCls =
     "w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none";
 
@@ -289,7 +291,7 @@ export default function ProfileEditFormPanel({
                     : "border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-emerald-400"
                 }`}
               >
-                {s.icon} {s.name}
+                {s.icon} {localizeSportName(s.name, locale)}
               </button>
             );
           })}

@@ -426,7 +426,7 @@ export default function CreateListingPage() {
               onChange={(e) => setForm({ ...form, dateTime: e.target.value })}
               min={new Date().toISOString().slice(0, 16)}
               className={selectClass}
-              aria-label="Tarih ve saat seçin"
+              aria-label={t("dateTime")}
             />
           </div>
         )}
