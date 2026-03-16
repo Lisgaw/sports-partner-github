@@ -4,8 +4,12 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { format, isAfter, startOfToday } from "date-fns";
-import { tr } from "date-fns/locale";
+import { tr, enUS, de, es, fr, ja, ko, ru } from "date-fns/locale";
+import type { Locale } from "date-fns";
 import toast from "react-hot-toast";
+import { useTranslations, useLocale } from "next-intl";
+
+const DATE_FNS_LOCALES: Record<string, Locale> = { tr, en: enUS, de, es, fr, ja, ko, ru };
 import { useProfile } from "@/hooks/useProfile";
 import { useLocations, useSports } from "@/hooks/useLocations";
 import { deleteListing, updateProfile } from "@/services/api";
@@ -27,19 +31,22 @@ import PostCard from "@/components/profile/PostCard";
 import FollowListModal from "@/components/profile/FollowListModal";
 
 // Eksik alanları tespit eden fonksiyon
-function getMissingProfileFields(user: any) {
+function getMissingProfileFields(user: any, t: (k: string) => string) {
   const missing: string[] = [];
-  if (!user.avatarUrl) missing.push("Profil fotoğrafı");
-  if (!user.phone) missing.push("Telefon numarası");
-  if (!user.birthDate) missing.push("Doğum tarihi");
+  if (!user.avatarUrl) missing.push(t("missingAvatar"));
+  if (!user.phone) missing.push(t("missingPhone"));
+  if (!user.birthDate) missing.push(t("missingBirthDate"));
   if (user.userType === "TRAINER" && (!user.trainerProfile?.specializations || user.trainerProfile.specializations.length === 0)) {
-    missing.push("Branş ve/veya sertifika");
+    missing.push(t("missingCert"));
   }
   return missing;
 }
 
 export default function ProfilePage() {
   const { data, loading, error, status, session, refresh, setData } = useProfile();
+  const t = useTranslations("profile");
+  const locale = useLocale();
+  const dateFnsLocale = DATE_FNS_LOCALES[locale] ?? enUS;
   const { locations } = useLocations();
   const { sports } = useSports();
   const allCities = locations.flatMap((c) => c.cities ?? []).sort((a, b) => {
@@ -98,7 +105,7 @@ export default function ProfilePage() {
         setOtpFlow(p => ({ ...p, [matchId]: { step: "idle", code: "", loading: false } }));
         refresh();
       } else {
-        toast.error(json.error || "Geçersiz kod");
+        toast.error(json.error || t("invalidCode"));
         setOtpFlow(p => ({ ...p, [matchId]: { ...flow, loading: false } }));
       }
     } catch { setOtpFlow(p => ({ ...p, [matchId]: { ...flow, loading: false } })); }
@@ -170,7 +177,7 @@ export default function ProfilePage() {
           onClick={refresh}
           className="mt-4 text-emerald-600 dark:text-emerald-400 hover:underline font-semibold"
         >
-          Tekrar Dene
+          {t("retry")}
         </button>
       </div>
     );
@@ -189,7 +196,7 @@ export default function ProfilePage() {
     setDeleting(true);
     try {
       await deleteListing(deleteModal);
-      toast.success("İlan silindi");
+      toast.success(t("listingDeleted"));
       setData((prev) => prev ? { ...prev, myListings: prev.myListings?.filter((l: any) => l.id !== deleteModal) } : prev);
     } finally {
       setDeleting(false);
@@ -248,20 +255,20 @@ export default function ProfilePage() {
   const handleSaveProfile = async () => {
     // Client-side validation
     if (!editForm.name.trim()) {
-      toast.error("Ad Soyad boş olamaz");
+      toast.error(t("nameRequired"));
       return;
     }
     if (editForm.name.trim().length < 2) {
-      toast.error("Ad Soyad en az 2 karakter olmalıdır");
+      toast.error(t("nameTooShort"));
       return;
     }
     if (editForm.phone && !/^[0-9+\-\s()]{7,15}$/.test(editForm.phone)) {
-      toast.error("Geçerli bir telefon numarası girin");
+      toast.error(t("invalidPhone"));
       return;
     }
     if (editForm.newPassword) {
       if (!editForm.currentPassword) {
-        toast.error("Mevcut şifrenizi girin");
+        toast.error(t("currentPasswordRequired"));
         return;
       }
       const pwErrors = [
@@ -373,17 +380,17 @@ export default function ProfilePage() {
         return;
       }
       await updateProfile(payload);
-      toast.success("Profil güncellendi");
+      toast.success(t("profileUpdated"));
       setEditMode(false);
       refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Hata oluştu");
+      toast.error(err instanceof Error ? err.message : t("error"));
     } finally {
       setSaving(false);
     }
   };
 
-  const missingFields = getMissingProfileFields(data.user);
+  const missingFields = getMissingProfileFields(data.user, t);
 
   // Eksik alan tamamlandığında güven puanı artır
   async function handleFieldCompleted(field: string) {
@@ -461,8 +468,8 @@ export default function ProfilePage() {
           >
             <span className="text-2xl">📚</span>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">Ders Takibi</p>
-              <p className="text-xs text-blue-500 dark:text-blue-400">Öğrenci kayıtlarını ve dersleri yönet</p>
+              <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">{t("lessonTracking")}</p>
+              <p className="text-xs text-blue-500 dark:text-blue-400">{t("lessonTrackingDesc")}</p>
             </div>
             <svg className="w-4 h-4 text-blue-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
           </a>
@@ -479,11 +486,11 @@ export default function ProfilePage() {
           <div className="flex items-center border-b border-gray-200 dark:border-gray-700 mb-4" role="tablist">
             <div className="flex items-center flex-1 min-w-0 overflow-x-auto scrollbar-hide">
               {([
-                { key: "posts", label: "📸 Gönderiler", badge: 0 },
-                { key: "listings", label: "📋 İlanlarım", badge: pendingIncoming },
-                { key: "responses", label: "📩 Başvurularım", badge: myResponsesCount },
-                { key: "matches", label: "🤝 Eşleşmeler", badge: matchesCount },
-                { key: "challenges", label: "⚔️ Tekliflerim", badge: 0 },
+                { key: "posts", label: t("tabPosts"), badge: 0 },
+                { key: "listings", label: t("tabListings"), badge: pendingIncoming },
+                { key: "responses", label: t("tabResponses"), badge: myResponsesCount },
+                { key: "matches", label: t("tabMatches"), badge: matchesCount },
+                { key: "challenges", label: t("tabChallenges"), badge: 0 },
               ] as { key: string; label: string; badge: number }[]).map((tab) => (
                 <button
                   key={tab.key}
@@ -525,13 +532,13 @@ export default function ProfilePage() {
                       onClick={() => { setActiveTab("calendar"); setMoreMenuOpen(false); }}
                       className={`w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm transition ${activeTab === "calendar" ? "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20" : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"}`}
                     >
-                      📅 Takvim
+                      {t("tabCalendar")}
                     </button>
                     <button
                       onClick={() => { setActiveTab("templates"); setMoreMenuOpen(false); }}
                       className={`w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm transition ${activeTab === "templates" ? "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20" : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"}`}
                     >
-                      🔁 Şablonlar
+                      {t("tabTemplates")}
                     </button>
                   </div>
                 </>
@@ -546,12 +553,12 @@ export default function ProfilePage() {
         <div className="space-y-4" role="tabpanel">
           {data.myListings?.length === 0 ? (
             <div className="text-center py-12 text-gray-400 dark:text-gray-500">
-              <p className="text-lg">Henüz ilan oluşturmadınız</p>
+              <p className="text-lg">{t("noListings")}</p>
               <Link
                 href="/ilan/olustur"
                 className="inline-block mt-3 bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition"
               >
-                İlan Oluştur
+                {t("createListing")}
               </Link>
             </div>
           ) : (
@@ -567,7 +574,7 @@ export default function ProfilePage() {
                     </Link>
                     <div className="flex gap-2 mt-1">
                       <Badge variant={listing.type === "RIVAL" ? "orange" : listing.type === "TRAINER" ? "blue" : listing.type === "EQUIPMENT" ? "purple" : "emerald"}>
-                        {listing.type === "RIVAL" ? "Rakip" : listing.type === "TRAINER" ? "Eğitmen" : listing.type === "EQUIPMENT" ? "Satılık" : "Partner"}
+                        {listing.type === "RIVAL" ? t("typeRival") : listing.type === "TRAINER" ? t("typeTrainer") : listing.type === "EQUIPMENT" ? t("typeEquipment") : t("typePartner")}
                       </Badge>
                       <Badge variant={
                         listing.status === "OPEN" ? "blue" :
@@ -585,13 +592,13 @@ export default function ProfilePage() {
                 </div>
                 <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                   📍 {listing.district?.city?.name}, {listing.district?.name} ·{" "}
-                  📅 {format(new Date(listing.dateTime), "d MMM yyyy HH:mm", { locale: tr })}
+                  📅 {format(new Date(listing.dateTime), "d MMM yyyy HH:mm", { locale: dateFnsLocale })}
                 </div>
 
                 {listing.responses?.length > 0 && (
                   <div className="mt-3 border-t border-gray-100 dark:border-gray-700 pt-3">
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
-                      Gelen Karşılıklar ({listing.responses.length})
+                      {t("incomingResponses")} ({listing.responses.length})
                     </p>
                     {listing.responses.map((resp) => (
                       <div key={resp.id} className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-700 last:border-0">
@@ -616,7 +623,7 @@ export default function ProfilePage() {
                         href={`/ilan/${listing.id}`}
                         className="text-sm text-emerald-600 dark:text-emerald-400 font-medium hover:underline mt-2 inline-block"
                       >
-                        Detay & Kabul/Red →
+                        {t("detailLink")}
                       </Link>
                     )}
                   </div>
@@ -625,7 +632,7 @@ export default function ProfilePage() {
                 {listing.match && (
                   <div className="mt-3 bg-green-50 dark:bg-green-900/20 rounded-lg p-3">
                     <p className="text-sm text-green-700 dark:text-green-300">
-                      ✅ Eşleşme: <Link href={`/profil/${listing.match.user2.id}`} className="font-semibold hover:underline">{listing.match.user2?.name}</Link>
+                      ✅ {t("matchedWith")} <Link href={`/profil/${listing.match.user2.id}`} className="font-semibold hover:underline">{listing.match.user2?.name}</Link>
                     </p>
                   </div>
                 )}
@@ -640,7 +647,7 @@ export default function ProfilePage() {
         <div className="space-y-4" role="tabpanel">
           {data.myResponses?.length === 0 ? (
             <div className="text-center py-12 text-gray-400 dark:text-gray-500">
-              <p className="text-lg">Henüz karşılık göndermediniz</p>
+              <p className="text-lg">{t("noResponses")}</p>
             </div>
           ) : (
             data.myResponses?.map((resp: ResponseWithListing) => (
@@ -675,7 +682,7 @@ export default function ProfilePage() {
         <div className="space-y-4" role="tabpanel">
           {data.myMatches?.length === 0 ? (
             <div className="text-center py-12 text-gray-400 dark:text-gray-500">
-              <p className="text-lg">Henüz eşleşmeniz yok</p>
+              <p className="text-lg">{t("noMatches")}</p>
             </div>
           ) : (
             data.myMatches?.map((match: Match) => {
@@ -693,7 +700,7 @@ export default function ProfilePage() {
                         {match.listing?.sport?.icon} {match.listing?.sport?.name}
                       </Link>
                       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        Partner: <Link href={`/profil/${partner?.id}`} className="font-semibold hover:text-emerald-600 transition">{partner?.name}</Link>
+                        {t("partner")} <Link href={`/profil/${partner?.id}`} className="font-semibold hover:text-emerald-600 transition">{partner?.name}</Link>
                       </p>
                     </div>
                   </div>
@@ -716,7 +723,7 @@ export default function ProfilePage() {
                           />
                         </div>
                         <span className="text-xs font-bold text-gray-500 dark:text-gray-400 w-16 text-right">
-                          {(match as any).trustScore}% güven
+                          {(match as any).trustScore}{t("trust")}
                         </span>
                       </div>
                     )}
@@ -725,24 +732,24 @@ export default function ProfilePage() {
                       if (flow.step === "idle") return (
                         <button onClick={() => requestOtp(match.id)} disabled={flow.loading}
                           className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 transition flex items-center gap-1">
-                          {flow.loading ? "..." : "🔐 OTP Doğrulama Başlat"}
+                          {flow.loading ? "..." : t("otpStart")}
                         </button>
                       );
                       return (
                         <div className="space-y-1.5">
                           {flow.generated && (
                             <p className="text-xs text-gray-500 dark:text-gray-400">
-                              Kodun: <span className="font-mono font-bold text-indigo-700 dark:text-indigo-300">{flow.generated}</span> — Rakibine ver
+                              {t("otpYourCode")} <span className="font-mono font-bold text-indigo-700 dark:text-indigo-300">{flow.generated}</span> {t("otpShareHint")}
                             </p>
                           )}
                           <div className="flex gap-2">
-                            <input type="text" maxLength={6} placeholder="Rakibin kodunu gir" value={flow.code}
+                            <input type="text" maxLength={6} placeholder={t("otpInputPlaceholder")} value={flow.code}
                               onChange={e => setOtpFlow(p => ({ ...p, [match.id]: { ...flow, code: e.target.value } }))}
                               className="flex-1 text-xs px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 outline-none focus:ring-1 focus:ring-indigo-500 font-mono"
                             />
                             <button onClick={() => verifyOtp(match.id)} disabled={flow.loading || flow.code.length < 6}
                               className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-700 disabled:opacity-50 transition">
-                              {flow.loading ? "..." : "Onayla"}
+                              {flow.loading ? "..." : t("otpConfirm")}
                             </button>
                           </div>
                         </div>
@@ -758,7 +765,7 @@ export default function ProfilePage() {
                         }}
                         className="text-xs font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition flex items-center gap-1"
                       >
-                        ⭐ Puan Ver
+                        {t("ratePartner")}
                       </button>
                     )}
                   </div>
@@ -782,8 +789,8 @@ export default function ProfilePage() {
               return (
                 <div className="text-center py-12 text-gray-400 dark:text-gray-500">
                   <p className="text-5xl mb-3">📅</p>
-                  <p className="text-lg">Yaklaşan etkinlik yok</p>
-                  <p className="text-sm mt-1">Bir ilana katıldığında burada görünecek.</p>
+                  <p className="text-lg">{t("noUpcoming")}</p>
+                  <p className="text-sm mt-1">{t("noUpcomingDesc")}</p>
                 </div>
               );
             }
@@ -804,8 +811,8 @@ export default function ProfilePage() {
               <div key={dateKey}>
                 <h3 className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-2">
                   {dateKey !== "?"
-                    ? format(new Date(dateKey), "d MMMM yyyy EEEE", { locale: tr })
-                    : "Tarih bilinmiyor"}
+                    ? format(new Date(dateKey), "d MMMM yyyy EEEE", { locale: dateFnsLocale })
+                    : t("unknownDate")}
                 </h3>
                 <div className="space-y-2">
                   {items.map((match: Match) => {
@@ -848,16 +855,16 @@ export default function ProfilePage() {
               return (
                 <div className="text-center py-12 text-gray-400 dark:text-gray-500">
                   <p className="text-5xl mb-3">🔁</p>
-                  <p className="text-lg">Henüz tekrarlayan şablon yok</p>
-                  <p className="text-sm mt-1">İlan oluştururken &ldquo;Tekrarlayan Etkinlik&rdquo; seçeneğini işaretle.</p>
+                  <p className="text-lg">{t("noTemplates")}</p>
+                  <p className="text-sm mt-1">{t("noTemplatesDesc")}</p>
                   <Link href="/ilan/olustur" className="inline-block mt-4 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-5 py-2 rounded-lg transition">
-                    + Şablon Oluştur
+                    {t("createTemplate")}
                   </Link>
                 </div>
               );
             }
             const DAY_LABELS: Record<string, string> = {
-              MON: "Pzt", TUE: "Sal", WED: "Çar", THU: "Per", FRI: "Cum", SAT: "Cmt", SUN: "Paz",
+              MON: t("dayMon"), TUE: t("dayTue"), WED: t("dayWed"), THU: t("dayThu"), FRI: t("dayFri"), SAT: t("daySat"), SUN: t("daySun"),
             };
             return templates.map((listing: ListingWithResponses) => {
               const ext = listing as ListingWithResponses & { isRecurring?: boolean; recurringDays?: string };
@@ -875,7 +882,7 @@ export default function ProfilePage() {
                       </p>
                     </div>
                     <span className="text-xs bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full font-medium">
-                      Tekrarlayan
+                      {t("recurring")}
                     </span>
                   </div>
                   {days.length > 0 && (
@@ -909,8 +916,8 @@ export default function ProfilePage() {
           ) : challenges.length === 0 ? (
             <div className="text-center py-12 text-gray-400 dark:text-gray-500">
               <p className="text-4xl mb-2">⚔️</p>
-              <p className="text-lg font-medium">Aktif teklif yok</p>
-              <p className="text-sm mt-1">Birine teklif gönder veya tekliflerini bekle.</p>
+              <p className="text-lg font-medium">{t("noChallenges")}</p>
+              <p className="text-sm mt-1">{t("noChallengesDesc")}</p>
             </div>
           ) : (
             challenges.map((c: any) => (
@@ -931,9 +938,9 @@ export default function ProfilePage() {
                     <div>
                       <p className="font-semibold text-gray-800 dark:text-gray-100 text-sm">
                         {c.direction === "received" ? (
-                          <><span className="text-indigo-600 dark:text-indigo-400">📨 Gelen:</span> {c.challenger?.name}</>
+                          <><span className="text-indigo-600 dark:text-indigo-400">{t("challengeReceived")}</span> {c.challenger?.name}</>
                         ) : (
-                          <><span className="text-emerald-600 dark:text-emerald-400">📤 Gönderilen:</span> {c.target?.name}</>
+                          <><span className="text-emerald-600 dark:text-emerald-400">{t("challengeSent")}</span> {c.target?.name}</>
                         )}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
@@ -949,17 +956,17 @@ export default function ProfilePage() {
                       <button
                         onClick={async () => {
                           const res = await fetch(`/api/challenges/${c.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "accept" }) });
-                          if (res.ok) { setChallenges(prev => prev.filter(ch => ch.id !== c.id)); toast.success("Teklif kabul edildi!"); }
+                          if (res.ok) { setChallenges(prev => prev.filter(ch => ch.id !== c.id)); toast.success(t("challengeAccepted")); }
                         }}
                         className="text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg font-semibold transition"
-                      >✓ Kabul</button>
+                      >{ t("acceptChallenge")}</button>
                       <button
                         onClick={async () => {
                           const res = await fetch(`/api/challenges/${c.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "reject" }) });
-                          if (res.ok) { setChallenges(prev => prev.filter(ch => ch.id !== c.id)); toast.success("Teklif reddedildi."); }
+                          if (res.ok) { setChallenges(prev => prev.filter(ch => ch.id !== c.id)); toast.success(t("challengeRejected")); }
                         }}
                         className="text-xs bg-gray-200 dark:bg-gray-700 hover:bg-red-100 dark:hover:bg-red-900/30 text-gray-600 dark:text-gray-400 hover:text-red-600 px-3 py-1.5 rounded-lg font-semibold transition"
-                      >✕ Reddet</button>
+                      >{t("rejectChallenge")}</button>
                     </div>
                   )}
                 </div>
@@ -1004,8 +1011,8 @@ export default function ProfilePage() {
           ) : posts.length === 0 ? (
             <div className="text-center py-12 text-gray-400 dark:text-gray-500">
               <p className="text-4xl mb-2">📸</p>
-              <p className="text-lg font-medium">Henüz gönderi yok</p>
-              <p className="text-sm mt-1">İlk gönderini oluştur!</p>
+              <p className="text-lg font-medium">{t("noPosts")}</p>
+              <p className="text-sm mt-1">{t("noPostsDesc")}</p>
             </div>
           ) : postsView === "grid" ? (
             <div className="grid grid-cols-3 gap-0.5 rounded-lg overflow-hidden">

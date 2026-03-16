@@ -94,6 +94,7 @@ export default function Navbar() {
   };
 
   const t = useTranslations("nav");
+  const tSettings = useTranslations("settings");
 
   return (
     <>
@@ -124,7 +125,7 @@ export default function Navbar() {
                   <polyline points="9 3 9 18" strokeLinecap="round" />
                   <polyline points="15 6 15 21" strokeLinecap="round" />
                 </svg>
-              ), label: "Harita" },
+              ), label: t("map") },
               { href: "/arama", icon: (
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
@@ -314,43 +315,40 @@ export default function Navbar() {
                                   <polyline points="9 3 9 18" strokeLinecap="round" />
                                   <polyline points="15 6 15 21" strokeLinecap="round" />
                                 </svg>
-                              ), label: "Harita" },
+                              ), label: t("map") },
                               { href: "/topluluklar", icon: (
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                 </svg>
-                              ), label: "Topluluk" },
+                              ), label: t("communities") },
                               { href: "/ayarlar", icon: (
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><circle cx="12" cy="12" r="3" />
                                 </svg>
-                              ), label: "Ayarlar" },
+                              ), label: t("settings") },
                               { action: () => { toggleDarkMode(); }, icon: (
                                 darkMode ? (
                                   <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M12 8a4 4 0 100 8 4 4 0 000-8z" /></svg>
                                 ) : (
                                   <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
                                 )
-                              ), label: darkMode ? "Aydınlık" : "Karanlık" },
+                              ), label: t(darkMode ? "lightMode" : "darkMode") },
                               { action: () => { setMoreOpen(false); handleOpenNotif(); }, icon: (
                                 <div className="relative">
                                   <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
                                   {unreadCount > 0 && <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red-500 rounded-full text-white text-[9px] font-bold flex items-center justify-center px-0.5">{unreadCount}</span>}
                                 </div>
-                              ), label: "Bildirimler" },
+                              ), label: t("notifications") },
                               { action: () => {
                                   const url = `${window.location.origin}/profil/${(session.user as any)?.username || ""}`;
                                   navigator.clipboard.writeText(url).then(() => { setInviteCopied(true); setTimeout(() => setInviteCopied(false), 2000); });
                                 }, icon: (
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
-                              ), label: inviteCopied ? "Kopyalandı!" : "Davet Et" },
-                              { href: "/turnuvalar", icon: (
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /></svg>
-                              ), label: "Turnuva" },
+                              ), id: "invite", label: t(inviteCopied ? "copied" : "invite") },
                               { href: "/liderlik", icon: (
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-                              ), label: "Liderlik" },
-                            ] as Array<{ href?: string; action?: () => void; icon: React.ReactNode; label: string }>).map((item) => (
+                              ), label: t("leaderboard") },
+                            ] as Array<{ href?: string; action?: () => void; icon: React.ReactNode; label: string; id?: string }>).map((item) => (
                               item.href ? (
                                 <Link
                                   key={item.label}
@@ -367,7 +365,7 @@ export default function Navbar() {
                                   type="button"
                                   onClick={item.action}
                                   className={`flex flex-col items-center justify-center gap-1.5 rounded-2xl px-2 py-3 text-xs font-semibold transition ${
-                                    item.label === "Kopyalandı!" ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300" : "bg-gray-50 text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400"
+                                    (inviteCopied && item.id === "invite") ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300" : "bg-gray-50 text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400"
                                   }`}
                                 >
                                   <span className="text-gray-500 dark:text-gray-400">{item.icon}</span>
@@ -379,13 +377,13 @@ export default function Navbar() {
 
                           {/* Hesap listesi */}
                           <div className="mt-5 space-y-0.5">
-                            <p className="mb-2 text-xs font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-gray-500 px-1">Hesap</p>
+                            <p className="mb-2 text-xs font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-gray-500 px-1">{t("account")}</p>
                             {([
-                              { href: "/ayarlar/profil", icon: "👤", label: "Profili Düzenle" },
-                              { href: "/ayarlar/guvenlik", icon: "🔒", label: "Hesap Güvenliği" },
-                              { href: "/ayarlar/profesyonel", icon: "⭐", label: "Profesyonel Hesap" },
-                              ...((session.user as any)?.userType === "TRAINER" ? [{ href: "/antrenor/derslerim", icon: "📚", label: "Ders Takibi" }] : []),
-                              { href: "/ayarlar/gizlilik", icon: "🛡️", label: "Gizlilik" },
+                              { href: "/ayarlar/profil", icon: "👤", label: tSettings("profile") },
+                              { href: "/ayarlar/guvenlik", icon: "🔒", label: tSettings("security") },
+                              { href: "/ayarlar/profesyonel", icon: "⭐", label: tSettings("professional") },
+                              ...((session.user as any)?.userType === "TRAINER" ? [{ href: "/antrenor/derslerim", icon: "📚", label: t("lessons") }] : []),
+                              { href: "/ayarlar/gizlilik", icon: "🛡️", label: tSettings("privacy") },
                             ] as Array<{ href: string; icon: string; label: string }>).map((item) => (
                               <Link
                                 key={item.href}
@@ -408,7 +406,7 @@ export default function Navbar() {
                               className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800 transition"
                             >
                               <span className="text-base w-6 text-center">🌐</span>
-                              <span className="text-sm font-medium flex-1">Dil / Language</span>
+                              <span className="text-sm font-medium flex-1">{t("language")}</span>
                               <svg className={`w-4 h-4 text-gray-400 transition-transform ${langExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                             </button>
                             {langExpanded && (
