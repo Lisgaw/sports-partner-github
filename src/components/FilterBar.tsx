@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocations, useSports } from "@/hooks/useLocations";
 import { useDebounce } from "@/hooks/useDebounce";
 import LocationSelector from "./LocationSelector";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { localizeSportName } from "@/lib/localized-ui";
 import type { Country, Sport } from "@/types";
 
@@ -16,39 +16,7 @@ type FilterBarProps = {
 
 export default function FilterBar({ onFilterChange, initialLocations, initialSports }: FilterBarProps) {
   const locale = useLocale();
-  const isTr = locale === "tr";
-
-  const text = {
-    title: isTr ? "🔍 İlanları Filtrele" : "🔍 Filter Listings",
-    clear: isTr ? "Temizle" : "Clear",
-    clearAria: isTr ? "Filtreleri temizle" : "Clear filters",
-    sportAria: isTr ? "Spor dalı seçin" : "Select sport",
-    sport: isTr ? "Spor Dalı" : "Sport",
-    levelAria: isTr ? "Seviye seçin" : "Select level",
-    level: isTr ? "Seviye" : "Level",
-    beginner: isTr ? "Başlangıç" : "Beginner",
-    intermediate: isTr ? "Orta" : "Intermediate",
-    advanced: isTr ? "İleri" : "Advanced",
-    typeAria: isTr ? "İlan tipi seçin" : "Select listing type",
-    type: isTr ? "İlan Tipi" : "Listing Type",
-    rival: isTr ? "Rakip Arıyor" : "Looking for Rival",
-    partner: isTr ? "Partner Arıyor" : "Looking for Partner",
-    trainer: isTr ? "Eğitmen" : "Trainer",
-    equipment: isTr ? "Satılık Malzeme" : "Equipment",
-    venueMembership: isTr ? "🎫 Üyelik Paketi" : "🎫 Membership",
-    venueClass: isTr ? "🏫 Ders/Kurs" : "🏫 Class/Course",
-    venueProduct: isTr ? "📦 Ürün Satışı" : "📦 Product",
-    venueService: isTr ? "💆 Hizmet" : "💆 Service",
-    individualGroup: isTr ? "Bireysel" : "Individual",
-    venueGroup: isTr ? "Onaylı Antrenör" : "Verified Trainer",
-    today: isTr ? "Bugün" : "Today",
-    week: isTr ? "Bu Hafta" : "This Week",
-    weekend: isTr ? "Hafta Sonu" : "Weekend",
-    price: isTr ? "💰 Fiyat" : "💰 Price",
-    min: isTr ? "Min ₺" : "Min",
-    max: isTr ? "Max ₺" : "Max",
-    recurring: isTr ? "🔄 Tekrarlayan" : "🔄 Recurring",
-  };
+  const t = useTranslations("filterBar");
 
   // Use SSR data if provided, otherwise fallback to client-side fetch
   const { locations: fetchedLocations, error: locError } = useLocations();
@@ -146,7 +114,7 @@ export default function FilterBar({ onFilterChange, initialLocations, initialSpo
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-4 mb-5">
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-bold text-gray-800 dark:text-gray-100 text-sm">
-          {text.title}
+          {t("title")}
         </h2>
         <div className="flex items-center gap-3">
           {(locError || sportError) && (
@@ -155,9 +123,9 @@ export default function FilterBar({ onFilterChange, initialLocations, initialSpo
           <button
             onClick={resetFilters}
             className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
-            aria-label={text.clearAria}
+            aria-label={t("clearAria")}
           >
-            {text.clear}
+            {t("clear")}
           </button>
         </div>
       </div>
@@ -182,9 +150,9 @@ export default function FilterBar({ onFilterChange, initialLocations, initialSpo
           value={selectedSport}
           onChange={(e) => setSelectedSport(e.target.value)}
           className={selectClass}
-          aria-label={text.sportAria}
+          aria-label={t("sportAria")}
         >
-          <option value="">{text.sport}</option>
+          <option value="">{t("sport")}</option>
           {sports.map((s) => (
             <option key={s.id} value={s.id}>
               {s.icon} {localizeSportName(s.name, locale)}
@@ -197,12 +165,12 @@ export default function FilterBar({ onFilterChange, initialLocations, initialSpo
           value={selectedLevel}
           onChange={(e) => setSelectedLevel(e.target.value)}
           className={selectClass}
-          aria-label={text.levelAria}
+          aria-label={t("levelAria")}
         >
-          <option value="">{text.level}</option>
-          <option value="BEGINNER">{text.beginner}</option>
-          <option value="INTERMEDIATE">{text.intermediate}</option>
-          <option value="ADVANCED">{text.advanced}</option>
+          <option value="">{t("level")}</option>
+          <option value="BEGINNER">{t("beginner")}</option>
+          <option value="INTERMEDIATE">{t("intermediate")}</option>
+          <option value="ADVANCED">{t("advanced")}</option>
         </select>
 
         {/* Tip */}
@@ -210,20 +178,20 @@ export default function FilterBar({ onFilterChange, initialLocations, initialSpo
           value={selectedType}
           onChange={(e) => setSelectedType(e.target.value)}
           className={selectClass}
-          aria-label={text.typeAria}
+          aria-label={t("typeAria")}
         >
-          <option value="">{text.type}</option>
-          <optgroup label={text.individualGroup}>
-            <option value="RIVAL">{text.rival}</option>
-            <option value="PARTNER">{text.partner}</option>
-            <option value="TRAINER">{text.trainer}</option>
-            <option value="EQUIPMENT">{text.equipment}</option>
+          <option value="">{t("type")}</option>
+          <optgroup label={t("individual")}>
+            <option value="RIVAL">{t("rival")}</option>
+            <option value="PARTNER">{t("partner")}</option>
+            <option value="TRAINER">{t("trainer")}</option>
+            <option value="EQUIPMENT">{t("equipment")}</option>
           </optgroup>
-          <optgroup label={text.venueGroup}>
-            <option value="VENUE_MEMBERSHIP">{text.venueMembership}</option>
-            <option value="VENUE_CLASS">{text.venueClass}</option>
-            <option value="VENUE_PRODUCT">{text.venueProduct}</option>
-            <option value="VENUE_SERVICE">{text.venueService}</option>
+          <optgroup label={t("verifiedTrainer")}>
+            <option value="VENUE_MEMBERSHIP">{t("venueMembership")}</option>
+            <option value="VENUE_CLASS">{t("venueClass")}</option>
+            <option value="VENUE_PRODUCT">{t("venueProduct")}</option>
+            <option value="VENUE_SERVICE">{t("venueService")}</option>
           </optgroup>
         </select>
       </div>
@@ -232,7 +200,7 @@ export default function FilterBar({ onFilterChange, initialLocations, initialSpo
       <div className="flex flex-wrap items-center gap-3 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
         {/* Hızlı Tarih */}
         <div className="flex gap-1">
-          {([{ id: "today", label: text.today }, { id: "week", label: text.week }, { id: "weekend", label: text.weekend }] as const).map(p => (
+          {([{ id: "today", label: t("today") }, { id: "week", label: t("week") }, { id: "weekend", label: t("weekend") }] as const).map(p => (
             <button
               key={p.id}
               type="button"
@@ -251,11 +219,11 @@ export default function FilterBar({ onFilterChange, initialLocations, initialSpo
         {/* Fiyat Aralığı — yalnızca EQUIPMENT veya TRAINER seçiliyken ya da tip seçilmemişse */}
         {(!selectedType || selectedType === "EQUIPMENT" || selectedType === "TRAINER" || selectedType.startsWith("VENUE_")) && (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{text.price}</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{t("price")}</span>
             <input
               type="number"
               min={0}
-              placeholder={text.min}
+              placeholder={t("priceMin")}
               value={minPrice}
               onChange={e => setMinPrice(e.target.value)}
               className="w-24 border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-xs text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none"
@@ -264,7 +232,7 @@ export default function FilterBar({ onFilterChange, initialLocations, initialSpo
             <input
               type="number"
               min={0}
-              placeholder={text.max}
+              placeholder={t("priceMax")}
               value={maxPrice}
               onChange={e => setMaxPrice(e.target.value)}
               className="w-24 border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-xs text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none"
@@ -280,7 +248,7 @@ export default function FilterBar({ onFilterChange, initialLocations, initialSpo
             onChange={e => setIsRecurring(e.target.checked)}
             className="accent-emerald-500 w-4 h-4"
           />
-          <span className="text-xs text-gray-600 dark:text-gray-300">{text.recurring}</span>
+          <span className="text-xs text-gray-600 dark:text-gray-300">{t("recurring")}</span>
         </label>
       </div>
     </div>

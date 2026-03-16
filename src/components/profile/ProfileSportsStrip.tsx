@@ -1,4 +1,5 @@
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { localizeSportName } from "@/lib/localized-ui";
 
 interface Sport {
   id: string;
@@ -18,6 +19,7 @@ export default function ProfileSportsStrip({
   preferredStyle,
 }: ProfileSportsStripProps) {
   const t = useTranslations("profile.sports");
+  const locale = useLocale();
   const TIME_LABELS: Record<string, string> = {
     morning: t("morning"),
     evening: t("evening"),
@@ -39,7 +41,7 @@ export default function ProfileSportsStrip({
             key={s.id}
             className="inline-flex items-center gap-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs px-2.5 py-1 rounded-full"
           >
-            {s.icon} {s.name}
+            {s.icon} {localizeSportName(s.name, locale)}
           </span>
         ))}
 

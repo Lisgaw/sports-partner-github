@@ -5,17 +5,13 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import CommunityCard, { CommunityCardData, CommunityType } from "@/components/CommunityCard";
+import { useLocale, useTranslations } from "next-intl";
+import { localizeSportName } from "@/lib/localized-ui";
 
 type DiscoveryType = CommunityType | "";
 
 type CreateType = CommunityType;
 
-const TYPES: { value: DiscoveryType; label: string }[] = [
-  { value: "", label: "🌐 Tümü" },
-  { value: "GROUP", label: "👥 Gruplar" },
-  { value: "CLUB", label: "🏛️ Kulüpler" },
-  { value: "TEAM", label: "⚽ Takımlar" },
-];
 
 interface Sport {
   id: string;
@@ -35,6 +31,14 @@ interface CommunityWithStatus extends CommunityCardData {
 export default function ToplulukPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const t = useTranslations("communities");
+  const locale = useLocale();
+  const TYPES: { value: DiscoveryType; label: string }[] = [
+    { value: "", label: t("allTypes") },
+    { value: "GROUP", label: t("groupsType") },
+    { value: "CLUB", label: t("clubsType") },
+    { value: "TEAM", label: t("teamsType") },
+  ];
 
   const [communities, setCommunities] = useState<CommunityWithStatus[]>([]);
   const [loading, setLoading] = useState(true);
@@ -94,11 +98,11 @@ export default function ToplulukPage() {
       setCommunities(json.data ?? []);
       setTotal(json.total ?? 0);
     } catch {
-      toast.error("Topluluklar yüklenemedi");
+      toast.error(t("loadFailed"));
     } finally {
       setLoading(false);
     }
-  }, [cityId, page, search, sportId, typeFilter]);
+  }, [cityId, page, search, sportId, t, typeFilter]);
 
   useEffect(() => {
     fetchCommunities();
@@ -117,7 +121,7 @@ export default function ToplulukPage() {
       if (!res.ok) throw new Error(json.error);
 
       const status = json.data?.status === "PENDING" ? "PENDING" : "APPROVED";
-      toast.success(status === "PENDING" ? "Katılma talebiniz gönderildi" : "Topluluğa katıldınız!");
+      toast.success(status === "PENDING" ? t("joinPending") : t("joinedSuccess"));
 
       setCommunities((prev) =>
         prev.map((community) =>
@@ -125,7 +129,7 @@ export default function ToplulukPage() {
         )
       );
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Bir hata oluştu");
+      toast.error(error instanceof Error ? error.message : t("errorGeneric"));
     } finally {
       setJoining(null);
     }
@@ -140,10 +144,10 @@ export default function ToplulukPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error);
 
-      toast.success("Topluluktan ayrıldınız");
+      toast.success(t("leftSuccess"));
       setCommunities((prev) => prev.map((community) => (community.id === id ? { ...community, myStatus: null } : community)));
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Bir hata oluştu");
+      toast.error(error instanceof Error ? error.message : t("errorGeneric"));
     } finally {
       setJoining(null);
     }
@@ -151,7 +155,7 @@ export default function ToplulukPage() {
 
   const handleCreate = async () => {
     if (!form.name.trim()) {
-      toast.error("İsim zorunlu");
+      toast.error(t("nameRequired"));
       return;
     }
 
@@ -173,7 +177,7 @@ export default function ToplulukPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error);
 
-      toast.success("Topluluk oluşturuldu!");
+      toast.success(t("createSuccess"));
       setShowCreate(false);
       setForm({ type: "GROUP", name: "", description: "", isPrivate: false, sportId: "", cityId: "", website: "" });
 
@@ -185,7 +189,7 @@ export default function ToplulukPage() {
 
       fetchCommunities();
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Bir hata oluştu");
+      toast.error(error instanceof Error ? error.message : t("errorGeneric"));
     } finally {
       setCreating(false);
     }
@@ -200,26 +204,26 @@ export default function ToplulukPage() {
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Topluluklar</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Gruplar, kulüpler ve takımları keşfet</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t("title")}</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{t("discover")}</p>
           </div>
           {session ? (
             <button
               onClick={() => setShowCreate(true)}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.97] text-white text-sm font-semibold transition-all shadow-md shadow-emerald-600/20"
-            >
+            >  
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
-              Topluluk Oluştur
+              {t("createCommunity")}
             </button>
           ) : (
             <a
               href="/auth/giris"
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-all shadow-md shadow-emerald-600/20"
             >
-              Giriş Yap ve Oluştur
+              {t("loginToCreate")}
             </a>
           )}
         </div>
@@ -250,7 +254,7 @@ export default function ToplulukPage() {
               setSearch(e.target.value);
               setPage(1);
             }}
-            placeholder="Topluluk ara..."
+            placeholder={t("searchPlaceholder")}
             className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm w-48 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
           <select
@@ -261,10 +265,10 @@ export default function ToplulukPage() {
             }}
             className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
-            <option value="">Tüm sporlar</option>
+            <option value="">{t("allSports")}</option>
             {sports.map((sport) => (
               <option key={sport.id} value={sport.id}>
-                {sport.icon} {sport.name}
+                {sport.icon} {localizeSportName(sport.name, locale)}
               </option>
             ))}
           </select>
@@ -276,7 +280,7 @@ export default function ToplulukPage() {
             }}
             className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
-            <option value="">Tüm şehirler</option>
+            <option value="">{t("allCities")}</option>
             {cities.map((city) => (
               <option key={city.id} value={city.id}>
                 {city.name}
@@ -294,8 +298,8 @@ export default function ToplulukPage() {
         ) : !hasResults ? (
           <div className="text-center py-20 text-gray-500 dark:text-gray-400">
             <div className="text-5xl mb-3">👥</div>
-            <p className="font-medium">Topluluk bulunamadı</p>
-            <p className="text-sm mt-1">İlk topluluğu sen oluştur.</p>
+            <p className="font-medium">{t("notFound")}</p>
+            <p className="text-sm mt-1">{t("createFirst")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -318,7 +322,7 @@ export default function ToplulukPage() {
               disabled={page === 1}
               className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-sm disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
-              ← Önceki
+              {t("prev")}
             </button>
             <span className="text-sm text-gray-600 dark:text-gray-400">
               {page} / {totalPages}
@@ -328,7 +332,7 @@ export default function ToplulukPage() {
               disabled={page === totalPages}
               className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-sm disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
-              Sonraki →
+              {t("next")}
             </button>
           </div>
         )}
@@ -346,9 +350,9 @@ export default function ToplulukPage() {
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{form.type === "CLUB" ? "🏛️" : form.type === "TEAM" ? "⚽" : "👥"}</span>
                 <div>
-                  <h2 className="text-base font-bold text-gray-900 dark:text-white leading-tight">Yeni Topluluk Oluştur</h2>
+                  <h2 className="text-base font-bold text-gray-900 dark:text-white leading-tight">{t("createTitle")}</h2>
                   <p className="text-xs text-gray-400 dark:text-gray-500 leading-tight">
-                    {form.type === "CLUB" ? "Resmi spor kulübü" : form.type === "TEAM" ? "Maç odaklı küçük takım" : "Herkese açık spor grubu"}
+                    {form.type === "CLUB" ? t("clubDesc") : form.type === "TEAM" ? t("teamDesc") : t("groupDesc")}
                   </p>
                 </div>
               </div>
@@ -363,12 +367,12 @@ export default function ToplulukPage() {
 
             <div className="px-6 py-5 space-y-5">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Topluluk Türü</label>
+                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{t("typeLabel")}</label>
                 <div className="grid grid-cols-3 gap-2">
                   {([
-                    { value: "GROUP", icon: "👥", label: "Grup", badge: "Açık", badgeColor: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300" },
-                    { value: "CLUB", icon: "🏛️", label: "Kulüp", badge: "Onaylı", badgeColor: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300" },
-                    { value: "TEAM", icon: "⚽", label: "Takım", badge: "Maç", badgeColor: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300" },
+                    { value: "GROUP", icon: "👥", label: t("groupLabel"), badge: t("groupBadge"), badgeColor: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300" },
+                    { value: "CLUB", icon: "🏗️", label: t("clubLabel"), badge: t("clubBadge"), badgeColor: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300" },
+                    { value: "TEAM", icon: "⚽", label: t("teamLabel"), badge: t("teamBadge"), badgeColor: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300" },
                   ] as const).map((typeItem) => (
                     <button
                       key={typeItem.value}
@@ -397,7 +401,7 @@ export default function ToplulukPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-                  {form.type === "CLUB" ? "Kulüp Adı" : form.type === "TEAM" ? "Takım Adı" : "Grup Adı"}
+                  {form.type === "CLUB" ? t("clubNameLabel") : form.type === "TEAM" ? t("teamNameLabel") : t("groupNameLabel")}
                   <span className="text-red-500 ml-0.5">*</span>
                 </label>
                 <input
@@ -413,7 +417,7 @@ export default function ToplulukPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-                  Açıklama <span className="font-normal text-gray-400">(opsiyonel)</span>
+                  {t("descriptionLabel")} <span className="font-normal text-gray-400">{t("optionalSuffix")}</span>
                 </label>
                 <textarea
                   value={form.description}
@@ -427,28 +431,28 @@ export default function ToplulukPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">🏅 Spor</label>
+                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{t("sportLabel")}</label>
                   <select
                     value={form.sportId}
                     onChange={(e) => setForm((prev) => ({ ...prev, sportId: e.target.value }))}
                     className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
                   >
-                    <option value="">— Seçin —</option>
+                    <option value="">{t("selectOption")}</option>
                     {sports.map((sport) => (
                       <option key={sport.id} value={sport.id}>
-                        {sport.icon} {sport.name}
+                        {sport.icon} {localizeSportName(sport.name, locale)}
                       </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">📍 Şehir</label>
+                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{t("cityLabel")}</label>
                   <select
                     value={form.cityId}
                     onChange={(e) => setForm((prev) => ({ ...prev, cityId: e.target.value }))}
                     className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
                   >
-                    <option value="">— Seçin —</option>
+                    <option value="">{t("selectOption")}</option>
                     {cities.map((city) => (
                       <option key={city.id} value={city.id}>
                         {city.name}
@@ -461,7 +465,7 @@ export default function ToplulukPage() {
               {form.type === "CLUB" && (
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-                    🌐 Web Sitesi <span className="font-normal text-gray-400">(opsiyonel)</span>
+                    {t("websiteLabel")} <span className="font-normal text-gray-400">{t("optionalSuffix")}</span>
                   </label>
                   <input
                     value={form.website}
@@ -480,10 +484,10 @@ export default function ToplulukPage() {
                 >
                   <div>
                     <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                      {form.type === "CLUB" ? "🔒 Üyelik onay gerektirsin" : "🔒 Özel grup"}
+                      {form.type === "CLUB" ? t("privateClubToggle") : t("privateGroupToggle")}
                     </p>
                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                      {form.type === "CLUB" ? "Üyelik başvuruları yönetici onayına sunulur" : "Katılım isteği yönetici onayına sunulur"}
+                      {form.type === "CLUB" ? t("privateClubDesc") : t("privateGroupDesc")}
                     </p>
                   </div>
                   <button
@@ -511,14 +515,14 @@ export default function ToplulukPage() {
                 {creating ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="animate-spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
-                    Oluşturuluyor...
+                    {t("creating")}
                   </span>
                 ) : form.type === "CLUB" ? (
-                  "🏛️ Kulübü Oluştur"
+                  t("createClubBtn")
                 ) : form.type === "TEAM" ? (
-                  "⚽ Takımı Oluştur"
+                  t("createTeamBtn")
                 ) : (
-                  "👥 Grubu Oluştur"
+                  t("createGroupBtn")
                 )}
               </button>
             </div>

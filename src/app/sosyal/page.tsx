@@ -5,7 +5,8 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { tr } from "date-fns/locale";
+import { tr as trLocale, enUS, de as deLocale, es as esLocale, fr as frLocale, ja as jaLocale, ko as koLocale, ru as ruLocale } from "date-fns/locale";
+import { useLocale, useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 import ReactionButton from "@/components/social/ReactionButton";
 import LikesModal from "@/components/social/LikesModal";
@@ -33,6 +34,7 @@ interface Post {
 export default function SosyalPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const t = useTranslations("social");
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,7 +69,7 @@ export default function SosyalPage() {
       }
       setNextCursor(json.nextCursor ?? null);
     } catch {
-      toast.error("Gönderiler yüklenemedi");
+      toast.error(t("loadFailed"));
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -109,7 +111,7 @@ export default function SosyalPage() {
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       const json = await res.json();
       if (json.url) setNewImages((p) => [...p, json.url]);
-      else toast.error(json.error || "Görsel yüklenemedi");
+      else toast.error(json.error || t("imageUploadFailed"));
     } finally {
       setUploadingImg(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -118,7 +120,7 @@ export default function SosyalPage() {
 
   const handlePost = async () => {
     if (!newContent.trim()) {
-      toast.error("Bir şeyler yaz");
+      toast.error(t("mustWrite"));
       return;
     }
     setPosting(true);
@@ -144,9 +146,9 @@ export default function SosyalPage() {
           ...p,
         ]);
         setNewContent("");
-        toast.success("Gönderi paylaşıldı 🎉");
+        toast.success(t("shareSuccess"));
       } else {
-        toast.error(json.error || "Gönderi paylaşılamadı");
+        toast.error(json.error || t("shareFailed"));
       }
     } finally {
       setPosting(false);
@@ -281,8 +283,7 @@ export default function SosyalPage() {
           )
         );
       } else {
-        const msg = typeof json.error === "string" ? json.error : "Yorum eklenemedi";
-        toast.error(msg);
+        toast.error(typeof json.error === "string" ? json.error : t("commentFailed"));
       }
     } finally {
       setSubmittingComment(null);
@@ -342,16 +343,16 @@ export default function SosyalPage() {
       {/* Başlık */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Sosyal Akış</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t("title")}</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-            Takip ettiklerinin ve senin paylaşımların
+            {t("subtitle")}
           </p>
         </div>
         <Link
           href="/profil"
           className="text-sm text-emerald-600 dark:text-emerald-400 hover:underline font-medium"
         >
-          Profilim →
+          {t("myProfile")}
         </Link>
       </div>
 
@@ -370,7 +371,7 @@ export default function SosyalPage() {
             <textarea
               value={newContent}
               onChange={(e) => setNewContent(e.target.value)}
-              placeholder="Antrenmanını, başarını veya motivasyonunu paylaş..."
+              placeholder={t("postPlaceholder")}
               rows={3}
               maxLength={1000}
               className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm text-gray-800 dark:text-gray-200 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
@@ -382,7 +383,7 @@ export default function SosyalPage() {
                 disabled={posting || !newContent.trim()}
                 className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white text-sm font-semibold px-4 py-1.5 rounded-lg transition"
               >
-                {posting ? "Paylaşılıyor..." : "Paylaş"}
+                {posting ? t("publishing") : t("share")}
               </button>
             </div>
           </div>
@@ -393,9 +394,9 @@ export default function SosyalPage() {
       {posts.length === 0 ? (
         <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700">
           <p className="text-4xl mb-3">🏃</p>
-          <p className="text-gray-500 dark:text-gray-400 font-medium">Henüz gönderi yok</p>
+          <p className="text-gray-500 dark:text-gray-400 font-medium">{t("noPostsTitle")}</p>
           <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-            Sporcu takip et veya ilk gönderiyi kendin paylaş!
+            {t("noPostsSubtitle")}
           </p>
         </div>
       ) : (
@@ -424,7 +425,7 @@ export default function SosyalPage() {
           {nextCursor && (
             <div ref={loadMoreRef} className="w-full flex justify-center py-4">
               <span className="text-emerald-600 dark:text-emerald-400 text-sm animate-pulse">
-                {loadingMore ? "Yükleniyor..." : "Daha fazla yükleniyor..."}
+                {t("loadingMore")}
               </span>
             </div>
           )}
@@ -436,6 +437,11 @@ export default function SosyalPage() {
 }
 
 // ─── Post Kartı Bileşeni ───────────────────────────────────────────────────────
+function getDateFnsLocale(locale: string) {
+  const map: Record<string, any> = { tr: trLocale, en: enUS, de: deLocale, es: esLocale, fr: frLocale, ja: jaLocale, ko: koLocale, ru: ruLocale };
+  return map[locale] ?? enUS;
+}
+
 function PostCard({
   post,
   sessionUserId,
@@ -474,20 +480,23 @@ function PostCard({
   const [likesList, setLikesList] = useState<any[]>([]);
   const [likesLoading, setLikesLoading] = useState(false);
   const [showAllComments, setShowAllComments] = useState(false);
+  const t = useTranslations("social");
+  const locale = useLocale();
+  const dateFnsLocale = getDateFnsLocale(locale);
 
   const currentReply = replyingToGlobal;
   const setReply = setReplyingToGlobal;
 
   const handleDelete = async () => {
-    if (!confirm("Gönderiyi silmek istiyor musun?")) return;
+    if (!confirm(t("deleteConfirm"))) return;
     setDeleting(true);
     try {
       const res = await fetch(`/api/posts/${post.id}`, { method: "DELETE" });
       if (res.ok) {
         onDeletePost(post.id);
-        toast.success("Gönderi silindi");
+        toast.success(t("postDeleted"));
       } else {
-        toast.error("Silinemedi");
+        toast.error(t("deleteFailed"));
       }
     } finally {
       setDeleting(false);
@@ -528,11 +537,12 @@ function PostCard({
           </div>
         </Link>
         <div className="flex-1 min-w-0">
-          <Link href={`/profil/${post.user.id}`} className="font-semibold text-sm text-gray-800 dark:text-gray-100 hover:text-emerald-600 dark:hover:text-emerald-400 transition">
+          <Link href={`/profil/${post.user.id}`}
+            className="font-bold text-sm text-gray-800 dark:text-gray-100 hover:text-emerald-600 dark:hover:text-emerald-400 transition">
             {post.user.name}
           </Link>
           <Link href={`/posts/${post.id}`} className="text-xs text-gray-400 dark:text-gray-500 hover:underline">
-            {format(new Date(post.createdAt), "d MMM yyyy, HH:mm", { locale: tr })}
+            {format(new Date(post.createdAt), "d MMM yyyy, HH:mm", { locale: dateFnsLocale })}
           </Link>
         </div>
         {isOwn && (
@@ -540,7 +550,7 @@ function PostCard({
             onClick={handleDelete}
             disabled={deleting}
             className="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition text-sm disabled:opacity-40"
-            title="Sil"
+            title={t("delete")}
           >
             🗑️
           </button>
@@ -597,7 +607,7 @@ function PostCard({
             </div>
           ) : (
             (comments[post.id] ?? []).length === 0 ? (
-              <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-1">Henüz yorum yok. İlk yorumu sen yap!</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-1">{t("noComments")}</p>
             ) : (() => {
               const allComments = comments[post.id] ?? [];
               const SHOW_LIMIT = 3;
@@ -610,7 +620,7 @@ function PostCard({
                       onClick={() => setShowAllComments(true)}
                       className="text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition mb-1"
                     >
-                      ↩ Diğer {remaining} yorumu gör
+                      {t("viewMoreComments", { n: remaining })}
                     </button>
                   )}
                   {visible.map((c: any) => (
@@ -631,7 +641,7 @@ function PostCard({
                       onClick={() => setShowAllComments(false)}
                       className="text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition mt-1"
                     >
-                      Yorumları gizle ↑
+                      {t("hideComments")}
                     </button>
                   )}
                 </div>
@@ -642,15 +652,15 @@ function PostCard({
           <div className="mt-2">
             {currentReply && (
               <div className="flex items-center justify-between px-2 py-1 mb-1 bg-gray-50 dark:bg-gray-700/30 rounded text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
-                <span><b>{currentReply.name}</b> kişisine yanıt veriliyor...</span>
-                <button onClick={() => setReply(null)} className="hover:underline">Vazgeç</button>
+                <span><b>{currentReply.name}</b> {t("replyingToLabel")}</span>
+                <button onClick={() => setReply(null)} className="hover:underline">{t("cancelReplyBtn")}</button>
               </div>
             )}
             <div className="flex gap-2">
               <input
                 id={`comment-input-${post.id}`}
                 type="text"
-                placeholder={currentReply ? "Yanıt yaz..." : "Yorum yaz..."}
+                placeholder={currentReply ? t("writeReply") : t("writeComment")}
                 value={commentText[post.id] ?? ""}
                 onChange={(e) => onCommentChange(post.id, e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && onComment(post.id)}
@@ -662,7 +672,7 @@ function PostCard({
                 disabled={!commentText[post.id]?.trim() || submittingComment === post.id}
                 className="text-sm bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl font-semibold disabled:opacity-40 transition"
               >
-                {submittingComment === post.id ? "..." : "Gönder"}
+                {submittingComment === post.id ? "..." : t("send")}
               </button>
             </div>
           </div>

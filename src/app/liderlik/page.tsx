@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { getLeaderboard, getSports } from "@/services/api";
 import type { LeaderboardEntry, Sport } from "@/types";
 
 import BadgeChip from "@/components/social/BadgeChip";
-import { getCompetitiveLevelLabel } from "@/lib/localized-ui";
+import { getCompetitiveLevelLabel, localizeSportName } from "@/lib/localized-ui";
 
 function StarDisplay({ value, count }: { value: number; count: number }) {
   return (
@@ -43,6 +43,7 @@ const LEVEL_COLORS: Record<string, string> = {
 
 export default function LiderlikPage() {
   const locale = useLocale();
+  const t = useTranslations("leaderboard");
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [sports, setSports] = useState<Sport[]>([]);
   const [selectedSport, setSelectedSport] = useState<string>("");
@@ -61,7 +62,7 @@ export default function LiderlikPage() {
     setLoading(true);
     getLeaderboard(selectedSport || undefined, 20, period)
       .then((res) => { if (res.success && res.data) setEntries(res.data); })
-      .catch(() => toast.error("Liderlik tablosu yüklenemedi"))
+      .catch(() => toast.error(t("loadFailed")))
       .finally(() => setLoading(false));
   }, [selectedSport, period]);
 
@@ -71,7 +72,7 @@ export default function LiderlikPage() {
     fetch("/api/leaderboard/friends")
       .then(r => r.json())
       .then(d => { if (d.rankings) setFriendEntries(d.rankings); })
-      .catch(() => toast.error("Arkadaş sıralaması yüklenemedi"))
+      .catch(() => toast.error(t("friendsLoadFailed")))
       .finally(() => setLoading(false));
   }, [mode]);
 
@@ -79,8 +80,8 @@ export default function LiderlikPage() {
     <div className="max-w-3xl mx-auto">
       {/* Header */}
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">🏅 Liderlik Tablosu</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-2">En yüksek puanlı sporcular</p>
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{t("title")}</h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-2">{t("subtitle")}</p>
       </div>
 
       {/* Mode Toggle */}
@@ -90,13 +91,13 @@ export default function LiderlikPage() {
             className={`px-5 py-2 rounded-lg text-sm font-semibold transition ${
               mode === "global" ? "bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm" : "text-gray-500 dark:text-gray-400 hover:text-gray-700"
             }`}>
-            🏆 Global
+            {t("global")}
           </button>
           <button onClick={() => setMode("friends")}
             className={`px-5 py-2 rounded-lg text-sm font-semibold transition ${
               mode === "friends" ? "bg-white dark:bg-gray-700 text-emerald-700 dark:text-emerald-300 shadow-sm" : "text-gray-500 dark:text-gray-400 hover:text-gray-700"
             }`}>
-            👥 Arkadaşlar
+            {t("friends")}
           </button>
         </div>
       </div>
@@ -108,9 +109,9 @@ export default function LiderlikPage() {
         <div className="mb-4 overflow-x-auto">
           <div className="mx-auto flex w-max bg-gray-100 dark:bg-gray-800 rounded-xl p-1 gap-1">
             {([
-              { key: "all" as const, label: "Tüm Zamanlar" },
-              { key: "monthly" as const, label: "Bu Ay" },
-              { key: "weekly" as const, label: "Bu Hafta" },
+              { key: "all" as const, label: t("allTime") },
+              { key: "monthly" as const, label: t("thisMonth") },
+              { key: "weekly" as const, label: t("thisWeek") },
             ]).map(p => (
               <button key={p.key} onClick={() => setPeriod(p.key)}
                 className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition ${
@@ -131,7 +132,7 @@ export default function LiderlikPage() {
               : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:border-emerald-400"
           }`}
         >
-          🏆 Tümü
+          {t("all")}
         </button>
         {sports.map((sport) => (
           <button
@@ -143,7 +144,7 @@ export default function LiderlikPage() {
                 : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:border-emerald-400"
             }`}
           >
-            {sport.icon} {sport.name}
+            {sport.icon} {localizeSportName(sport.name, locale)}
           </button>
         ))}
       </div>
@@ -157,8 +158,8 @@ export default function LiderlikPage() {
           {friendEntries.length === 0 ? (
             <div className="text-center py-16">
               <span className="text-6xl">👥</span>
-              <p className="mt-4 text-gray-500 dark:text-gray-400">Takip ettiğin kimse yok</p>
-              <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Sporcuları takip ederek arkadaş sıralamasına katıl</p>
+              <p className="mt-4 text-gray-500 dark:text-gray-400">{t("noFriends")}</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">{t("noFriendsDesc")}</p>
             </div>
           ) : friendEntries.map((entry) => (
             <Link key={entry.id} href={`/profil/${entry.id}`}
@@ -176,7 +177,7 @@ export default function LiderlikPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-semibold text-gray-800 dark:text-gray-100">{entry.name}</span>
-                  {entry.isMe && <span className="text-xs bg-emerald-500 text-white px-2 py-0.5 rounded-full">Sen</span>}
+                  {entry.isMe && <span className="text-xs bg-emerald-500 text-white px-2 py-0.5 rounded-full">{t("youLabel")}</span>}
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${LEVEL_COLORS[entry.userLevel] || "bg-gray-100 text-gray-600"}`}>
                     {getCompetitiveLevelLabel(entry.userLevel, locale)}
                   </span>
@@ -189,8 +190,8 @@ export default function LiderlikPage() {
                   )}
                 </div>
                 <div className="flex items-center gap-3 mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  <span>🔥 {entry.currentStreak} gün seri</span>
-                  <span>🤝 {entry.totalMatches} maç</span>
+                  <span>🔥 {t("streakDays", { n: entry.currentStreak })}</span>
+                  <span>🤝 {t("matchesCount", { n: entry.totalMatches })}</span>
                 </div>
               </div>
               <div className="w-full sm:w-auto sm:text-right pl-14 sm:pl-0">
@@ -212,7 +213,7 @@ export default function LiderlikPage() {
       ) : entries.length === 0 ? (
         <div className="text-center py-16">
           <span className="text-6xl">😕</span>
-          <p className="mt-4 text-gray-500 dark:text-gray-400">Bu spor için henüz veri yok</p>
+          <p className="mt-4 text-gray-500 dark:text-gray-400">{t("noData")}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -326,7 +327,7 @@ export default function LiderlikPage() {
                   <div className="flex flex-wrap gap-1 mt-1">
                     {entry.sports.slice(0, 3).map((s) => (
                       <span key={s.id} className="text-xs bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded-full">
-                        {s.icon} {s.name}
+                        {s.icon} {localizeSportName(s.name, locale)}
                       </span>
                     ))}
                   </div>
@@ -351,11 +352,11 @@ export default function LiderlikPage() {
               <div className="w-full sm:w-auto sm:text-right pl-14 sm:pl-0">
                 <StarDisplay value={entry.avgRating} count={entry.ratingCount} />
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                  🤝 {entry.totalMatches} eşleşme
+                  🤝 {t("matchesCount", { n: entry.totalMatches })}
                 </p>
                 {entry.currentStreak > 0 && (
                   <p className="text-xs text-orange-500 dark:text-orange-400 font-medium">
-                    {entry.currentStreak >= 7 ? "🔥" : "⚡"} {entry.currentStreak} gün
+                    {entry.currentStreak >= 7 ? "🔥" : "⚡"} {t("streakDays", { n: entry.currentStreak })}
                   </p>
                 )}
               </div>

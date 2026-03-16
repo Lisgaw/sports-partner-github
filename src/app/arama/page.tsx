@@ -6,6 +6,8 @@ import Link from "next/link";
 import { searchAll } from "@/services/api";
 import type { SearchResults } from "@/types";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useLocale, useTranslations } from "next-intl";
+import { localizeSportName } from "@/lib/localized-ui";
 
 const HISTORY_KEY = "sp_search_history";
 const MAX_HISTORY = 8;
@@ -33,6 +35,8 @@ export default function AramaPage() {
   const [history, setHistory] = useState<string[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const t = useTranslations("search");
+  const locale = useLocale();
 
   const debouncedQuery = useDebounce(query, 400);
 
@@ -54,10 +58,10 @@ export default function AramaPage() {
         setHistory(getHistory());
         router.replace(`/arama?q=${encodeURIComponent(term)}`, { scroll: false });
       } else {
-        setError(res.error ?? "Arama yapılamadı");
+        setError(res.error ?? t("searchFailed"));
       }
     } catch {
-      setError("Arama yapılamadı");
+      setError(t("searchFailed"));
     } finally {
       setLoading(false);
     }
@@ -94,7 +98,7 @@ export default function AramaPage() {
             onChange={e => { setQuery(e.target.value); setShowHistory(false); }}
             onFocus={() => { if (!query && history.length > 0) setShowHistory(true); }}
             onBlur={() => setTimeout(() => setShowHistory(false), 150)}
-            placeholder="İlan, kullanıcı, kulüp, grup veya spor dalı ara…"
+            placeholder={t("placeholder")}
             className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm text-base"
           />
           {query && (
@@ -111,8 +115,8 @@ export default function AramaPage() {
         {showHistory && history.length > 0 && (
           <div className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg z-20 overflow-hidden">
             <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100 dark:border-gray-700">
-              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Son Aramalar</span>
-              <button onClick={handleClearHistory} className="text-xs text-red-400 hover:text-red-500">Temizle</button>
+              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t("recentSearches")}</span>
+              <button onClick={handleClearHistory} className="text-xs text-red-400 hover:text-red-500">{t("clearHistory")}</button>
             </div>
             {history.map(h => (
               <button
@@ -131,7 +135,7 @@ export default function AramaPage() {
       {loading && (
         <div className="text-center py-12">
           <div className="inline-block w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-          <p className="mt-3 text-gray-500 dark:text-gray-400">Aranıyor…</p>
+          <p className="mt-3 text-gray-500 dark:text-gray-400">{t("searching")}</p>
         </div>
       )}
       {error && <p className="text-center text-red-500 py-8">{error}</p>}
@@ -139,7 +143,7 @@ export default function AramaPage() {
       {/* Boş Durum */}
       {!loading && !results && !query && history.length > 0 && (
         <div className="mb-6">
-          <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3">📜 Son Aramalar</p>
+          <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3">📜 {t("recentSearches")}</p>
           <div className="flex flex-wrap gap-2">
             {history.map(h => (
               <button
@@ -156,7 +160,7 @@ export default function AramaPage() {
       {!loading && !results && !query && (
         <div className="text-center py-10 space-y-6">
           <p className="text-5xl mb-2">🔍</p>
-          <p className="text-gray-500 dark:text-gray-400 text-lg">İlan, kullanıcı, kulüp veya spor dalı aramaya başlayın</p>
+          <p className="text-gray-500 dark:text-gray-400 text-lg">{t("noQuery")}</p>
         </div>
       )}
       {/* Hızlı Erişim — her zaman, sorgu yokken göster */}
@@ -164,15 +168,15 @@ export default function AramaPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-lg mx-auto py-4">
           <Link href="/liderlik" className="flex flex-col items-center gap-2 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 hover:shadow-md transition">
             <span className="text-2xl">🏆</span>
-            <span className="text-xs font-semibold text-amber-700 dark:text-amber-300">Liderlik</span>
+            <span className="text-xs font-semibold text-amber-700 dark:text-amber-300">{t("leaderboardLink")}</span>
           </Link>
           <Link href="/topluluklar" className="flex flex-col items-center gap-2 p-4 rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 hover:shadow-md transition">
             <span className="text-2xl">👥</span>
-            <span className="text-xs font-semibold text-purple-700 dark:text-purple-300">Topluluklar</span>
+            <span className="text-xs font-semibold text-purple-700 dark:text-purple-300">{t("communitiesLink")}</span>
           </Link>
           <Link href="/kulupler" className="flex flex-col items-center gap-2 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 hover:shadow-md transition">
             <span className="text-2xl">🏟️</span>
-            <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">Kulüpler</span>
+            <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">{t("clubsLink")}</span>
           </Link>
         </div>
       )}
@@ -181,20 +185,20 @@ export default function AramaPage() {
       {results && !loading && (
         <>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
-            <span className="font-semibold text-gray-900 dark:text-white">&ldquo;{debouncedQuery}&rdquo;</span> için {totalResults} sonuç
+            {t("resultFor", { query: debouncedQuery, count: totalResults })}
           </p>
 
           {totalResults === 0 && (
             <div className="text-center py-12">
               <p className="text-4xl mb-3">😔</p>
-              <p className="text-gray-500 dark:text-gray-400">Sonuç bulunamadı</p>
+              <p className="text-gray-500 dark:text-gray-400">{t("noResults")}</p>
             </div>
           )}
 
           {/* İlanlar */}
           {results.listings.length > 0 && (
             <section className="mb-8">
-              <h2 className="text-base font-bold text-gray-800 dark:text-white mb-3">📋 İlanlar ({results.listings.length})</h2>
+              <h2 className="text-base font-bold text-gray-800 dark:text-white mb-3">{t("listingsSection")} ({results.listings.length})</h2>
               <div className="space-y-2">
                 {results.listings.map(l => (
                   <Link
@@ -204,7 +208,7 @@ export default function AramaPage() {
                   >
                     <span className="text-2xl">{l.sport.icon}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 dark:text-white truncate">{l.sport.name} — {l.district ? `${l.district.city.name}, ${l.district.name}` : l.city?.name ?? ""}</p>
+                      <p className="font-medium text-gray-900 dark:text-white truncate">{localizeSportName(l.sport.name, locale)} — {l.district ? `${l.district.city.name}, ${l.district.name}` : l.city?.name ?? ""}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">{l.user.name} · {l.level}</p>
                     </div>
                     <span className="text-xs text-gray-400 dark:text-gray-500">{new Date(l.dateTime).toLocaleDateString("tr-TR")}</span>
@@ -217,7 +221,7 @@ export default function AramaPage() {
           {/* Kullanıcılar */}
           {results.users.length > 0 && (
             <section className="mb-8">
-              <h2 className="text-base font-bold text-gray-800 dark:text-white mb-3">👤 Kullanıcılar ({results.users.length})</h2>
+              <h2 className="text-base font-bold text-gray-800 dark:text-white mb-3">{t("usersSection")} ({results.users.length})</h2>
               <div className="space-y-2">
                 {results.users.map(u => (
                   <Link
@@ -231,7 +235,7 @@ export default function AramaPage() {
                     }
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-gray-900 dark:text-white">{u.name}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{u.city?.name}{u.sports.length > 0 ? ` · ${u.sports.map(s => `${s.icon} ${s.name}`).join(", ")}` : ""}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{u.city?.name}{u.sports.length > 0 ? ` · ${u.sports.map(s => `${s.icon} ${localizeSportName(s.name, locale)}`).join(", ")}` : ""}</p>
                     </div>
                   </Link>
                 ))}
@@ -242,7 +246,7 @@ export default function AramaPage() {
           {/* Kulüpler */}
           {results.clubs.length > 0 && (
             <section className="mb-8">
-              <h2 className="text-base font-bold text-gray-800 dark:text-white mb-3">🏆 Kulüpler ({results.clubs.length})</h2>
+              <h2 className="text-base font-bold text-gray-800 dark:text-white mb-3">{t("clubsSection")} ({results.clubs.length})</h2>
               <div className="space-y-2">
                 {results.clubs.map(c => (
                   <Link
@@ -256,7 +260,7 @@ export default function AramaPage() {
                     }
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-gray-900 dark:text-white">{c.name}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{c.sport ? `${c.sport.icon} ${c.sport.name}` : ""}{c.city ? ` · ${c.city.name}` : ""} · {c._count.members} üye</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{c.sport ? `${c.sport.icon} ${localizeSportName(c.sport.name, locale)}` : ""}{c.city ? ` · ${c.city.name}` : ""} · {t("membersCount", { count: c._count.members })}</p>
                     </div>
                   </Link>
                 ))}
@@ -267,7 +271,7 @@ export default function AramaPage() {
           {/* Gruplar */}
           {results.groups.length > 0 && (
             <section className="mb-8">
-              <h2 className="text-base font-bold text-gray-800 dark:text-white mb-3">👥 Gruplar ({results.groups.length})</h2>
+              <h2 className="text-base font-bold text-gray-800 dark:text-white mb-3">{t("groupsSection")} ({results.groups.length})</h2>
               <div className="space-y-2">
                 {results.groups.map(g => (
                   <Link
@@ -278,7 +282,7 @@ export default function AramaPage() {
                     <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-lg">👥</div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-gray-900 dark:text-white">{g.name}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{g.sport ? `${g.sport.icon} ${g.sport.name}` : ""}{g.city ? ` · ${g.city.name}` : ""} · {g._count.members} üye</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{g.sport ? `${g.sport.icon} ${localizeSportName(g.sport.name, locale)}` : ""}{g.city ? ` · ${g.city.name}` : ""} · {t("membersCount", { count: g._count.members })}</p>
                     </div>
                   </Link>
                 ))}
@@ -289,7 +293,7 @@ export default function AramaPage() {
           {/* Sporlar */}
           {results.sports.length > 0 && (
             <section className="mb-8">
-              <h2 className="text-base font-bold text-gray-800 dark:text-white mb-3">🏅 Spor Dalları ({results.sports.length})</h2>
+              <h2 className="text-base font-bold text-gray-800 dark:text-white mb-3">{t("sportsSection")} ({results.sports.length})</h2>
               <div className="flex flex-wrap gap-2">
                 {results.sports.map(s => (
                   <Link
@@ -297,7 +301,7 @@ export default function AramaPage() {
                     href={`/?sportId=${s.id}`}
                     className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 hover:border-emerald-400 dark:hover:border-emerald-500 text-sm text-gray-700 dark:text-gray-300 transition"
                   >
-                    <span>{s.icon}</span> {s.name}
+                    <span>{s.icon}</span> {localizeSportName(s.name, locale)}
                   </Link>
                 ))}
               </div>

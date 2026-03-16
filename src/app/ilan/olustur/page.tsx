@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import toast from "react-hot-toast";
+import { useLocale, useTranslations } from "next-intl";
+import { localizeSportName } from "@/lib/localized-ui";
 import { useLocations, useSports } from "@/hooks/useLocations";
 import { createListing } from "@/services/api";
 import type { CreateListingForm, ListingType } from "@/types";
@@ -13,6 +15,8 @@ import LocationSelector from "@/components/LocationSelector";
 export default function CreateListingPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
+  const t = useTranslations("listings");
+  const locale = useLocale();
   const [loading, setLoading] = useState(false);
   const [isVerifiedTrainer, setIsVerifiedTrainer] = useState(false);
 
@@ -214,10 +218,10 @@ export default function CreateListingPage() {
       }
       payload.isAnonymous = form.isAnonymous;
       const data = await createListing(payload);
-      toast.success("İlan başarıyla oluşturuldu!");
+      toast.success(t("successMsg"));
       if (data.data) router.push(`/ilan/${data.data.id}`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Bir hata oluştu");
+      toast.error(err instanceof Error ? err.message : t("errorGeneric"));
     } finally {
       setLoading(false);
     }
@@ -240,7 +244,7 @@ export default function CreateListingPage() {
   return (
     <div className="max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">
-        📝 Yeni İlan Oluştur
+        {t("createTitle")}
       </h1>
 
       <form
@@ -250,25 +254,25 @@ export default function CreateListingPage() {
         {/* İlan Tipi */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            İlan Tipi *
+            {t("listingType")}
           </label>
           <div className="grid grid-cols-2 gap-3">
             {[
-              { value: "RIVAL", label: "🥊 Rakip Arıyorum", active: "border-orange-500 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300" },
-              { value: "PARTNER", label: "🤝 Partner Arıyorum", active: "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300" },
-              { value: "TRAINER", label: "🎓 Eğitmen İlanı", active: "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300" },
-              { value: "EQUIPMENT", label: "🛒 Spor Malzemesi", active: "border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300" },
-            ].map((t) => (
+              { value: "RIVAL", label: t("rival"), active: "border-orange-500 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300" },
+              { value: "PARTNER", label: t("partner"), active: "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300" },
+              { value: "TRAINER", label: t("trainerType"), active: "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300" },
+              { value: "EQUIPMENT", label: t("equipment"), active: "border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300" },
+            ].map((typeItem) => (
               <button
-                key={t.value}
+                key={typeItem.value}
                 type="button"
-                onClick={() => setForm({ ...form, type: t.value as ListingType })}
+                onClick={() => setForm({ ...form, type: typeItem.value as ListingType })}
                 className={`p-3 rounded-lg border-2 text-center transition text-sm font-medium ${
-                  form.type === t.value ? t.active : "border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-300"
+                  form.type === typeItem.value ? typeItem.active : "border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-300"
                 }`}
-                aria-pressed={form.type === t.value}
+                aria-pressed={form.type === typeItem.value}
               >
-                {t.label}
+                {typeItem.label}
               </button>
             ))}
           </div>
@@ -277,39 +281,39 @@ export default function CreateListingPage() {
             <div className="mt-3 flex items-start gap-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 p-3 text-sm text-blue-800 dark:text-blue-300">
               <span className="flex-shrink-0 text-base">ℹ️</span>
               <span>
-                Eğitmen ilanı verebilmek için eğitmen başvurunuzun onaylanmış olması gerekir.
-                Henüz başvurmadıysanız <a href="/profil" className="underline font-medium">profilinizden</a> başvurabilirsiniz.
+                {t("trainerRequired")}
+                {" "}<a href="/profil" className="underline font-medium">{t("profileLink")}</a>
               </span>
             </div>
           )}
 
           {!isVerifiedTrainer && (
             <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-300">
-              Üyelik paketi, ürün satışı, hizmet ve ders/kurs ilanları sadece onaylı antrenör hesaplarında açılır.
+              {t("trainersOnlyInfo")}
             </div>
           )}
 
           {/* Trainer-only listing types */}
           {isVerifiedTrainer && (
             <div className="mt-4">
-              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">🎓 Onaylı Antrenör Alanları</p>
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{t("verifiedSection")}</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {[
-                  { value: "VENUE_MEMBERSHIP", label: "💳 Üyelik Paketi", active: "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300" },
-                  { value: "VENUE_CLASS", label: "📚 Ders/Kurs", active: "border-pink-500 bg-pink-50 dark:bg-pink-900/20 text-pink-700 dark:text-pink-300" },
-                  { value: "VENUE_PRODUCT", label: "🛍️ Ürün Satışı", active: "border-amber-500 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300" },
-                  { value: "VENUE_SERVICE", label: "🔧 Hizmet", active: "border-cyan-500 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300" },
-                ].map((t) => (
+                  { value: "VENUE_MEMBERSHIP", label: t("venueMembership"), active: "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300" },
+                  { value: "VENUE_CLASS", label: t("venueClass"), active: "border-pink-500 bg-pink-50 dark:bg-pink-900/20 text-pink-700 dark:text-pink-300" },
+                  { value: "VENUE_PRODUCT", label: t("venueProduct"), active: "border-amber-500 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300" },
+                  { value: "VENUE_SERVICE", label: t("venueService"), active: "border-cyan-500 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300" },
+                ].map((typeItem2) => (
                   <button
-                    key={t.value}
+                    key={typeItem2.value}
                     type="button"
-                    onClick={() => setForm({ ...form, type: t.value as ListingType })}
+                    onClick={() => setForm({ ...form, type: typeItem2.value as ListingType })}
                     className={`p-3 rounded-lg border-2 text-center transition text-sm font-medium ${
-                      form.type === t.value ? t.active : "border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-300"
+                      form.type === typeItem2.value ? typeItem2.active : "border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-300"
                     }`}
-                    aria-pressed={form.type === t.value}
+                    aria-pressed={form.type === typeItem2.value}
                   >
-                    {t.label}
+                    {typeItem2.label}
                   </button>
                 ))}
               </div>
@@ -320,19 +324,19 @@ export default function CreateListingPage() {
         {/* Spor Dalı */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Spor Dalı *
+            {t("sport")}
           </label>
           <select
             required
             value={form.sportId}
             onChange={(e) => setForm({ ...form, sportId: e.target.value })}
             className={selectClass}
-            aria-label="Spor dalı seçin"
+            aria-label={t("sport")}
           >
-            <option value="">Seçiniz</option>
+            <option value="">{t("selectOption")}</option>
             {sports.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.icon} {s.name}
+                {s.icon} {localizeSportName(s.name, locale)}
               </option>
             ))}
           </select>
@@ -354,7 +358,7 @@ export default function CreateListingPage() {
               📍 GPS konumu alındı — yakın kullanıcılara görünürsün
             </span>
           ) : gpsStatus === "denied" ? (
-            <span className="text-sm text-amber-600 dark:text-amber-400">⚠️ Konum izni verilmedi — yakın ilan özelliği çalışmaz</span>
+            <span className="text-sm text-amber-600 dark:text-amber-400">{t("gpsDenied")}</span>
           ) : (
             <button
               type="button"
@@ -377,9 +381,9 @@ export default function CreateListingPage() {
               className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium disabled:opacity-50 transition-colors"
             >
               {gpsStatus === "loading" ? (
-                <><span className="w-3.5 h-3.5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" /> Konum alınıyor...</>
+                <><span className="w-3.5 h-3.5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" /> {t("gpsLoading")}</>
               ) : (
-                <>📍 GPS konumumu paylaş <span className="text-xs text-gray-400 font-normal">(opsiyonel — yakın ilanlar için)</span></>
+                <>{t("gpsShare")} <span className="text-xs text-gray-400 font-normal">{t("gpsOptional")}</span></>
               )}
             </button>
           )}
@@ -389,7 +393,7 @@ export default function CreateListingPage() {
               onClick={() => { setForm(f => ({ ...f, latitude: null, longitude: null })); setGpsStatus("idle"); }}
               className="ml-auto text-xs text-gray-400 hover:text-red-400 transition-colors"
             >
-              ✕ Kaldır
+              {t("gpsRemove")}
             </button>
           )}
         </div>
@@ -397,11 +401,11 @@ export default function CreateListingPage() {
         {/* Mekan (serbest metin) */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Mekan <span className="text-gray-400 font-normal">(opsiyonel)</span>
+            {t("venueTextLabel")} <span className="text-gray-400 font-normal">{t("optional")}</span>
           </label>
           <input
             type="text"
-            placeholder="Örn: Atatürk Spor Salonu, Merkez Parkı..."
+            placeholder={t("venueTextPh")}
             value={(form as any).venueText ?? ""}
             onChange={(e) => setForm({ ...form, ...(form as any), venueText: e.target.value })}
             className={selectClass}
@@ -412,7 +416,7 @@ export default function CreateListingPage() {
         {form.type !== "EQUIPMENT" && !isTrainerOnlyType && (
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Tarih ve Saat {form.type !== "TRAINER" ? "*" : "(antrenman başlangıcı)"}
+              {t("dateTime")} {form.type !== "TRAINER" ? "*" : <span className="text-gray-400 font-normal">{t("dateTimeTrainer")}</span>}
             </label>
             <input
               id="dateTime"
@@ -430,24 +434,24 @@ export default function CreateListingPage() {
         {/* ── Eğitmen Alanları ── */}
         {form.type === "TRAINER" && (
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 space-y-3">
-            <p className="font-semibold text-blue-800 dark:text-blue-200 text-sm">🎓 Eğitmen Bilgileri</p>
+            <p className="font-semibold text-blue-800 dark:text-blue-200 text-sm">🎓 {t("trainerInfo")}</p>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Deneyim (Yıl)</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("experience")}</label>
                 <input type="number" min="0" value={trainerForm.experience} onChange={(e) => setTrainerForm({ ...trainerForm, experience: e.target.value })} className={selectClass} placeholder="5" />
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Uzmanlık Alanı</label>
-              <input type="text" value={trainerForm.specialization} onChange={(e) => setTrainerForm({ ...trainerForm, specialization: e.target.value })} className={selectClass} placeholder="Kondisyon, teknik, taktik..." />
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("specialization")}</label>
+              <input type="text" value={trainerForm.specialization} onChange={(e) => setTrainerForm({ ...trainerForm, specialization: e.target.value })} className={selectClass} placeholder={t("specializationPh")} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Spor Salonu Adı</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("gymName")}</label>
                 <input type="text" value={trainerForm.gymName} onChange={(e) => setTrainerForm({ ...trainerForm, gymName: e.target.value })} className={selectClass} placeholder="Opsiyonel" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Spor Salonu Adresi</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("gymAddress")}</label>
                 <input type="text" value={trainerForm.gymAddress} onChange={(e) => setTrainerForm({ ...trainerForm, gymAddress: e.target.value })} className={selectClass} placeholder="Opsiyonel" />
               </div>
             </div>
@@ -457,38 +461,38 @@ export default function CreateListingPage() {
         {/* ── Ekipman Alanları ── */}
         {form.type === "EQUIPMENT" && (
           <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4 space-y-3">
-            <p className="font-semibold text-purple-800 dark:text-purple-200 text-sm">🛒 Ürün Bilgileri</p>
+            <p className="font-semibold text-purple-800 dark:text-purple-200 text-sm">🛒 {t("equipInfo")}</p>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Fiyat (₺) *</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("price")} *</label>
                 <input type="number" min="0" required value={equipForm.price} onChange={(e) => setEquipForm({ ...equipForm, price: e.target.value })} className={selectClass} placeholder="500" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Durum *</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("condition")} *</label>
                 <select required value={equipForm.condition} onChange={(e) => setEquipForm({ ...equipForm, condition: e.target.value })} className={selectClass}>
-                  <option value="">Seçiniz</option>
-                  <option value="NEW">✨ Sıfır</option>
-                  <option value="LIKE_NEW">🌟 Sıfır Gibi</option>
-                  <option value="GOOD">👍 İyi</option>
-                  <option value="FAIR">🔧 Orta</option>
+                  <option value="">{t("selectOption")}</option>
+                  <option value="NEW">{t("conditionNew")}</option>
+                  <option value="LIKE_NEW">{t("conditionLikeNew")}</option>
+                  <option value="GOOD">{t("conditionGood")}</option>
+                  <option value="FAIR">{t("conditionFair")}</option>
                 </select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Marka</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("brand")}</label>
                 <input type="text" value={equipForm.brand} onChange={(e) => setEquipForm({ ...equipForm, brand: e.target.value })} className={selectClass} placeholder="Nike, Adidas..." />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Model</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("model")}</label>
                 <input type="text" value={equipForm.model} onChange={(e) => setEquipForm({ ...equipForm, model: e.target.value })} className={selectClass} placeholder="Seri / Model no" />
               </div>
             </div>
             {/* Image upload */}
             <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Ürün Fotoğrafları (max 4)</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("photos")}</label>
               <label className="flex items-center gap-2 cursor-pointer text-sm text-purple-700 dark:text-purple-300 hover:text-purple-800 transition">
-                <span className="bg-purple-100 dark:bg-purple-900/40 border border-purple-300 dark:border-purple-700 px-3 py-1.5 rounded-lg">📷 Fotoğraf Seç</span>
+                <span className="bg-purple-100 dark:bg-purple-900/40 border border-purple-300 dark:border-purple-700 px-3 py-1.5 rounded-lg">{t("selectPhoto")}</span>
                 <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => {
                   const files = Array.from(e.target.files || []).slice(0, 4);
                   setEquipImages(files);
@@ -509,32 +513,32 @@ export default function CreateListingPage() {
         {/* ─── VENUE_MEMBERSHIP: Üyelik Paketi ─── */}
         {form.type === "VENUE_MEMBERSHIP" && (
           <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-xl p-4 space-y-3">
-            <p className="font-medium text-indigo-800 dark:text-indigo-200">💳 Üyelik Paketi Detayları</p>
+            <p className="font-medium text-indigo-800 dark:text-indigo-200">💳 {t("membershipInfo")}</p>
             <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Üyelik Türü *</label>
-              <input type="text" value={venueMembershipForm.membershipType} onChange={(e) => setVenueMembershipForm({ ...venueMembershipForm, membershipType: e.target.value })} className={selectClass} placeholder="Aylık, Yıllık, Günlük..." />
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("membershipType")} *</label>
+              <input type="text" value={venueMembershipForm.membershipType} onChange={(e) => setVenueMembershipForm({ ...venueMembershipForm, membershipType: e.target.value })} className={selectClass} placeholder={t("membershipTypePh")} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Fiyat (₺)</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("price")}</label>
                 <input type="number" min="0" value={venueMembershipForm.price} onChange={(e) => setVenueMembershipForm({ ...venueMembershipForm, price: e.target.value })} className={selectClass} placeholder="1200" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Maks. Üye</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("maxMembers")}</label>
                 <input type="number" min="0" value={venueMembershipForm.maxMembers} onChange={(e) => setVenueMembershipForm({ ...venueMembershipForm, maxMembers: e.target.value })} className={selectClass} placeholder="150" />
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Dahil Hizmetler</label>
-              <textarea value={venueMembershipForm.includes} onChange={(e) => setVenueMembershipForm({ ...venueMembershipForm, includes: e.target.value })} rows={2} className={`${selectClass} resize-none`} placeholder="Sauna, havuz, PT, grup dersleri" />
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("includes")}</label>
+              <textarea value={venueMembershipForm.includes} onChange={(e) => setVenueMembershipForm({ ...venueMembershipForm, includes: e.target.value })} rows={2} className={`${selectClass} resize-none`} placeholder={t("includesPh")} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                 <input type="checkbox" checked={venueMembershipForm.trialAvailable} onChange={(e) => setVenueMembershipForm({ ...venueMembershipForm, trialAvailable: e.target.checked })} className="accent-indigo-500" />
-                Deneme Paketi Var
+                {t("trialAvailable")}
               </label>
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Deneme Fiyatı (₺)</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("trialPrice")}</label>
                 <input type="number" min="0" value={venueMembershipForm.trialPrice} onChange={(e) => setVenueMembershipForm({ ...venueMembershipForm, trialPrice: e.target.value })} className={selectClass} placeholder="0" />
               </div>
             </div>
@@ -544,38 +548,38 @@ export default function CreateListingPage() {
         {/* ─── VENUE_CLASS: Ders/Kurs ─── */}
         {form.type === "VENUE_CLASS" && (
           <div className="bg-pink-50 dark:bg-pink-900/20 border border-pink-200 dark:border-pink-800 rounded-xl p-4 space-y-3">
-            <p className="font-medium text-pink-800 dark:text-pink-200">📚 Ders/Kurs Detayları</p>
+            <p className="font-medium text-pink-800 dark:text-pink-200">📚 {t("classInfo")}</p>
             <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Ders Adı *</label>
-              <input type="text" value={venueClassForm.className} onChange={(e) => setVenueClassForm({ ...venueClassForm, className: e.target.value })} className={selectClass} placeholder="Yüzme Başlangıç, Pilates, Kickboks..." />
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("className")} *</label>
+              <input type="text" value={venueClassForm.className} onChange={(e) => setVenueClassForm({ ...venueClassForm, className: e.target.value })} className={selectClass} placeholder={t("classNamePh")} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Eğitmen</label>
-                <input type="text" value={venueClassForm.instructorName} onChange={(e) => setVenueClassForm({ ...venueClassForm, instructorName: e.target.value })} className={selectClass} placeholder="Ad Soyad" />
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("instructor")}</label>
+                <input type="text" value={venueClassForm.instructorName} onChange={(e) => setVenueClassForm({ ...venueClassForm, instructorName: e.target.value })} className={selectClass} placeholder={t("instructorPh")} />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Takvim / Program</label>
-                <input type="text" value={venueClassForm.schedule} onChange={(e) => setVenueClassForm({ ...venueClassForm, schedule: e.target.value })} className={selectClass} placeholder="Pzt-Çrş 19:00 / Cts 10:00" />
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("schedule")}</label>
+                <input type="text" value={venueClassForm.schedule} onChange={(e) => setVenueClassForm({ ...venueClassForm, schedule: e.target.value })} className={selectClass} placeholder={t("schedulePh")} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Seans Fiyatı (₺)</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("pricePerSession")}</label>
                 <input type="number" min="0" value={venueClassForm.pricePerSession} onChange={(e) => setVenueClassForm({ ...venueClassForm, pricePerSession: e.target.value })} className={selectClass} placeholder="250" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Aylık Fiyat (₺)</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("priceMonthly")}</label>
                 <input type="number" min="0" value={venueClassForm.priceMonthly} onChange={(e) => setVenueClassForm({ ...venueClassForm, priceMonthly: e.target.value })} className={selectClass} placeholder="1500" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Zorluk</label>
-                <input type="text" value={venueClassForm.difficulty} onChange={(e) => setVenueClassForm({ ...venueClassForm, difficulty: e.target.value })} className={selectClass} placeholder="Başlangıç, Orta, İleri" />
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("difficulty")}</label>
+                <input type="text" value={venueClassForm.difficulty} onChange={(e) => setVenueClassForm({ ...venueClassForm, difficulty: e.target.value })} className={selectClass} placeholder={t("difficultyPh")} />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Kontenjan</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("classCapacity")}</label>
                 <input type="number" min="1" value={venueClassForm.maxParticipants} onChange={(e) => setVenueClassForm({ ...venueClassForm, maxParticipants: e.target.value })} className={selectClass} placeholder="15" />
               </div>
             </div>
@@ -585,20 +589,20 @@ export default function CreateListingPage() {
         {/* ─── VENUE_PRODUCT: Ürün Satışı ─── */}
         {form.type === "VENUE_PRODUCT" && (
           <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 space-y-3">
-            <p className="font-medium text-amber-800 dark:text-amber-200">🛍️ Ürün Detayları</p>
+            <p className="font-medium text-amber-800 dark:text-amber-200">🛍️ {t("productInfo")}</p>
             <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Ürün Adı *</label>
-              <input type="text" value={venueProductForm.productName} onChange={(e) => setVenueProductForm({ ...venueProductForm, productName: e.target.value })} className={selectClass} placeholder="Whey Protein, Dumbbell Set..." />
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("productName")} *</label>
+              <input type="text" value={venueProductForm.productName} onChange={(e) => setVenueProductForm({ ...venueProductForm, productName: e.target.value })} className={selectClass} placeholder={t("productNamePh")} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Fiyat (₺)</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("price")}</label>
                 <input type="number" min="0" value={venueProductForm.price} onChange={(e) => setVenueProductForm({ ...venueProductForm, price: e.target.value })} className={selectClass} placeholder="250" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Kategori</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("productCategory")}</label>
                 <select value={venueProductForm.productCategory} onChange={(e) => setVenueProductForm({ ...venueProductForm, productCategory: e.target.value })} className={selectClass}>
-                  <option value="">Seçiniz</option>
+                  <option value="">{t("selectOption")}</option>
                   <option value="supplement">Supplement</option>
                   <option value="ekipman">Ekipman</option>
                   <option value="giyim">Giyim</option>
@@ -609,17 +613,17 @@ export default function CreateListingPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Marka</label>
-                <input type="text" value={venueProductForm.brand} onChange={(e) => setVenueProductForm({ ...venueProductForm, brand: e.target.value })} className={selectClass} placeholder="Marka" />
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("brand")}</label>
+                <input type="text" value={venueProductForm.brand} onChange={(e) => setVenueProductForm({ ...venueProductForm, brand: e.target.value })} className={selectClass} placeholder="Nike, Adidas..." />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Birim</label>
-                <input type="text" value={venueProductForm.unit} onChange={(e) => setVenueProductForm({ ...venueProductForm, unit: e.target.value })} className={selectClass} placeholder="adet, kutu, kg" />
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("unit")}</label>
+                <input type="text" value={venueProductForm.unit} onChange={(e) => setVenueProductForm({ ...venueProductForm, unit: e.target.value })} className={selectClass} placeholder={t("unitPh")} />
               </div>
             </div>
             <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
               <input type="checkbox" checked={venueProductForm.inStock} onChange={(e) => setVenueProductForm({ ...venueProductForm, inStock: e.target.checked })} className="accent-amber-500" />
-              Stokta Mevcut
+              {t("inStock")}
             </label>
           </div>
         )}
@@ -627,24 +631,24 @@ export default function CreateListingPage() {
         {/* ─── VENUE_SERVICE: Hizmet ─── */}
         {form.type === "VENUE_SERVICE" && (
           <div className="bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded-xl p-4 space-y-3">
-            <p className="font-medium text-cyan-800 dark:text-cyan-200">🔧 Hizmet Detayları</p>
+            <p className="font-medium text-cyan-800 dark:text-cyan-200">🔧 {t("serviceInfo")}</p>
             <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Hizmet Türü *</label>
-              <input type="text" value={venueServiceForm.serviceType} onChange={(e) => setVenueServiceForm({ ...venueServiceForm, serviceType: e.target.value })} className={selectClass} placeholder="Kişisel antrenman, fizyoterapi, masaj..." />
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("serviceType")} *</label>
+              <input type="text" value={venueServiceForm.serviceType} onChange={(e) => setVenueServiceForm({ ...venueServiceForm, serviceType: e.target.value })} className={selectClass} placeholder={t("serviceTypePh")} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Fiyat (₺)</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("price")}</label>
                 <input type="number" min="0" value={venueServiceForm.pricePerSession} onChange={(e) => setVenueServiceForm({ ...venueServiceForm, pricePerSession: e.target.value })} className={selectClass} placeholder="300" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Süre (dk)</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("duration")}</label>
                 <input type="number" min="1" value={venueServiceForm.sessionDuration} onChange={(e) => setVenueServiceForm({ ...venueServiceForm, sessionDuration: e.target.value })} className={selectClass} placeholder="60" />
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Uzmanlık / Nitelikler</label>
-              <textarea value={venueServiceForm.qualifications} onChange={(e) => setVenueServiceForm({ ...venueServiceForm, qualifications: e.target.value })} rows={2} className={`${selectClass} resize-none`} placeholder="Sertifika, uzmanlık alanı, deneyim" />
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("qualifications")}</label>
+              <textarea value={venueServiceForm.qualifications} onChange={(e) => setVenueServiceForm({ ...venueServiceForm, qualifications: e.target.value })} rows={2} className={`${selectClass} resize-none`} placeholder={t("qualificationsPh")} />
             </div>
           </div>
         )}
@@ -653,13 +657,13 @@ export default function CreateListingPage() {
         {form.type !== "EQUIPMENT" && !isTrainerOnlyType && (
           <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Seviye *
+            {t("level")}
           </label>
           <div className="grid grid-cols-3 gap-3">
             {[
-              { value: "BEGINNER", label: "🌱 Başlangıç", active: "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300" },
-              { value: "INTERMEDIATE", label: "🔥 Orta", active: "border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300" },
-              { value: "ADVANCED", label: "⚡ İleri", active: "border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300" },
+              { value: "BEGINNER", label: t("beginnerLevel"), active: "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300" },
+              { value: "INTERMEDIATE", label: t("intermediateLevel"), active: "border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300" },
+              { value: "ADVANCED", label: t("advancedLevel"), active: "border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300" },
             ].map((l) => (
               <button
                 key={l.value}
@@ -682,7 +686,7 @@ export default function CreateListingPage() {
         {/* Açıklama */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Açıklama
+            {t("description")}
           </label>
           <textarea
             value={form.description}
@@ -690,7 +694,7 @@ export default function CreateListingPage() {
             rows={3}
             maxLength={1000}
             className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-emerald-500 outline-none resize-none"
-            placeholder="İlanınız hakkında detay ekleyin (max 1000 karakter)..."
+            placeholder={t("descriptionPh")}
           />
         </div>
 
@@ -698,10 +702,10 @@ export default function CreateListingPage() {
         {form.type === "PARTNER" && (
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Maksimum Katılımcı Sayısı
+              {t("maxParticipants")}
               {form.maxParticipants > 2 && (
                 <span className="ml-2 text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full">
-                  👥 Grup İlanı
+                  {t("groupBadge")}
                 </span>
               )}
             </label>
@@ -715,11 +719,11 @@ export default function CreateListingPage() {
                 className="flex-1 accent-emerald-500"
               />
               <span className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 font-semibold px-3 py-1 rounded-lg text-sm min-w-[60px] text-center">
-                {form.maxParticipants} kişi
+                {form.maxParticipants} {t("person")}
               </span>
             </div>
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-              {form.maxParticipants === 2 ? "Standart 1v1 partner" : `${form.maxParticipants} kişilik grup aktivitesi`}
+              {form.maxParticipants === 2 ? t("participantStandard") : t("participantCount", { n: form.maxParticipants })}
             </p>
           </div>
         )}
@@ -728,13 +732,13 @@ export default function CreateListingPage() {
         {form.type !== "EQUIPMENT" && !isTrainerOnlyType && (
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Katılımcı Cinsiyeti
+            {t("gender")}
           </label>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { value: "ANY", label: "🌐 Herkese Açık" },
-              { value: "FEMALE_ONLY", label: "👩 Yalnızca Kadınlar" },
-              { value: "MALE_ONLY", label: "👨 Yalnızca Erkekler" },
+              { value: "ANY", label: t("anyGender") },
+              { value: "FEMALE_ONLY", label: t("femaleOnly") },
+              { value: "MALE_ONLY", label: t("maleOnly") },
             ].map((g) => (
               <button
                 key={g.value}
@@ -757,11 +761,11 @@ export default function CreateListingPage() {
         {form.type !== "EQUIPMENT" && !isTrainerOnlyType && (
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Başvuru Yaş Aralığı <span className="text-gray-400 font-normal">(opsiyonel)</span>
+            {t("ageRange")} <span className="text-gray-400 font-normal">{t("optional")}</span>
           </label>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Minimum Yaş</label>
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t("minAge")}</label>
               <input
                 type="number"
                 min="10"
@@ -773,7 +777,7 @@ export default function CreateListingPage() {
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Maksimum Yaş</label>
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t("maxAge")}</label>
               <input
                 type="number"
                 min="10"
@@ -788,10 +792,10 @@ export default function CreateListingPage() {
           {(form.minAge || form.maxAge) && (
             <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
               👤 {form.minAge && form.maxAge
-                ? `${form.minAge}-${form.maxAge} yaş arası başvurabilir`
+                ? t("ageDisplay", { min: form.minAge, max: form.maxAge })
                 : form.minAge
-                ? `${form.minAge} yaş ve üstü başvurabilir`
-                : `${form.maxAge} yaş ve altı başvurabilir`}
+                ? t("ageMin", { min: form.minAge })
+                : t("ageMax", { max: form.maxAge ?? 0 })}
             </p>
           )}
         </div>
@@ -800,14 +804,14 @@ export default function CreateListingPage() {
         {/* Grup Seçimi */}
         {myGroups.length > 0 && !isTrainerOnlyType && (
         <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4">
-          <p className="font-medium text-purple-800 dark:text-purple-200 mb-2">👥 Grup İlanı (Opsiyonel)</p>
-          <p className="text-xs text-purple-600 dark:text-purple-400 mb-3">Bu ilanı bir grubunuzla ilişkilendirebilirsiniz.</p>
+          <p className="font-medium text-purple-800 dark:text-purple-200 mb-2">👥 {t("groupLabel")}</p>
+          <p className="text-xs text-purple-600 dark:text-purple-400 mb-3">{t("groupHint")}</p>
           <select
             value={form.groupId ?? ""}
             onChange={(e) => setForm({ ...form, groupId: e.target.value || null })}
             className="w-full border border-purple-300 dark:border-purple-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-purple-500 outline-none"
           >
-            <option value="">Grup seçme (bireysel ilan)</option>
+            <option value="">{t("noGroupOption")}</option>
             {myGroups.map((g) => (
               <option key={g.id} value={g.id}>
                 {g.name} ({g._count.members} üye)
@@ -822,9 +826,9 @@ export default function CreateListingPage() {
         <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-amber-800 dark:text-amber-200">⚡ Hızlı İlan (Hadi Gel!)</p>
+              <p className="font-medium text-amber-800 dark:text-amber-200">{t("quickTitle")}</p>
               <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
-                İlan 2 saat içinde otomatik kapanır. Acil partner arayanlar için idealdir.
+                {t("quickDesc")}
               </p>
             </div>
             <button
@@ -851,9 +855,9 @@ export default function CreateListingPage() {
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-red-800 dark:text-red-200">⚡ Anlık Eşleşme — Gece Yarısı Maçı</p>
+              <p className="font-medium text-red-800 dark:text-red-200">{t("urgentTitle")}</p>
               <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">
-                Şu an müsaitim! 30 dakikalık acil ilan açılır, aynı semtteki uygun kullanıcılara anında bildirim gider. İlk kabul eden eşleşir.
+                {t("urgentDesc")}
               </p>
             </div>
             <button
@@ -875,7 +879,7 @@ export default function CreateListingPage() {
           {form.isUrgent && (
             <div className="mt-2 bg-red-100 dark:bg-red-900/30 rounded-lg px-3 py-2">
               <p className="text-xs text-red-700 dark:text-red-300 font-medium">
-                🔴 İlan oluşturulunca 30 dakika sayacı başlar. Bildirim gönderilen kullanıcıların başvurusu beklenir.
+                {t("urgentActive")}
               </p>
             </div>
           )}
@@ -887,9 +891,9 @@ export default function CreateListingPage() {
         <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-gray-800 dark:text-gray-200">🕵️ Kör Maç — Anonim İlan</p>
+              <p className="font-medium text-gray-800 dark:text-gray-200">{t("anonymousTitle")}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                Eşleşme gerçekleşene kadar profil bilgilerin gizlenir. Kadın kullanıcılar için güvenli eşleşme!
+                {t("anonymousDesc")}
               </p>
             </div>
             <button
@@ -911,7 +915,7 @@ export default function CreateListingPage() {
           {form.isAnonymous && (
             <div className="mt-2 bg-gray-100 dark:bg-gray-700/50 rounded-lg px-3 py-2">
               <p className="text-xs text-gray-600 dark:text-gray-300 font-medium">
-                🔒 Başvuranlar sadece seviye, yaş aralığı ve spor bilgini görecek. Eşleşme onaylanan profil açılır.
+                {t("anonymousActive")}
               </p>
             </div>
           )}
@@ -923,9 +927,9 @@ export default function CreateListingPage() {
           <div className="bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 rounded-xl p-4">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <p className="font-medium text-violet-800 dark:text-violet-200">🔁 Tekrarlayan Etkinlik</p>
+                <p className="font-medium text-violet-800 dark:text-violet-200">{t("recurringTitle")}</p>
                 <p className="text-xs text-violet-600 dark:text-violet-400 mt-0.5">
-                  Her hafta belirli günlerde tekrarlayan etkinlikler için.
+                  {t("recurringDesc")}
                 </p>
               </div>
               <button
@@ -942,16 +946,16 @@ export default function CreateListingPage() {
             </div>
             {form.isRecurring && (
               <div>
-                <p className="text-xs font-medium text-violet-700 dark:text-violet-300 mb-2">Hangi günlerde tekrarlansın?</p>
+                <p className="text-xs font-medium text-violet-700 dark:text-violet-300 mb-2">{t("recurringDaysLabel")}</p>
                 <div className="flex flex-wrap gap-2">
                   {[
-                    { value: "MON", label: "Pzt" },
-                    { value: "TUE", label: "Sal" },
-                    { value: "WED", label: "Çar" },
-                    { value: "THU", label: "Per" },
-                    { value: "FRI", label: "Cum" },
-                    { value: "SAT", label: "Cmt" },
-                    { value: "SUN", label: "Paz" },
+                    { value: "MON", label: t("mon") },
+                    { value: "TUE", label: t("tue") },
+                    { value: "WED", label: t("wed") },
+                    { value: "THU", label: t("thu") },
+                    { value: "FRI", label: t("fri") },
+                    { value: "SAT", label: t("sat") },
+                    { value: "SUN", label: t("sun") },
                   ].map((day) => {
                     const selected = form.recurringDays.includes(day.value);
                     return (
@@ -992,7 +996,7 @@ export default function CreateListingPage() {
           }
           className="w-full text-lg"
         >
-          {form.isQuick ? "⚡ Hızlı İlan Yayınla" : form.isRecurring ? "🔁 Tekrarlayan İlan Yayınla" : "İlanı Yayınla"}
+          {form.isQuick ? t("submitQuick") : form.isRecurring ? t("submitRecurring") : t("submitBtn")}
         </Button>
       </form>
     </div>

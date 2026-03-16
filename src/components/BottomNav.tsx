@@ -89,10 +89,10 @@ export default function BottomNav() {
   return (
     <nav
       aria-label="Alt menü"
-      className="md:hidden fixed bottom-0 inset-x-0 z-[65] px-2 pb-2"
-      style={{ paddingBottom: "max(env(safe-area-inset-bottom), 8px)" }}
+      className="md:hidden fixed bottom-0 inset-x-0 z-[65]"
     >
-      <div className="mx-auto flex items-stretch h-[72px] max-w-md rounded-2xl border border-gray-200/90 dark:border-gray-700/80 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
+      <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-gray-200/90 dark:border-gray-700/80 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+      <div className="mx-auto flex items-stretch h-[60px] max-w-lg px-2">
         {/* Ana Sayfa + Keşfet */}
         {navItems.slice(0, 2).map(({ href, icon: Icon, label }) => {
           const active = isActive(href);
@@ -162,6 +162,8 @@ export default function BottomNav() {
           </span>
           <span>{t("bottomProfile")}</span>
         </button>
+      </div>
+      <div style={{ height: "env(safe-area-inset-bottom, 0px)" }} />
       </div>
     </nav>
   );
