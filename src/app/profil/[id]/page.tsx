@@ -4,8 +4,8 @@ import { use, useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { format, differenceInYears } from "date-fns";
-import { tr } from "date-fns/locale";
 import { useSession } from "next-auth/react";
+import { useLocale, useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 import { getPublicProfile, submitRating, getUserRatings, toggleFollow, getFollowStats, getLeaderboard, startDirectConversation, removeFollower } from "@/services/api";
 import { APIError } from "@/services/api";
@@ -16,6 +16,184 @@ import Button from "@/components/ui/Button";
 import TrainerBadgePopup from "@/components/profile/TrainerBadgePopup";
 import PostCard from "@/components/profile/PostCard";
 import SocialLinksRow from "@/components/social/SocialLinksRow";
+import { getDateFnsLocale, localizeListingType, localizeSportName, resolveAppLocale } from "@/lib/localized-ui";
+
+const PUBLIC_PROFILE_COPY = {
+  tr: {
+    loadFailed: "Profil yüklenemedi",
+    profileUnavailableTitle: "Bu profili görüntüleme izniniz yok",
+    profileUnavailableSubtitle: "Bu kullanıcı profilini gizlemiş veya sizi engellemiş olabilir.",
+    notFound: "Kullanıcı bulunamadı",
+    signInToFollow: "Takip etmek için giriş yapın",
+    followRequestSent: "⏳ İstek Gönderildi",
+    following: "Takip Ediliyor",
+    follow: "Takip Et",
+    message: "Mesaj Gönder",
+    challenge: "Teklif Gönder",
+    rate: "Değerlendir",
+    removeFollower: "Takipçiyi Çıkar",
+    restrict: "Kısıtla",
+    unrestrict: "Kısıtlamayı Kaldır",
+    block: "Engelle",
+    unblock: "Engeli Kaldır",
+    report: "Şikayet Et",
+    blocked: "Engellendi",
+    followsYou: "Seni takip ediyor",
+    dayStreak: "gün seri",
+    memberSince: "tarihinden beri üye",
+    postsTab: "Gönderiler",
+    listingsTab: "İlanlar",
+    ratingsTab: "Değerlendirmeler",
+    statsTab: "İstatistikler",
+    hiddenTitle: "Bu Profil Gizli",
+    hiddenDesc: "Paylaşımları ve detayları görmek için bu kullanıcıyı takip etmelisin.",
+    signInAndFollow: "Giriş Yap ve Takip Et",
+    noActiveListings: "Aktif ilan yok",
+    noRatings: "Henüz değerlendirme yok",
+    statsLoadFailed: "İstatistikler yüklenemedi",
+    totalMatches: "Toplam Maç",
+    completedMatches: "Tamamlanan",
+    currentStreak: "Günlük Seri",
+    longestStreak: "Rekor Seri",
+    ratingsCount: "değerlendirme",
+    bySport: "Spora Göre Maçlar",
+    monthlyActivity: "Son 12 Ay Aktivitesi",
+    matches: "maç",
+    followers: "takipçi",
+    followingCountLabel: "takip",
+    editProfile: "Düzenle",
+    yearsOld: "yaşında",
+    noPosts: "Henüz gönderi yok",
+    responses: "yanıt",
+    loading: "Yükleniyor...",
+    noOneYet: "Henüz kimse yok",
+    unknownCity: "Bilinmeyen Şehir",
+    reportReceived: "Şikayetiniz alındı, incelenecek.",
+    reportSendFailed: "Şikayet gönderilemedi",
+    genericError: "Bir hata oluştu",
+    conversationStartFailed: "Konuşma başlatılamadı",
+    signIn: "Giriş yapın",
+    followRequestWithdrawn: "Takip isteği geri çekildi",
+    followStarted: "✓ Takip edildi",
+    followStopped: "Takipten çıkıldı",
+  },
+  en: {
+    loadFailed: "Profile could not be loaded",
+    profileUnavailableTitle: "You cannot view this profile",
+    profileUnavailableSubtitle: "This user may have hidden their profile or blocked you.",
+    notFound: "User not found",
+    signInToFollow: "Sign in to follow",
+    followRequestSent: "⏳ Request sent",
+    following: "Following",
+    follow: "Follow",
+    message: "Send Message",
+    challenge: "Send Challenge",
+    rate: "Rate",
+    removeFollower: "Remove Follower",
+    restrict: "Restrict",
+    unrestrict: "Remove Restriction",
+    block: "Block",
+    unblock: "Unblock",
+    report: "Report",
+    blocked: "Blocked",
+    followsYou: "Follows you",
+    dayStreak: "day streak",
+    memberSince: "member since",
+    postsTab: "Posts",
+    listingsTab: "Listings",
+    ratingsTab: "Ratings",
+    statsTab: "Stats",
+    hiddenTitle: "This Profile Is Private",
+    hiddenDesc: "You need to follow this user to see their posts and details.",
+    signInAndFollow: "Sign In and Follow",
+    noActiveListings: "No active listings",
+    noRatings: "No ratings yet",
+    statsLoadFailed: "Stats could not be loaded",
+    totalMatches: "Total Matches",
+    completedMatches: "Completed",
+    currentStreak: "Current Streak",
+    longestStreak: "Best Streak",
+    ratingsCount: "ratings",
+    bySport: "Matches by Sport",
+    monthlyActivity: "Last 12 Months",
+    matches: "matches",
+    followers: "followers",
+    followingCountLabel: "following",
+    editProfile: "Edit",
+    yearsOld: "years old",
+    noPosts: "No posts yet",
+    responses: "responses",
+    loading: "Loading...",
+    noOneYet: "Nobody yet",
+    unknownCity: "Unknown City",
+    reportReceived: "Your report has been received and will be reviewed.",
+    reportSendFailed: "Report could not be sent",
+    genericError: "Something went wrong",
+    conversationStartFailed: "Conversation could not be started",
+    signIn: "Sign in",
+    followRequestWithdrawn: "Follow request withdrawn",
+    followStarted: "✓ Followed",
+    followStopped: "Unfollowed",
+  },
+  ru: {
+    loadFailed: "Не удалось загрузить профиль",
+    profileUnavailableTitle: "Вы не можете просматривать этот профиль",
+    profileUnavailableSubtitle: "Этот пользователь мог скрыть профиль или заблокировать вас.",
+    notFound: "Пользователь не найден",
+    signInToFollow: "Войдите, чтобы подписаться",
+    followRequestSent: "⏳ Запрос отправлен",
+    following: "Вы подписаны",
+    follow: "Подписаться",
+    message: "Написать",
+    challenge: "Отправить вызов",
+    rate: "Оценить",
+    removeFollower: "Удалить подписчика",
+    restrict: "Ограничить",
+    unrestrict: "Снять ограничение",
+    block: "Заблокировать",
+    unblock: "Разблокировать",
+    report: "Пожаловаться",
+    blocked: "Заблокирован",
+    followsYou: "Подписан на вас",
+    dayStreak: "дн. подряд",
+    memberSince: "в приложении с",
+    postsTab: "Посты",
+    listingsTab: "Объявления",
+    ratingsTab: "Отзывы",
+    statsTab: "Статистика",
+    hiddenTitle: "Профиль закрыт",
+    hiddenDesc: "Чтобы видеть публикации и детали, нужно подписаться на пользователя.",
+    signInAndFollow: "Войти и подписаться",
+    noActiveListings: "Нет активных объявлений",
+    noRatings: "Пока нет отзывов",
+    statsLoadFailed: "Не удалось загрузить статистику",
+    totalMatches: "Всего матчей",
+    completedMatches: "Завершено",
+    currentStreak: "Текущая серия",
+    longestStreak: "Лучший рекорд",
+    ratingsCount: "оценок",
+    bySport: "Матчи по видам спорта",
+    monthlyActivity: "Активность за 12 месяцев",
+    matches: "матчей",
+    followers: "подписчиков",
+    followingCountLabel: "подписок",
+    editProfile: "Редактировать",
+    yearsOld: "лет",
+    noPosts: "Пока нет постов",
+    responses: "ответов",
+    loading: "Загрузка...",
+    noOneYet: "Пока никого нет",
+    unknownCity: "Город неизвестен",
+    reportReceived: "Жалоба отправлена и будет проверена.",
+    reportSendFailed: "Не удалось отправить жалобу",
+    genericError: "Произошла ошибка",
+    conversationStartFailed: "Не удалось начать диалог",
+    signIn: "Войти",
+    followRequestWithdrawn: "Запрос на подписку отменен",
+    followStarted: "✓ Подписка оформлена",
+    followStopped: "Подписка отменена",
+  },
+} as const;
 function StarRating({ value, onChange }: { value: number; onChange?: (v: number) => void }) {
   return (
     <div className="flex gap-1">
@@ -44,6 +222,13 @@ export default function PublicProfilePage({
   const { id } = use(params);
   const { data: session } = useSession();
   const router = useRouter();
+  const locale = useLocale();
+  const safeLocale = resolveAppLocale(locale);
+  const uiLocale: "tr" | "en" | "ru" = safeLocale === "ru" ? "ru" : safeLocale === "tr" ? "tr" : "en";
+  const dateLocale = getDateFnsLocale(locale);
+  const tProfile = useTranslations("profile");
+  const tHeader = useTranslations("profile.header");
+  const copy = PUBLIC_PROFILE_COPY[uiLocale];
   const [messagingLoading, setMessagingLoading] = useState(false);
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [profileAccessError, setProfileAccessError] = useState<"blocked" | "private" | null>(null);
@@ -181,17 +366,17 @@ export default function PublicProfilePage({
   }, [id, activeTab]);
 
   const handleFollow = async () => {
-    if (!session) { toast.error("Takip etmek için giriş yapın"); return; }
+    if (!session) { toast.error(copy.signInToFollow); return; }
     // Pending istek varsa iptal et / geri çek
     if (pendingFollow) {
       setFollowLoading(true);
       try {
         const res = await toggleFollow(id) as any;
         setPendingFollow(false);
-        toast.success(res.message || "Takip isteği geri çekildi");
+        toast.success(res.message || copy.followRequestWithdrawn);
         // Sayaçları güncelle
         loadFollowStats();
-      } catch { toast.error("Hata oluştu"); }
+      } catch { toast.error(copy.genericError); }
       finally { setFollowLoading(false); }
       return;
     }
@@ -213,15 +398,15 @@ export default function PublicProfilePage({
       loadFollowStats();
 
       if (actualPending) {
-        toast.success("⏳ Takip isteği gönderildi");
+        toast.success(copy.followRequestSent);
       } else {
-        toast.success(actualFollowing ? "✓ Takip edildi" : "Takipten çıkıldı");
+        toast.success(actualFollowing ? copy.followStarted : copy.followStopped);
       }
     } catch (err) {
       // Hata durumunda optimistic update'i geri al
       setIsFollowing(!next);
       setFollowerCount((prev) => next ? prev - 1 : prev + 1);
-      toast.error(err instanceof Error ? err.message : "Hata oluştu");
+      toast.error(err instanceof Error ? err.message : copy.genericError);
     } finally {
       setFollowLoading(false);
     }
@@ -231,13 +416,13 @@ export default function PublicProfilePage({
     setSubmittingRating(true);
     try {
       await submitRating(id, ratingScore, ratingComment);
-      toast.success("Değerlendirmeniz gönderildi!");
+      toast.success(tProfile("ratingSubmitted"));
       setRatingModal(false);
       // Refresh ratings
       const r = await getUserRatings(id);
       if (r.success && r.data) setRatings(r.data);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Hata oluştu");
+      toast.error(err instanceof Error ? err.message : copy.genericError);
     } finally {
       setSubmittingRating(false);
     }
@@ -252,7 +437,7 @@ export default function PublicProfilePage({
         const res = await fetch(`/api/users/${id}/block`, { method: "DELETE" });
         if ((await res.json()).success) {
           setBlockStatus(null);
-          toast.success(type === "BLOCK" ? "Engel kaldırıldı" : "Kısıtlama kaldırıldı");
+          toast.success(type === "BLOCK" ? copy.unblock : copy.unrestrict);
         }
       } else {
         const res = await fetch(`/api/users/${id}/block`, {
@@ -264,13 +449,13 @@ export default function PublicProfilePage({
         if (json.success) {
           setBlockStatus(type);
           if (type === "BLOCK") { setIsFollowing(false); setFollowsMe(false); }
-          toast.success(type === "BLOCK" ? "Kullanıcı engellendi" : "Kullanıcı kısıtlandı");
+          toast.success(type === "BLOCK" ? copy.blocked : copy.restrict);
         } else {
           toast.error(json.error ?? "İşlem başarısız");
         }
       }
     } catch {
-      toast.error("Bir hata oluştu");
+      toast.error(copy.genericError);
     } finally {
       setBlockLoading(false);
     }
@@ -287,11 +472,11 @@ export default function PublicProfilePage({
       });
       const json = await res.json();
       if (json.success) {
-        toast.success("Şikayetiniz alındı, incelenecek.");
+        toast.success(copy.reportReceived);
         setReportModal(false);
         setReportDesc("");
       } else {
-        toast.error(json.error ?? "Şikayet gönderilemedi");
+        toast.error(json.error ?? copy.reportSendFailed);
       }
     } finally {
       setReportLoading(false);
@@ -305,7 +490,7 @@ export default function PublicProfilePage({
       const res = await fetch(`/api/users/${id}/followers`);
       const json = await res.json();
       if (json.success) setFollowListData(json.data);
-    } catch { toast.error("Hata oluştu"); }
+    } catch { toast.error(copy.genericError); }
     finally { setFollowListLoading(false); }
   };
 
@@ -316,7 +501,7 @@ export default function PublicProfilePage({
       const res = await fetch(`/api/users/${id}/following`);
       const json = await res.json();
       if (json.success) setFollowListData(json.data);
-    } catch { toast.error("Hata oluştu"); }
+    } catch { toast.error(copy.genericError); }
     finally { setFollowListLoading(false); }
   };
 
@@ -327,18 +512,18 @@ export default function PublicProfilePage({
       const res = await removeFollower(id);
       if (res.success) {
         setFollowsMe(false);
-        toast.success("Takipçi kaldırıldı");
+        toast.success(copy.removeFollower);
       } else {
         toast.error("İşlem başarısız");
       }
     } catch {
-      toast.error("Bir hata oluştu");
+      toast.error(copy.genericError);
     }
   };
 
   const handleChallenge = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!challengeForm.sportId) { toast.error("Spor dalı seçiniz"); return; }
+    if (!challengeForm.sportId) { toast.error(tProfile("chooseSport")); return; }
     setChallengeLoading(true);
     try {
       const res = await fetch("/api/challenges", {
@@ -354,14 +539,14 @@ export default function PublicProfilePage({
       });
       const json = await res.json();
       if (json.success) {
-        toast.success("✅ Teklif gönderildi! 48 saat geçerlidir.");
+        toast.success(tProfile("challengeSent"));
         setShowChallengeModal(false);
         setChallengeForm({ sportId: "", challengeType: "RIVAL", message: "", proposedDateTime: "" });
       } else {
-        toast.error(json.error ?? "Teklif gönderilemedi");
+        toast.error(json.error ?? tProfile("challengeSendFailed"));
       }
     } catch {
-      toast.error("Bir hata oluştu");
+      toast.error(copy.genericError);
     } finally {
       setChallengeLoading(false);
     }
@@ -380,20 +565,20 @@ export default function PublicProfilePage({
       return (
         <div className="text-center py-16 max-w-sm mx-auto">
           <span className="text-6xl">🚫</span>
-          <p className="mt-4 font-semibold text-gray-700 dark:text-gray-300">Bu profili görüntüleme izniniz yok</p>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Bu kullanıcı profilini gizlemiş veya sizi engellemiş olabilir.</p>
+          <p className="mt-4 font-semibold text-gray-700 dark:text-gray-300">{copy.profileUnavailableTitle}</p>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{copy.profileUnavailableSubtitle}</p>
         </div>
       );
     }
     return (
       <div className="text-center py-16">
         <span className="text-6xl">😕</span>
-        <p className="mt-4 text-gray-500 dark:text-gray-400">Kullanıcı bulunamadı</p>
+        <p className="mt-4 text-gray-500 dark:text-gray-400">{copy.notFound}</p>
       </div>
     );
   }
 
-  const joinDate = profile.createdAt ? format(new Date(profile.createdAt), "MMMM yyyy", { locale: tr }) : "";
+  const joinDate = profile.createdAt ? format(new Date(profile.createdAt), "MMMM yyyy", { locale: dateLocale }) : "";
 
       // Gizlilik kontrolü: mesaj gönderme izni var mı?
       const whoCanMessage = profile.whoCanMessage ?? "EVERYONE";
@@ -418,7 +603,7 @@ export default function PublicProfilePage({
       <div className="relative">
         <div className="h-40 sm:h-48 bg-gradient-to-br from-emerald-600 via-teal-500 to-cyan-500 overflow-hidden">
           {(profile as any).coverUrl && (
-            <img src={(profile as any).coverUrl} alt="Kapak" className="w-full h-full object-cover" />
+            <img src={(profile as any).coverUrl} alt={tHeader("coverAlt")} className="w-full h-full object-cover" />
           )}
         </div>
 
@@ -426,7 +611,7 @@ export default function PublicProfilePage({
         {profile.isOwnProfile && (
           <Link href="/ayarlar/profil"
             className="absolute top-3 right-3 z-10 text-xs font-semibold px-3 py-1.5 rounded-full bg-black/40 text-white hover:bg-black/55 backdrop-blur-sm transition">
-            ✏️ Düzenle
+            ✏️ {copy.editProfile}
           </Link>
         )}
       </div>
@@ -459,7 +644,7 @@ export default function PublicProfilePage({
                     : "bg-emerald-600 text-white hover:bg-emerald-700"
                 }`}
               >
-                {followLoading ? "..." : pendingFollow ? "⏳ İstek Gönderildi" : isFollowing ? "Takip Ediliyor" : "Takip Et"}
+                {followLoading ? "..." : pendingFollow ? copy.followRequestSent : isFollowing ? copy.following : copy.follow}
               </button>
             )}
             {!profile.isOwnProfile && (
@@ -468,17 +653,17 @@ export default function PublicProfilePage({
                 {session && blockStatus !== "BLOCK" && canMessage && (
                   <button
                     onClick={async () => {
-                      if (!session) { toast.error("Giriş yapın"); return; }
+                      if (!session) { toast.error(copy.signIn); return; }
                       setMessagingLoading(true);
                       try {
                         const res = await startDirectConversation(id);
                         if (res.success && res.data) router.push(`/mesajlar/dm/${res.data.id}`);
-                        else toast.error("Konuşma başlatılamadı");
-                      } catch { toast.error("Konuşma başlatılamadı"); }
+                        else toast.error(copy.conversationStartFailed);
+                      } catch { toast.error(copy.conversationStartFailed); }
                       finally { setMessagingLoading(false); }
                     }}
                     disabled={messagingLoading}
-                    title="Mesaj Gönder"
+                    title={copy.message}
                     className="w-9 h-9 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition text-sm"
                   >💬</button>
                 )}
@@ -486,14 +671,14 @@ export default function PublicProfilePage({
                 {session && blockStatus !== "BLOCK" && canChallenge && (
                   <button
                     onClick={() => setShowChallengeModal(true)}
-                    title="Teklif Gönder"
+                    title={copy.challenge}
                     className="w-9 h-9 flex items-center justify-center rounded-lg bg-orange-50 dark:bg-orange-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/50 transition text-sm text-orange-600 dark:text-orange-400"
                   >⚔️</button>
                 )}
                 {session && !isRestricted && (
                   <button
                     onClick={() => setRatingModal(true)}
-                    title="Değerlendir"
+                    title={copy.rate}
                     className="w-9 h-9 flex items-center justify-center rounded-lg bg-yellow-50 dark:bg-yellow-900/30 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 transition text-sm text-yellow-600 dark:text-yellow-400"
                   >⭐</button>
                 )}
@@ -510,23 +695,23 @@ export default function PublicProfilePage({
                 <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-[101] overflow-hidden py-1">
                   {followsMe && (
                     <button onClick={handleRemoveFollower} className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                      👤 Takipçiyi Çıkar
+                      👤 {copy.removeFollower}
                     </button>
                   )}
                   <button onClick={() => handleBlock("RESTRICT")} className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                    🔇 {blockStatus === "RESTRICT" ? "Kısıtlamayı Kaldır" : "Kısıtla"}
+                    🔇 {blockStatus === "RESTRICT" ? copy.unrestrict : copy.restrict}
                   </button>
                   <button onClick={() => handleBlock("BLOCK")} className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
-                    🚫 {blockStatus === "BLOCK" ? "Engeli Kaldır" : "Engelle"}
+                    🚫 {blockStatus === "BLOCK" ? copy.unblock : copy.block}
                   </button>
                   <button onClick={() => { setDotMenuOpen(false); setReportModal(true); }} className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition">
-                    🚩 Şikayet Et
+                    🚩 {copy.report}
                   </button>
                 </div>
               </div>
             )}
             {blockStatus === "BLOCK" && (
-              <span className="text-xs text-red-500 font-medium">🚫 Engellendi</span>
+              <span className="text-xs text-red-500 font-medium">🚫 {copy.blocked}</span>
             )}
           </div>
         </div>
@@ -554,11 +739,11 @@ export default function PublicProfilePage({
             )}
             {profile.birthDate && profile.city && <span>·</span>}
             {profile.birthDate && (
-              <span>{differenceInYears(new Date(), new Date(profile.birthDate))} yaşında</span>
+              <span>{differenceInYears(new Date(), new Date(profile.birthDate))} {copy.yearsOld}</span>
             )}
           </div>
           {followsMe && (
-            <span className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 inline-block">Seni takip ediyor</span>
+            <span className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 inline-block">{copy.followsYou}</span>
           )}
         </div>
 
@@ -578,12 +763,12 @@ export default function PublicProfilePage({
 
         {/* Stats — clean inline row */}
         <div className="flex items-center gap-4 text-sm mb-3 flex-wrap">
-          <span><strong className="text-gray-900 dark:text-white">{profile.totalMatches ?? 0}</strong> <span className="text-gray-500 dark:text-gray-400">maç</span></span>
+          <span><strong className="text-gray-900 dark:text-white">{profile.totalMatches ?? 0}</strong> <span className="text-gray-500 dark:text-gray-400">{copy.matches}</span></span>
           <button onClick={() => !isRestricted && loadFollowers()} className="hover:opacity-80 transition">
-            <strong className="text-gray-900 dark:text-white">{followerCount}</strong> <span className="text-gray-500 dark:text-gray-400">takipçi</span>
+            <strong className="text-gray-900 dark:text-white">{followerCount}</strong> <span className="text-gray-500 dark:text-gray-400">{copy.followers}</span>
           </button>
           <button onClick={() => !isRestricted && loadFollowing()} className="hover:opacity-80 transition">
-            <strong className="text-gray-900 dark:text-white">{followingCount}</strong> <span className="text-gray-500 dark:text-gray-400">takip</span>
+            <strong className="text-gray-900 dark:text-white">{followingCount}</strong> <span className="text-gray-500 dark:text-gray-400">{copy.followingCountLabel}</span>
           </button>
           {profile.avgRating !== null && profile.avgRating !== undefined && (
             <span><strong className="text-gray-900 dark:text-white">{profile.avgRating.toFixed(1)}</strong> <span className="text-gray-500 dark:text-gray-400">★ ({profile.ratingCount})</span></span>
@@ -599,13 +784,13 @@ export default function PublicProfilePage({
         <div className="flex flex-wrap gap-1.5 mb-3">
           {(profile.sports ?? []).map((s) => (
             <span key={s.id} className="inline-flex items-center gap-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs px-2.5 py-1 rounded-full">
-              {s.icon} {s.name}
+              {s.icon} {localizeSportName(s.name, locale)}
             </span>
           ))}
           {badges.length > 0 && badges.map((b) => <BadgeChip key={b.id} badge={b} />)}
           {(profile as any).currentStreak > 0 && (
             <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20">
-              🔥 {(profile as any).currentStreak} gün seri
+              🔥 {(profile as any).currentStreak} {copy.dayStreak}
             </span>
           )}
         </div>
@@ -622,17 +807,17 @@ export default function PublicProfilePage({
         )}
 
         {/* Meta */}
-        <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">📅 {joinDate} tarihinden beri üye</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">📅 {joinDate} {copy.memberSince}</p>
       </div>
 
       {/* ── TABS ──────────────────────────────────────────── */}
       <div className="sticky top-[56px] z-30 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
         <div className="flex max-w-2xl mx-auto">
           {[
-            { key: "posts",    label: "Gönderiler" },
-            { key: "listings", label: `İlanlar${(profile as any).activeListings?.length > 0 ? ` (${(profile as any).activeListings.length})` : ""}` },
-            { key: "ratings",  label: `Değerlendirmeler${ratings.length > 0 ? ` (${ratings.length})` : ""}` },
-            { key: "stats",    label: "İstatistikler" },
+            { key: "posts",    label: copy.postsTab },
+            { key: "listings", label: `${copy.listingsTab}${(profile as any).activeListings?.length > 0 ? ` (${(profile as any).activeListings.length})` : ""}` },
+            { key: "ratings",  label: `${copy.ratingsTab}${ratings.length > 0 ? ` (${ratings.length})` : ""}` },
+            { key: "stats",    label: copy.statsTab },
           ].map(t => (
             <button
               key={t.key}
@@ -661,16 +846,16 @@ export default function PublicProfilePage({
           <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-3xl text-emerald-600 dark:text-emerald-400">🔒</span>
           </div>
-          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">Bu Profil Gizli</h3>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">{copy.hiddenTitle}</h3>
           <p className="text-xs text-gray-500 dark:text-gray-400 max-w-[240px] mx-auto leading-relaxed">
-            Paylaşımları ve detayları görmek için bu kullanıcıyı takip etmelisin.
+            {copy.hiddenDesc}
           </p>
           {!session && (
             <button 
               onClick={() => router.push("/auth/giris")}
               className="mt-5 px-6 py-2 bg-emerald-600 text-white rounded-xl font-bold text-xs shadow-lg shadow-emerald-500/20 active:scale-95 transition-transform"
             >
-              Giriş Yap ve Takip Et
+              {copy.signInAndFollow}
             </button>
           )}
         </div>
@@ -690,7 +875,7 @@ export default function PublicProfilePage({
           ) : posts.length === 0 ? (
             <div className="text-center py-12 text-gray-400 dark:text-gray-500">
               <p className="text-4xl mb-2">📸</p>
-              <p className="text-sm">Henüz gönderi yok</p>
+              <p className="text-sm">{copy.noPosts}</p>
             </div>
           ) : postsView === "grid" ? (
             <div className="grid grid-cols-3 gap-0.5 rounded-lg overflow-hidden">
@@ -730,7 +915,7 @@ export default function PublicProfilePage({
       {!isRestricted && activeTab === "listings" && (
         <div className="space-y-3">
           {profile.activeListings.length === 0 ? (
-            <p className="text-center text-gray-500 dark:text-gray-400 py-8">Aktif ilan yok</p>
+            <p className="text-center text-gray-500 dark:text-gray-400 py-8">{copy.noActiveListings}</p>
           ) : (
             profile.activeListings.map((listing) => (
               <Link key={listing.id} href={`/ilan/${listing.id}`}>
@@ -738,9 +923,9 @@ export default function PublicProfilePage({
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div className="flex items-center gap-2">
                       <span className="text-xl">{listing.sport?.icon || "🏆"}</span>
-                      <span className="font-semibold text-gray-800 dark:text-gray-100">{listing.sport?.name}</span>
+                      <span className="font-semibold text-gray-800 dark:text-gray-100">{listing.sport?.name ? localizeSportName(listing.sport.name, locale) : ""}</span>
                       <BadgeComp variant={listing.type === "RIVAL" ? "orange" : listing.type === "TRAINER" ? "blue" : listing.type === "EQUIPMENT" ? "purple" : "emerald"} size="sm">
-                        {listing.type === "RIVAL" ? "Rakip" : listing.type === "TRAINER" ? "Eğitmen" : listing.type === "EQUIPMENT" ? "Satılık" : "Partner"}
+                        {localizeListingType(listing.type, locale)}
                       </BadgeComp>
                     </div>
                     <span className={`text-xs px-2 py-1 rounded-full font-medium ${LEVEL_COLORS[listing.level]}`}>
@@ -749,8 +934,8 @@ export default function PublicProfilePage({
                   </div>
                   <div className="mt-2 text-sm text-gray-500 dark:text-gray-400 flex flex-wrap gap-3">
                     <span>📍 {listing.district?.city?.name}, {listing.district?.name}</span>
-                    <span>📅 {format(new Date(listing.dateTime), "d MMM HH:mm", { locale: tr })}</span>
-                    <span>💬 {listing._count?.responses ?? 0} yanıt</span>
+                    <span>📅 {format(new Date(listing.dateTime), "d MMM HH:mm", { locale: dateLocale })}</span>
+                    <span>💬 {listing._count?.responses ?? 0} {copy.responses}</span>
                   </div>
                 </div>
               </Link>
@@ -763,7 +948,7 @@ export default function PublicProfilePage({
       {!isRestricted && activeTab === "ratings" && (
         <div className="space-y-3">
           {ratings.length === 0 ? (
-            <p className="text-center text-gray-500 dark:text-gray-400 py-8">Henüz değerlendirme yok</p>
+            <p className="text-center text-gray-500 dark:text-gray-400 py-8">{copy.noRatings}</p>
           ) : (
             ratings.map((r) => (
               <div key={r.id} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4">
@@ -780,7 +965,7 @@ export default function PublicProfilePage({
                   <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 italic">&quot;{r.comment}&quot;</p>
                 )}
                 <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
-                  {format(new Date(r.createdAt), "d MMMM yyyy", { locale: tr })}
+                  {format(new Date(r.createdAt), "d MMMM yyyy", { locale: dateLocale })}
                 </p>
               </div>
             ))
@@ -794,16 +979,16 @@ export default function PublicProfilePage({
           {statsLoading ? (
             <div className="flex justify-center py-14"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600" /></div>
           ) : !statsData ? (
-            <p className="text-center text-gray-400 dark:text-gray-500 py-12">İstatistikler yüklenemedi</p>
+            <p className="text-center text-gray-400 dark:text-gray-500 py-12">{copy.statsLoadFailed}</p>
           ) : (
             <>
               {/* Özet kartlar */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
-                  { label: "Toplam Maç", value: statsData.totalMatches, icon: "⚔️" },
-                  { label: "Tamamlanan", value: statsData.completedMatches, icon: "✅" },
-                  { label: "Günlük Seri", value: `${statsData.currentStreak} 🔥`, icon: "📅" },
-                  { label: "Rekor Seri",  value: `${statsData.longestStreak} 🏆`, icon: "🌟" },
+                  { label: copy.totalMatches, value: statsData.totalMatches, icon: "⚔️" },
+                  { label: copy.completedMatches, value: statsData.completedMatches, icon: "✅" },
+                  { label: copy.currentStreak, value: `${statsData.currentStreak} 🔥`, icon: "📅" },
+                  { label: copy.longestStreak,  value: `${statsData.longestStreak} 🏆`, icon: "🌟" },
                 ].map((card) => (
                   <div key={card.label} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4 text-center">
                     <p className="text-2xl mb-1">{card.icon}</p>
@@ -819,7 +1004,7 @@ export default function PublicProfilePage({
                   <span className="text-3xl">⭐</span>
                   <div>
                     <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{statsData.avgRating}</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">{statsData.ratingCount} değerlendirme</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">{statsData.ratingCount} {copy.ratingsCount}</p>
                   </div>
                 </div>
               )}
@@ -827,15 +1012,15 @@ export default function PublicProfilePage({
               {/* Spora göre dağılım */}
               {statsData.bySport.length > 0 && (
                 <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4">
-                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Spora Göre Maçlar</h3>
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{copy.bySport}</h3>
                   <div className="space-y-2">
                     {statsData.bySport.map((s: any) => {
                       const max = statsData.bySport[0]?.matchCount || 1;
                       return (
                         <div key={s.id}>
                           <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-0.5">
-                            <span>{s.icon || "🏅"} {s.name}</span>
-                            <span className="font-semibold">{s.matchCount} maç{s.avgRating ? ` · ⭐${s.avgRating}` : ""}</span>
+                            <span>{s.icon || "🏅"} {localizeSportName(s.name, locale)}</span>
+                            <span className="font-semibold">{s.matchCount} {copy.matches}{s.avgRating ? ` · ⭐${s.avgRating}` : ""}</span>
                           </div>
                           <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                             <div
@@ -853,14 +1038,14 @@ export default function PublicProfilePage({
               {/* Aylık aktivite */}
               {statsData.monthly.length > 0 && (
                 <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4">
-                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Son 12 Ay Aktivitesi</h3>
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{copy.monthlyActivity}</h3>
                   <div className="flex items-end gap-1 h-20">
                     {statsData.monthly.map((m: any) => {
                       const maxM = Math.max(...statsData.monthly.map((x: any) => x.count), 1);
                       const heightPct = Math.round((m.count / maxM) * 100);
                       const label = m.month.slice(5); // MM only
                       return (
-                        <div key={m.month} className="flex-1 flex flex-col items-center gap-0.5" title={`${m.month}: ${m.count} maç`}>
+                        <div key={m.month} className="flex-1 flex flex-col items-center gap-0.5" title={`${m.month}: ${m.count} ${copy.matches}`}>
                           <div className="w-full flex flex-col justify-end h-16">
                             <div
                               className={`w-full rounded-sm transition-all duration-500 ${m.count > 0 ? "bg-emerald-500" : "bg-gray-100 dark:bg-gray-700"}`}
@@ -1021,7 +1206,7 @@ export default function PublicProfilePage({
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
             <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between sticky top-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md z-10">
               <h3 className="font-bold text-gray-900 dark:text-white">
-                {showFollowersModal ? "Takipçiler" : "Takip Edilenler"}
+                {showFollowersModal ? copy.followers : copy.followingCountLabel}
               </h3>
               <button 
                 onClick={() => { setShowFollowersModal(false); setShowFollowingModal(false); setFollowListData([]); }}
@@ -1035,11 +1220,11 @@ export default function PublicProfilePage({
               {followListLoading ? (
                 <div className="py-20 flex flex-col items-center justify-center gap-3">
                   <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-                  <p className="text-xs text-gray-500">Yükleniyor...</p>
+                  <p className="text-xs text-gray-500">{copy.loading}</p>
                 </div>
               ) : followListData.length === 0 ? (
                 <div className="py-20 text-center">
-                  <p className="text-gray-400 text-sm">Henüz kimse yok</p>
+                  <p className="text-gray-400 text-sm">{copy.noOneYet}</p>
                 </div>
               ) : (
                 followListData.map((item) => (
@@ -1064,7 +1249,7 @@ export default function PublicProfilePage({
                     <div className="flex-1 min-w-0">
                       <div className="font-semibold text-gray-900 dark:text-white text-sm truncate">{item.name}</div>
                       <div className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
-                        {item.city?.name || "Bilinmeyen Şehir"}
+                        {item.city?.name || copy.unknownCity}
                       </div>
                     </div>
                     <div className="pr-1 opacity-0 group-hover:opacity-100 transition-opacity">

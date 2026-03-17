@@ -4,11 +4,20 @@ import { prisma } from "@/lib/prisma";
 // Haritada gösterilecek ilanları döndürür (GPS koordinatı olan açık ilanlar)
 export async function GET() {
   try {
-    const listings = await prisma.listing.findMany({
+    const now = new Date();
+    const coordinateGrid = 0.0045;
+    const anonymizeCoordinate = (value: number) => Math.round(value / coordinateGrid) * coordinateGrid;
+
+    const rawListings = await prisma.listing.findMany({
       where: {
         status: "OPEN",
         latitude: { not: null },
         longitude: { not: null },
+        dateTime: { gt: now },
+        OR: [
+          { expiresAt: null },
+          { expiresAt: { gt: now } },
+        ],
       },
       select: {
         id: true,
@@ -34,6 +43,12 @@ export async function GET() {
       take: 500,
       orderBy: { createdAt: "desc" },
     });
+
+    const listings = rawListings.map((listing) => ({
+      ...listing,
+      latitude: anonymizeCoordinate(Number(listing.latitude)),
+      longitude: anonymizeCoordinate(Number(listing.longitude)),
+    }));
 
     return NextResponse.json({ success: true, listings });
   } catch {

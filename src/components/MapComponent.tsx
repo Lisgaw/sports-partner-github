@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import Link from "next/link";
+import { useLocale } from "next-intl";
+import { localizeListingType, localizeSportName } from "@/lib/localized-ui";
 
 // Leaflet ikon düzeltmesi (Next.js'te ikonlar otomatik çalışmaz)
 const fixLeafletIcons = () => {
@@ -77,6 +79,7 @@ function createColoredIcon(type: string) {
 }
 
 export default function MapComponent({ listings, center = [39.9, 32.8], zoom = 6 }: MapComponentProps) {
+  const locale = useLocale();
   useEffect(() => {
     fixLeafletIcons();
   }, []);
@@ -103,13 +106,13 @@ export default function MapComponent({ listings, center = [39.9, 32.8], zoom = 6
               <div className="font-semibold text-sm mb-1 line-clamp-2">{listing.description ?? `${listing.sport?.name ?? ""} İlanı`}</div>
               <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
                 <span>{listing.sport?.icon}</span>
-                <span>{listing.sport?.name}</span>
+                <span>{listing.sport?.name ? localizeSportName(listing.sport.name, locale) : ""}</span>
                 <span className="mx-1">•</span>
                 <span
                   className="px-1.5 py-0.5 rounded-full text-white text-[10px] font-medium"
                   style={{ backgroundColor: TYPE_COLORS[listing.type] ?? "#6b7280" }}
                 >
-                  {TYPE_LABELS[listing.type] ?? listing.type}
+                  {localizeListingType(listing.type, locale) ?? TYPE_LABELS[listing.type] ?? listing.type}
                 </span>
               </div>
               {listing.district && (
@@ -131,7 +134,7 @@ export default function MapComponent({ listings, center = [39.9, 32.8], zoom = 6
                 href={`/ilan/${listing.id}`}
                 className="block text-center text-xs bg-blue-600 text-white rounded-lg py-1.5 px-3 hover:bg-blue-700 transition-colors"
               >
-                İlanı Gör →
+                {locale === "tr" ? "İlanı Gör" : locale === "ru" ? "Открыть объявление" : "View Listing"} →
               </Link>
             </div>
           </Popup>

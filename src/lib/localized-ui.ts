@@ -1,8 +1,21 @@
 import type { Badge } from "@/types";
+import type { Locale } from "date-fns";
+import { tr, enUS, ru, de, fr, es, ja, ko } from "date-fns/locale";
 
 export type AppLocale = "tr" | "en" | "ru" | "de" | "fr" | "es" | "ja" | "ko";
 
 const SUPPORTED_LOCALES: AppLocale[] = ["tr", "en", "ru", "de", "fr", "es", "ja", "ko"];
+
+const DATE_FNS_LOCALES: Record<AppLocale, Locale> = {
+  tr,
+  en: enUS,
+  ru,
+  de,
+  fr,
+  es,
+  ja,
+  ko,
+};
 
 function fallbackLocale(locale?: string): AppLocale {
   return SUPPORTED_LOCALES.includes((locale ?? "") as AppLocale) ? (locale as AppLocale) : "tr";
@@ -30,6 +43,26 @@ const SPORT_NAME_LABELS: Record<string, Partial<Record<AppLocale, string>>> = {
   "Pilates": { tr: "Pilates", en: "Pilates", ru: "Пилатес", de: "Pilates", fr: "Pilates", es: "Pilates", ja: "ピラティス", ko: "필라테스" },
   "Dans": { tr: "Dans", en: "Dance", ru: "Танцы", de: "Tanz", fr: "Danse", es: "Baile", ja: "ダンス", ko: "댄스" },
   "Fitness": { tr: "Fitness", en: "Fitness", ru: "Фитнес", de: "Fitness", fr: "Fitness", es: "Fitness", ja: "フィットネス", ko: "피트니스" },
+};
+
+const LISTING_TYPE_LABELS: Record<string, Partial<Record<AppLocale, string>>> = {
+  RIVAL: { tr: "Rakip", en: "Rival", ru: "Соперник", de: "Gegner", fr: "Adversaire", es: "Rival", ja: "ライバル", ko: "상대" },
+  PARTNER: { tr: "Partner", en: "Partner", ru: "Партнер", de: "Partner", fr: "Partenaire", es: "Compañero", ja: "パートナー", ko: "파트너" },
+  TRAINER: { tr: "Antrenör", en: "Trainer", ru: "Тренер", de: "Trainer", fr: "Coach", es: "Entrenador", ja: "トレーナー", ko: "트레이너" },
+  EQUIPMENT: { tr: "Ekipman", en: "Equipment", ru: "Снаряжение", de: "Ausrüstung", fr: "Équipement", es: "Equipo", ja: "用具", ko: "장비" },
+  VENUE_RENTAL: { tr: "Saha Kiralama", en: "Venue Rental", ru: "Аренда площадки", de: "Platzmiete", fr: "Location de terrain", es: "Alquiler de cancha", ja: "施設レンタル", ko: "시설 대관" },
+  VENUE_MEMBERSHIP: { tr: "Üyelik", en: "Membership", ru: "Абонемент", de: "Mitgliedschaft", fr: "Adhésion", es: "Membresía", ja: "会員権", ko: "멤버십" },
+  VENUE_CLASS: { tr: "Ders/Kurs", en: "Class/Course", ru: "Занятие/курс", de: "Kurs", fr: "Cours", es: "Clase/curso", ja: "クラス/講座", ko: "수업/코스" },
+  VENUE_PRODUCT: { tr: "Ürün", en: "Product", ru: "Товар", de: "Produkt", fr: "Produit", es: "Producto", ja: "商品", ko: "상품" },
+  VENUE_EVENT: { tr: "Etkinlik", en: "Event", ru: "Событие", de: "Event", fr: "Événement", es: "Evento", ja: "イベント", ko: "이벤트" },
+  VENUE_SERVICE: { tr: "Hizmet", en: "Service", ru: "Услуга", de: "Service", fr: "Service", es: "Servicio", ja: "サービス", ko: "서비스" },
+};
+
+const LESSON_TYPE_LABELS: Record<string, Partial<Record<AppLocale, string>>> = {
+  birebir: { tr: "Birebir", en: "One-on-One", ru: "Индивидуально", de: "Einzelunterricht", fr: "Individuel", es: "Individual", ja: "個人", ko: "1:1" },
+  grup: { tr: "Grup", en: "Group", ru: "Группа", de: "Gruppe", fr: "Groupe", es: "Grupo", ja: "グループ", ko: "그룹" },
+  cocuk: { tr: "Çocuk", en: "Children", ru: "Дети", de: "Kinder", fr: "Enfants", es: "Niños", ja: "子ども", ko: "어린이" },
+  performans: { tr: "Performans", en: "Performance", ru: "Производительность", de: "Leistung", fr: "Performance", es: "Rendimiento", ja: "パフォーマンス", ko: "퍼포먼스" },
 };
 
 const COMPETITIVE_LEVEL_LABELS: Record<AppLocale, Record<string, string>> = {
@@ -183,10 +216,30 @@ export function resolveAppLocale(locale?: string): AppLocale {
   return fallbackLocale(locale);
 }
 
+export function getDateFnsLocale(locale?: string): Locale {
+  return DATE_FNS_LOCALES[fallbackLocale(locale)];
+}
+
 export function localizeSportName(sportName: string, locale?: string): string {
   const safeLocale = fallbackLocale(locale);
   const labels = SPORT_NAME_LABELS[sportName];
   if (!labels) return sportName;
 
   return labels[safeLocale] ?? labels.en ?? labels.tr ?? sportName;
+}
+
+export function localizeListingType(type: string, locale?: string): string {
+  const safeLocale = fallbackLocale(locale);
+  const labels = LISTING_TYPE_LABELS[type];
+  if (!labels) return type;
+
+  return labels[safeLocale] ?? labels.en ?? labels.tr ?? type;
+}
+
+export function localizeLessonType(lessonType: string, locale?: string): string {
+  const safeLocale = fallbackLocale(locale);
+  const labels = LESSON_TYPE_LABELS[lessonType];
+  if (!labels) return lessonType;
+
+  return labels[safeLocale] ?? labels.en ?? labels.tr ?? lessonType;
 }

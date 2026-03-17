@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { differenceInYears } from "date-fns";
+import { useLocale, useTranslations } from "next-intl";
+import { localizeLessonType, resolveAppLocale } from "@/lib/localized-ui";
 
 interface TrainerProfile {
   isVerified: boolean;
@@ -30,16 +32,126 @@ interface Props {
   isOwn?: boolean;
 }
 
-const LESSON_TYPE_LABELS: Record<string, { label: string; icon: string }> = {
-  birebir: { label: "Birebir", icon: "👤" },
-  grup: { label: "Grup", icon: "👥" },
-  cocuk: { label: "Çocuk", icon: "🧒" },
-  performans: { label: "Performans", icon: "🏆" },
+const LESSON_TYPE_ICONS: Record<string, string> = {
+  birebir: "👤",
+  grup: "👥",
+  cocuk: "🧒",
+  performans: "🏆",
 };
+
+const TRAINER_BADGE_COPY = {
+  tr: {
+    verifiedTrainer: "Onaylı Antrenör",
+    viewTrainerInfo: "Antrenör bilgilerini görüntüle",
+    age: "Yaş",
+    city: "Şehir",
+    specializations: "Uzmanlık Alanları",
+    educationCertificates: "Eğitim & Sertifikalar",
+    hourlyRate: "Saatlik ücret",
+    perHour: "/sa",
+    equipmentProvided: "Ekipman sağlanıyor",
+    equipmentNotProvided: "Ekipman sağlanmıyor",
+    visibilityHint: "Görünürlüğü Gizlilik Ayarları'ndan değiştirebilirsin",
+  },
+  en: {
+    verifiedTrainer: "Verified Trainer",
+    viewTrainerInfo: "View trainer details",
+    age: "Age",
+    city: "City",
+    specializations: "Specializations",
+    educationCertificates: "Education & Certificates",
+    hourlyRate: "Hourly rate",
+    perHour: "/h",
+    equipmentProvided: "Equipment provided",
+    equipmentNotProvided: "No equipment provided",
+    visibilityHint: "You can change this visibility in Privacy Settings",
+  },
+  ru: {
+    verifiedTrainer: "Проверенный тренер",
+    viewTrainerInfo: "Показать данные тренера",
+    age: "Возраст",
+    city: "Город",
+    specializations: "Специализации",
+    educationCertificates: "Образование и сертификаты",
+    hourlyRate: "Почасовая ставка",
+    perHour: "/ч",
+    equipmentProvided: "Инвентарь предоставляется",
+    equipmentNotProvided: "Инвентарь не предоставляется",
+    visibilityHint: "Видимость можно изменить в настройках приватности",
+  },
+  de: {
+    verifiedTrainer: "Verifizierter Trainer",
+    viewTrainerInfo: "Trainerdetails anzeigen",
+    age: "Alter",
+    city: "Stadt",
+    specializations: "Spezialisierungen",
+    educationCertificates: "Ausbildung und Zertifikate",
+    hourlyRate: "Stundensatz",
+    perHour: "/Std.",
+    equipmentProvided: "Ausrüstung vorhanden",
+    equipmentNotProvided: "Keine Ausrüstung vorhanden",
+    visibilityHint: "Die Sichtbarkeit kannst du in den Privatsphäre-Einstellungen ändern",
+  },
+  fr: {
+    verifiedTrainer: "Coach vérifié",
+    viewTrainerInfo: "Voir les informations du coach",
+    age: "Âge",
+    city: "Ville",
+    specializations: "Spécialisations",
+    educationCertificates: "Formation et certificats",
+    hourlyRate: "Tarif horaire",
+    perHour: "/h",
+    equipmentProvided: "Équipement fourni",
+    equipmentNotProvided: "Pas d'équipement fourni",
+    visibilityHint: "Vous pouvez changer cette visibilité dans les paramètres de confidentialité",
+  },
+  es: {
+    verifiedTrainer: "Entrenador verificado",
+    viewTrainerInfo: "Ver datos del entrenador",
+    age: "Edad",
+    city: "Ciudad",
+    specializations: "Especialidades",
+    educationCertificates: "Educación y certificados",
+    hourlyRate: "Tarifa por hora",
+    perHour: "/h",
+    equipmentProvided: "Equipo incluido",
+    equipmentNotProvided: "Sin equipo incluido",
+    visibilityHint: "Puedes cambiar esta visibilidad en la configuración de privacidad",
+  },
+  ja: {
+    verifiedTrainer: "認証トレーナー",
+    viewTrainerInfo: "トレーナー情報を見る",
+    age: "年齢",
+    city: "都市",
+    specializations: "専門分野",
+    educationCertificates: "学歴・資格",
+    hourlyRate: "時間料金",
+    perHour: "/時",
+    equipmentProvided: "用具あり",
+    equipmentNotProvided: "用具なし",
+    visibilityHint: "表示設定はプライバシー設定から変更できます",
+  },
+  ko: {
+    verifiedTrainer: "인증 트레이너",
+    viewTrainerInfo: "트레이너 정보 보기",
+    age: "나이",
+    city: "도시",
+    specializations: "전문 분야",
+    educationCertificates: "교육 및 자격증",
+    hourlyRate: "시간당 요금",
+    perHour: "/시간",
+    equipmentProvided: "장비 제공",
+    equipmentNotProvided: "장비 미제공",
+    visibilityHint: "공개 여부는 개인정보 설정에서 변경할 수 있습니다",
+  },
+} as const;
 
 export default function TrainerBadgePopup({ trainerProfile, user, isOwn }: Props) {
   const [open, setOpen] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
+  const locale = useLocale();
+  const tProf = useTranslations("settings.professionalPage");
+  const copy = TRAINER_BADGE_COPY[resolveAppLocale(locale)];
 
   // Close when clicking outside
   useEffect(() => {
@@ -60,7 +172,7 @@ export default function TrainerBadgePopup({ trainerProfile, user, isOwn }: Props
         <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
           <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
         </svg>
-        Onaylı Antrenör
+        {copy.verifiedTrainer}
       </span>
     );
   }
@@ -76,12 +188,12 @@ export default function TrainerBadgePopup({ trainerProfile, user, isOwn }: Props
         type="button"
         onClick={() => setOpen(v => !v)}
         className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-sm hover:from-blue-600 hover:to-indigo-700 transition cursor-pointer"
-        title="Antrenör bilgilerini görüntüle"
+        title={copy.viewTrainerInfo}
       >
         <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
           <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
         </svg>
-        Onaylı Antrenör
+        {copy.verifiedTrainer}
         <svg className="w-3 h-3 ml-0.5 opacity-80" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d={open ? "M5 15l7-7 7 7" : "M19 9l-7 7-7-7"} />
         </svg>
@@ -107,7 +219,7 @@ export default function TrainerBadgePopup({ trainerProfile, user, isOwn }: Props
                     <svg className="w-3.5 h-3.5 text-white/90" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                     </svg>
-                    <span className="text-xs text-white/90 font-semibold">Onaylı Antrenör</span>
+                    <span className="text-xs text-white/90 font-semibold">{copy.verifiedTrainer}</span>
                   </div>
                 </div>
               </div>
@@ -119,16 +231,16 @@ export default function TrainerBadgePopup({ trainerProfile, user, isOwn }: Props
               {/* Temel bilgiler */}
               <div className="grid grid-cols-2 gap-2">
                 {age !== null && (
-                  <InfoChip icon="🎂" label="Yaş" value={`${age} yaşında`} />
+                  <InfoChip icon="🎂" label={copy.age} value={`${age}`} />
                 )}
                 {user.city?.name && (
-                  <InfoChip icon="📍" label="Şehir" value={user.city.name} />
+                  <InfoChip icon="📍" label={copy.city} value={user.city.name} />
                 )}
                 {trainerProfile.experienceYears != null && (
-                  <InfoChip icon="📅" label="Deneyim" value={`${trainerProfile.experienceYears} yıl`} />
+                  <InfoChip icon="📅" label={tProf("experience")} value={String(trainerProfile.experienceYears)} />
                 )}
                 {trainerProfile.gymName && (
-                  <InfoChip icon="🏢" label="Salon" value={trainerProfile.gymName} />
+                  <InfoChip icon="🏢" label={tProf("gymName")} value={trainerProfile.gymName} />
                 )}
               </div>
 
@@ -138,13 +250,13 @@ export default function TrainerBadgePopup({ trainerProfile, user, isOwn }: Props
                   {trainerProfile.university && (
                     <div className="flex items-start gap-2 text-xs text-blue-700 dark:text-blue-300">
                       <span className="mt-0.5">🎓</span>
-                      <span><strong>Üniversite:</strong> {trainerProfile.university}</span>
+                      <span><strong>{tProf("university")}:</strong> {trainerProfile.university}</span>
                     </div>
                   )}
                   {trainerProfile.department && (
                     <div className="flex items-start gap-2 text-xs text-blue-700 dark:text-blue-300">
                       <span className="mt-0.5">📚</span>
-                      <span><strong>Bölüm:</strong> {trainerProfile.department}</span>
+                      <span><strong>{tProf("department")}:</strong> {trainerProfile.department}</span>
                     </div>
                   )}
                 </div>
@@ -153,11 +265,11 @@ export default function TrainerBadgePopup({ trainerProfile, user, isOwn }: Props
               {/* Branşlar / Uzmanlıklar */}
               {specializations.length > 0 && (
                 <div>
-                  <p className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">Uzmanlık Alanları</p>
+                  <p className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">{copy.specializations}</p>
                   <div className="flex flex-wrap gap-1.5">
                     {specializations.map((sp, i) => (
                       <span key={i} className="inline-flex items-center gap-1 text-xs bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-full">
-                        🏅 {sp.sportName}{sp.years ? ` · ${sp.years} yıl` : ""}
+                        🏅 {sp.sportName}{sp.years ? ` · ${sp.years}` : ""}
                       </span>
                     ))}
                   </div>
@@ -167,13 +279,13 @@ export default function TrainerBadgePopup({ trainerProfile, user, isOwn }: Props
               {/* Ders türleri */}
               {lessonTypes.length > 0 && (
                 <div>
-                  <p className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">Ders Türleri</p>
+                  <p className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">{tProf("lessonTypes")}</p>
                   <div className="flex flex-wrap gap-1.5">
                     {lessonTypes.map((lt) => {
-                      const cfg = LESSON_TYPE_LABELS[lt] ?? { label: lt, icon: "📋" };
+                      const icon = LESSON_TYPE_ICONS[lt] ?? "📋";
                       return (
                         <span key={lt} className="inline-flex items-center gap-1 text-xs bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 px-2 py-0.5 rounded-full">
-                          {cfg.icon} {cfg.label}
+                          {icon} {localizeLessonType(lt, locale)}
                         </span>
                       );
                     })}
@@ -190,7 +302,7 @@ export default function TrainerBadgePopup({ trainerProfile, user, isOwn }: Props
                 }`}>
                   <span className="text-base">{trainerProfile.providesEquipment ? "✅" : "❌"}</span>
                   <span className="font-medium">
-                    {trainerProfile.providesEquipment ? "Ekipman sağlanıyor" : "Ekipman sağlanmıyor"}
+                    {trainerProfile.providesEquipment ? copy.equipmentProvided : copy.equipmentNotProvided}
                   </span>
                 </div>
               )}
@@ -198,7 +310,7 @@ export default function TrainerBadgePopup({ trainerProfile, user, isOwn }: Props
               {/* Eğitim & Sertifika */}
               {trainerProfile.certNote && (
                 <div>
-                  <p className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">Eğitim & Sertifikalar</p>
+                  <p className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">{copy.educationCertificates}</p>
                   <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed bg-gray-50 dark:bg-gray-700/40 rounded-xl p-2.5">
                     {trainerProfile.certNote}
                   </p>
@@ -208,8 +320,8 @@ export default function TrainerBadgePopup({ trainerProfile, user, isOwn }: Props
               {/* Saatlik ücret */}
               {(trainerProfile as any).hourlyRate && (
                 <div className="flex items-center justify-between text-xs pt-1 border-t border-gray-100 dark:border-gray-700">
-                  <span className="text-gray-500 dark:text-gray-400">Saatlik ücret</span>
-                  <span className="font-bold text-blue-600 dark:text-blue-400">{(trainerProfile as any).hourlyRate}₺/sa</span>
+                  <span className="text-gray-500 dark:text-gray-400">{copy.hourlyRate}</span>
+                  <span className="font-bold text-blue-600 dark:text-blue-400">{(trainerProfile as any).hourlyRate}₺{copy.perHour}</span>
                 </div>
               )}
 
@@ -219,7 +331,7 @@ export default function TrainerBadgePopup({ trainerProfile, user, isOwn }: Props
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  Görünürlüğü Gizlilik Ayarları&apos;ndan değiştirebilirsin
+                  {copy.visibilityHint}
                 </div>
               )}
             </div>

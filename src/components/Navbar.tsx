@@ -13,8 +13,19 @@ import { usePathname, useRouter } from "next/navigation";
 import { useNotifications } from "@/hooks/useNotifications";
 import Dropdown from "@/components/ui/Dropdown";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import toast from "react-hot-toast";
+
+const ACTIVITY_LABELS = {
+  tr: "Aktivitelerim",
+  en: "My Activities",
+  ru: "Мои активности",
+  de: "Meine Aktivitäten",
+  fr: "Mes activités",
+  es: "Mis actividades",
+  ja: "マイアクティビティ",
+  ko: "내 활동",
+} as const;
 
 export default function Navbar() {
   const { data: session } = useSession();
@@ -87,6 +98,8 @@ export default function Navbar() {
 
   const t = useTranslations("nav");
   const tSettings = useTranslations("settings");
+  const locale = useLocale();
+  const activitiesLabel = ACTIVITY_LABELS[locale as keyof typeof ACTIVITY_LABELS] ?? ACTIVITY_LABELS.en;
 
   return (
     <>
@@ -200,7 +213,7 @@ export default function Navbar() {
           <div className="flex items-center gap-1.5 md:gap-3">
             {session ? (
               <>
-                <Link href="/aktivitelerim" className="inline-flex relative p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400" aria-label="Aktivitelerim" title="Aktivitelerim">
+                <Link href="/aktivitelerim" className="inline-flex relative p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400" aria-label={activitiesLabel} title={activitiesLabel}>
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                   </svg>
