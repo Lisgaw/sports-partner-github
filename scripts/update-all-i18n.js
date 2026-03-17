@@ -1,4 +1,5 @@
 // Script to add all missing i18n keys to all 8 locale files (no BOM)
+/* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require("fs");
 const path = require("path");
 

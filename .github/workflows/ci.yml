@@ -61,12 +61,33 @@ jobs:
           NEXTAUTH_URL: "http://localhost:3000"
 
   # ───────────────────────────────────────────────
-  # 3. Build Kontrolü (Next.js)
+  # 3. Type Check
+  # ───────────────────────────────────────────────
+  typecheck:
+    name: TypeScript Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Node.js kurulum
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Bağımlılıkları yükle
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+  # ───────────────────────────────────────────────
+  # 4. Build Kontrolü (Next.js)
   # ───────────────────────────────────────────────
   build:
     name: Next.js Build
     runs-on: ubuntu-latest
-    needs: [lint, unit-tests]
+    needs: [lint, unit-tests, typecheck]
     steps:
       - uses: actions/checkout@v4
 

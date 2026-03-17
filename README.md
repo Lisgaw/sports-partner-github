@@ -16,7 +16,7 @@ Mobil öncelikli, konum bazlı spor partner ve rakip bulma web uygulaması (MVP)
 - **Rate Limiting**: Günde max 5 ilan oluşturma limiti
 - **Karanlık Mod**: Tam karanlık mod desteği (localStorage ile kalıcı)
 - **SEO**: Dinamik sitemap, robots.txt, OpenGraph meta
-- **Test Altyapısı**: Vitest + React Testing Library (55 test)
+- **Test Altyapısı**: Vitest + React Testing Library (76 birim test)
 - **Mobil Uyumlu**: Responsive, mobil öncelikli tasarım
 
 ## 🛠 Teknoloji Stack
@@ -28,7 +28,7 @@ Mobil öncelikli, konum bazlı spor partner ve rakip bulma web uygulaması (MVP)
 | Tailwind CSS | UI/Styling |
 | Prisma 5 | ORM |
 | PostgreSQL | Veritabanı |
-| NextAuth v4 | Kimlik doğrulama |
+| NextAuth v5 (beta) | Kimlik doğrulama |
 | Zod v4 | Form/API validasyonu |
 | Vitest | Test framework |
 | React Testing Library | Bileşen testleri |
@@ -179,8 +179,9 @@ npm run test:coverage
 
 Mevcut testler:
 - **Validasyon testleri** (35 test): Zod şema doğrulamaları
-- **Bileşen testleri** (13 test): Button, Badge render testleri
-- **Tip testleri** (7 test): Sabit değer ve etiket doğrulamaları
+- **Bileşen testleri** (14 test): UI ve ErrorBoundary davranış testleri
+- **Tip/iş kuralı testleri** (27 test): tip sabitleri, skor ve profil yardımcıları
+- **E2E envanteri**: Playwright tarafında 19 dosyada 136 test senaryosu
 
 ## 🔮 Sonraki Faz (Post-MVP)
 
@@ -192,9 +193,9 @@ Mevcut testler:
 - [ ] Sosyal giriş (Google, GitHub)
 - [ ] Takım oluşturma ve turnuva sistemi
 - [ ] Push notification (mobil)
-- [ ] i18n çoklu dil desteği
+- [x] i18n çoklu dil desteği
 - [ ] Admin paneli
-- [ ] E2E testler (Playwright)
+- [x] E2E testler (Playwright)
 - [ ] Vercel / Docker deployment
 
 ## 📝 Lisans
