@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -166,6 +166,20 @@ export default function TekliflerPage() {
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const loadChallenges = useCallback(async (direction: "received" | "sent") => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/challenges?direction=${direction}`);
+      const json = await response.json();
+      if (json.success) setChallenges(json.data ?? []);
+      else toast.error("Teklifler yüklenemedi");
+    } catch {
+      toast.error("Teklifler yüklenemedi");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/giris");
@@ -174,16 +188,8 @@ export default function TekliflerPage() {
 
   useEffect(() => {
     if (!session) return;
-    setLoading(true);
-    fetch(`/api/challenges?direction=${tab}`)
-      .then((r) => r.json())
-      .then((json) => {
-        if (json.success) setChallenges(json.data ?? []);
-        else toast.error("Teklifler yüklenemedi");
-      })
-      .catch(() => toast.error("Teklifler yüklenemedi"))
-      .finally(() => setLoading(false));
-  }, [session, tab]);
+    void loadChallenges(tab);
+  }, [session, tab, loadChallenges]);
 
   const handleAction = (id: string) => {
     setChallenges((prev) => prev.filter((c) => c.id !== id));

@@ -46,6 +46,7 @@ export function useNotificationState(): NotificationContextValue {
   const [unreadMessages, setUnreadMessages] = useState(0);
   const sseRef = useRef<EventSource | null>(null);
   const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const connectSSERef = useRef<() => void>(() => {});
 
   // REST ile bildirimleri çek
   const refresh = useCallback(async () => {
@@ -113,20 +114,35 @@ export function useNotificationState(): NotificationContextValue {
       sse.close();
       sseRef.current = null;
       // 5 saniye sonra yeniden bağlan
-      retryTimer.current = setTimeout(connectSSE, 5000);
+      if (retryTimer.current) {
+        clearTimeout(retryTimer.current);
+      }
+      retryTimer.current = setTimeout(() => {
+        connectSSERef.current();
+      }, 5000);
     };
   }, [session]);
+
+  useEffect(() => {
+    connectSSERef.current = connectSSE;
+  }, [connectSSE]);
 
   // Oturum açıldığında SSE başlat + ilk veriyi çek
   useEffect(() => {
     if (!session) return;
-    refresh();
-    connectSSE();
+
+    const bootstrapTimer = setTimeout(() => {
+      void refresh();
+      connectSSE();
+    }, 0);
 
     // 60 saniyede bir tazeleme (SSE arka planda tamamlayıcı)
-    const interval = setInterval(refresh, 60_000);
+    const interval = setInterval(() => {
+      void refresh();
+    }, 60_000);
 
     return () => {
+      clearTimeout(bootstrapTimer);
       sseRef.current?.close();
       sseRef.current = null;
       if (retryTimer.current) clearTimeout(retryTimer.current);

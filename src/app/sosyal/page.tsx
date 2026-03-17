@@ -74,7 +74,7 @@ export default function SosyalPage() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, []);
+  }, [t]);
 
   // Posts + Stories ilk yükleme
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { getProfile } from "@/services/api";
 import type { ProfileData } from "@/types";
@@ -9,30 +9,31 @@ export function useProfile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (status === "authenticated" && session) {
-      setLoading(true);
-      getProfile()
-        .then((d) => {
-          if (d.success && d.data) setData(d.data);
-        })
-        .catch((err) => setError(err instanceof Error ? err.message : "Profil yüklenemedi"))
-        .finally(() => setLoading(false));
-    } else if (status === "unauthenticated") {
-      setLoading(false);
-    }
-  }, [session, status]);
-
-  const refresh = () => {
+  const loadProfile = useCallback(async () => {
     if (!session) return;
     setLoading(true);
-    getProfile()
-      .then((d) => {
-        if (d.success && d.data) setData(d.data);
-      })
-      .catch((err) => setError(err instanceof Error ? err.message : "Profil yüklenemedi"))
-      .finally(() => setLoading(false));
+    try {
+      const d = await getProfile();
+      if (d.success && d.data) setData(d.data);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Profil yüklenemedi");
+    } finally {
+      setLoading(false);
+    }
+  }, [session]);
+
+  useEffect(() => {
+    if (status === "authenticated" && session) {
+      void loadProfile();
+    }
+  }, [session, status, loadProfile]);
+
+  const refresh = () => {
+    void loadProfile();
   };
 
-  return { data, loading, error, status, session, refresh, setData };
+  const resolvedLoading = status === "unauthenticated" ? false : loading;
+
+  return { data, loading: resolvedLoading, error, status, session, refresh, setData };
 }

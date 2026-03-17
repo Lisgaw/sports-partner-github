@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import toast from "react-hot-toast";
@@ -282,7 +283,7 @@ export default function CreateListingPage() {
               <span className="flex-shrink-0 text-base">ℹ️</span>
               <span>
                 {t("trainerRequired")}
-                {" "}<a href="/profil" className="underline font-medium">{t("profileLink")}</a>
+                {" "}<Link href="/profil" className="underline font-medium">{t("profileLink")}</Link>
               </span>
             </div>
           )}

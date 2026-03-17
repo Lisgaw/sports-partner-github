@@ -65,7 +65,7 @@ export default function AramaPage() {
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, [router, t]);
 
   useEffect(() => {
     doSearch(debouncedQuery);

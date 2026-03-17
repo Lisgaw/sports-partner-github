@@ -33,7 +33,7 @@ export default function MesajlarPage() {
       })
       .catch(() => toast.error(t("loadFailed")))
       .finally(() => setLoading(false));
-  }, [status, router]);
+  }, [status, router, t]);
 
   if (status === "loading" || loading) {
     return (

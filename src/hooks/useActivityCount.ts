@@ -4,7 +4,7 @@ export function useActivityCount(enabled = true) {
   const [count, setCount] = useState<number>(0);
 
   useEffect(() => {
-    if (!enabled) { setCount(0); return; }
+    if (!enabled) return;
     let cancelled = false;
     async function fetchCounts() {
       try {
@@ -36,5 +36,5 @@ export function useActivityCount(enabled = true) {
     return () => { cancelled = true; clearInterval(interval); };
   }, [enabled]);
 
-  return count;
+  return enabled ? count : 0;
 }

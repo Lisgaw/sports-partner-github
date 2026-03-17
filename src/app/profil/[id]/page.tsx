@@ -102,7 +102,7 @@ export default function PublicProfilePage({
         setFollowingCount(res.data.followingCount);
       }
     } catch { /* ignore */ }
-  }, [id, session]);
+  }, [id]);
 
   useEffect(() => {
     Promise.all([
@@ -777,7 +777,7 @@ export default function PublicProfilePage({
                   <StarRating value={r.score} />
                 </div>
                 {r.comment && (
-                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 italic">"{r.comment}"</p>
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 italic">&quot;{r.comment}&quot;</p>
                 )}
                 <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
                   {format(new Date(r.createdAt), "d MMMM yyyy", { locale: tr })}

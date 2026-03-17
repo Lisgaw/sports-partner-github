@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -52,6 +52,32 @@ export default function LiderlikPage() {
   const [friendEntries, setFriendEntries] = useState<FriendEntry[]>([]);
   const [period, setPeriod] = useState<"all" | "weekly" | "monthly">("all");
 
+  const loadGlobalLeaderboard = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await getLeaderboard(selectedSport || undefined, 20, period);
+      if (res.success && res.data) setEntries(res.data);
+    } catch {
+      toast.error(t("loadFailed"));
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedSport, period, t]);
+
+  const loadFriendsLeaderboard = useCallback(async () => {
+    if (mode !== "friends") return;
+    setLoading(true);
+    try {
+      const response = await fetch("/api/leaderboard/friends");
+      const data = await response.json();
+      if (data.rankings) setFriendEntries(data.rankings);
+    } catch {
+      toast.error(t("friendsLoadFailed"));
+    } finally {
+      setLoading(false);
+    }
+  }, [mode, t]);
+
   useEffect(() => {
     getSports()
       .then((res) => { if (res.success && res.data) setSports(res.data); })
@@ -59,22 +85,13 @@ export default function LiderlikPage() {
   }, []);
 
   useEffect(() => {
-    setLoading(true);
-    getLeaderboard(selectedSport || undefined, 20, period)
-      .then((res) => { if (res.success && res.data) setEntries(res.data); })
-      .catch(() => toast.error(t("loadFailed")))
-      .finally(() => setLoading(false));
-  }, [selectedSport, period]);
+    void loadGlobalLeaderboard();
+  }, [loadGlobalLeaderboard]);
 
   useEffect(() => {
     if (mode !== "friends") return;
-    setLoading(true);
-    fetch("/api/leaderboard/friends")
-      .then(r => r.json())
-      .then(d => { if (d.rankings) setFriendEntries(d.rankings); })
-      .catch(() => toast.error(t("friendsLoadFailed")))
-      .finally(() => setLoading(false));
-  }, [mode]);
+    void loadFriendsLeaderboard();
+  }, [mode, loadFriendsLeaderboard]);
 
   return (
     <div className="max-w-3xl mx-auto">
