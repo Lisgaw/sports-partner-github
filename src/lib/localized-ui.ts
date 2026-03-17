@@ -4,6 +4,8 @@ import { tr, enUS, ru, de, fr, es, ja, ko } from "date-fns/locale";
 import { APP_LOCALES, type AppLocale } from "@/lib/i18n-locales";
 import { localizeSportFromDbName } from "@/lib/sport-catalog";
 
+export type { AppLocale } from "@/lib/i18n-locales";
+
 const SUPPORTED_LOCALES: AppLocale[] = [...APP_LOCALES];
 
 const DATE_FNS_LOCALES: Record<AppLocale, Locale> = {
