@@ -59,6 +59,18 @@
     "all": "すべて",
     "back": "戻る"
   },
+  "layout": {
+    "metadata": {
+      "title": "SporPartner - スポーツのパートナーとライバルを探そう",
+      "description": "スポーツのパートナーや対戦相手を見つけよう。サッカー、バスケットボール、テニスなど。",
+      "keywords": "スポーツ,パートナー,ライバル,サッカー,バスケットボール,テニス,スポーツパートナー"
+    },
+    "skipToContent": "本文へスキップ",
+    "brandName": "SporPartner",
+    "copyright": "© {year} SporPartner",
+    "privacyPolicy": "プライバシーポリシー",
+    "termsOfUse": "利用規約"
+  },
   "listings": {
     "title": "スポーツ募集",
     "detail": "詳細を見る",
@@ -68,7 +80,13 @@
       "RIVAL": "対戦相手",
       "PARTNER": "パートナー",
       "TRAINER": "トレーナー",
-      "EQUIPMENT": "用具"
+      "EQUIPMENT": "用具",
+      "VENUE_RENTAL": "施設レンタル",
+      "VENUE_MEMBERSHIP": "会員権",
+      "VENUE_CLASS": "クラス/講座",
+      "VENUE_PRODUCT": "商品",
+      "VENUE_EVENT": "イベント",
+      "VENUE_SERVICE": "サービス"
     },
     "levels": {
       "BEGINNER": "初級",
@@ -210,7 +228,81 @@
     "forgotPassword": "パスワードをお忘れですか？",
     "noAccount": "アカウントをお持ちでないですか？",
     "hasAccount": "すでにアカウントをお持ちですか？",
-    "continueWith": "または次で続行"
+    "continueWith": "または次で続行",
+    "loginSuccess": "ログインに成功しました！",
+    "genericError": "エラーが発生しました",
+    "emailPlaceholder": "example@email.com",
+    "passwordPlaceholder": "••••••",
+    "register": {
+      "title": "アカウント作成",
+      "step1Subtitle": "基本情報を入力してください",
+      "step2Subtitle": "場所とプロフィール情報",
+      "fullName": "氏名",
+      "fullNamePlaceholder": "氏名を入力",
+      "passwordMinPlaceholder": "8文字以上",
+      "passwordConfirm": "パスワード再入力",
+      "passwordConfirmPlaceholder": "パスワードを再入力",
+      "continue": "続行 →",
+      "gender": "性別",
+      "genderPlaceholder": "選択してください",
+      "genderMale": "男性",
+      "genderFemale": "女性",
+      "genderPreferNotToSay": "回答しない",
+      "birthDate": "生年月日",
+      "phone": "電話番号",
+      "phonePlaceholder": "090-XXXX-XXXX",
+      "optional": "(任意)",
+      "back": "← 戻る",
+      "show": "表示",
+      "hide": "非表示",
+      "submitFailed": "登録に失敗しました",
+      "submitSuccess": "登録が完了しました。ログインしています...",
+      "autoLoginFailed": "自動ログインに失敗しました。手動でログインしてください",
+      "retryError": "エラーが発生しました。もう一度お試しください",
+      "rules": {
+        "min": "8文字以上",
+        "upper": "大文字",
+        "lower": "小文字",
+        "number": "数字",
+        "special": "記号"
+      },
+      "validation": {
+        "nameMin": "名前は2文字以上で入力してください",
+        "emailInvalid": "有効なメールアドレスを入力してください",
+        "passwordMin": "パスワードは8文字以上で入力してください",
+        "passwordUpper": "パスワードに大文字を含めてください",
+        "passwordLower": "パスワードに小文字を含めてください",
+        "passwordNumber": "パスワードに数字を含めてください",
+        "passwordSpecial": "パスワードに記号を含めてください (!@#$%^&*)",
+        "passwordMismatch": "パスワードが一致しません",
+        "genderRequired": "性別を選択してください",
+        "birthDateRequired": "生年月日は必須です",
+        "countryRequired": "国を選択してください",
+        "cityRequired": "都市を選択してください",
+        "districtRequired": "地区を選択してください"
+      }
+    },
+    "forgot": {
+      "title": "パスワードを忘れた",
+      "subtitle": "メールアドレスを入力すると、再設定リンクを送信します。",
+      "submit": "再設定リンクを送信",
+      "remembered": "パスワードを思い出しましたか？",
+      "sentTitle": "メールを送信しました！",
+      "sentBody": "{email} に再設定リンクを送信しました。受信トレイを確認してください。",
+      "notReceived": "メールが届きませんか？",
+      "tryAgain": "再試行",
+      "backToLogin": "ログインへ戻る"
+    },
+    "reset": {
+      "title": "新しいパスワードを設定",
+      "newPassword": "新しいパスワード",
+      "newPasswordPlaceholder": "8文字以上、大/小文字、数字、記号を含む",
+      "submit": "パスワードを更新",
+      "backToLogin": "← ログインへ戻る",
+      "successTitle": "パスワードを更新しました！",
+      "successToast": "パスワードが更新されました！",
+      "redirecting": "ログインページに移動しています..."
+    }
   },
   "tournaments": {
     "title": "トーナメント",

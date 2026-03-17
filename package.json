@@ -8,6 +8,7 @@
     "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint",
+    "i18n:check": "node scripts/check-i18n-hardcoded.mjs",
     "lint:warnings": "node scripts/lint-warning-report.mjs",
     "deps:outdated": "npm outdated",
     "deps:audit": "npm audit --omit=dev",

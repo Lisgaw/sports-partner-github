@@ -2,7 +2,7 @@
 
 import { differenceInYears } from "date-fns";
 import { useLocale, useTranslations } from "next-intl";
-import toast from "react-hot-toast";
+import toast from "@/lib/toast";
 import Button from "@/components/ui/Button";
 import TrainerBadgePopup from "@/components/profile/TrainerBadgePopup";
 import SocialLinksRow from "@/components/social/SocialLinksRow";

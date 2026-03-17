@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useProfile } from "@/hooks/useProfile";
 import { useSports } from "@/hooks/useLocations";
-import toast from "react-hot-toast";
+import toast from "@/lib/toast";
 import Button from "@/components/ui/Button";
 import { useTranslations } from "next-intl";
 

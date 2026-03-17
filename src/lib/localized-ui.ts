@@ -1,10 +1,10 @@
 import type { Badge } from "@/types";
 import type { Locale } from "date-fns";
 import { tr, enUS, ru, de, fr, es, ja, ko } from "date-fns/locale";
+import { APP_LOCALES, type AppLocale } from "@/lib/i18n-locales";
+import { localizeSportFromDbName } from "@/lib/sport-catalog";
 
-export type AppLocale = "tr" | "en" | "ru" | "de" | "fr" | "es" | "ja" | "ko";
-
-const SUPPORTED_LOCALES: AppLocale[] = ["tr", "en", "ru", "de", "fr", "es", "ja", "ko"];
+const SUPPORTED_LOCALES: AppLocale[] = [...APP_LOCALES];
 
 const DATE_FNS_LOCALES: Record<AppLocale, Locale> = {
   tr,
@@ -20,30 +20,6 @@ const DATE_FNS_LOCALES: Record<AppLocale, Locale> = {
 function fallbackLocale(locale?: string): AppLocale {
   return SUPPORTED_LOCALES.includes((locale ?? "") as AppLocale) ? (locale as AppLocale) : "tr";
 }
-
-const SPORT_NAME_LABELS: Record<string, Partial<Record<AppLocale, string>>> = {
-  "Futbol": { tr: "Futbol", en: "Football", ru: "Футбол", de: "Fussball", fr: "Football", es: "Futbol", ja: "サッカー", ko: "축구" },
-  "Basketbol": { tr: "Basketbol", en: "Basketball", ru: "Баскетбол", de: "Basketball", fr: "Basket", es: "Baloncesto", ja: "バスケットボール", ko: "농구" },
-  "Tenis": { tr: "Tenis", en: "Tennis", ru: "Теннис", de: "Tennis", fr: "Tennis", es: "Tenis", ja: "テニス", ko: "테니스" },
-  "Voleybol": { tr: "Voleybol", en: "Volleyball", ru: "Волейбол", de: "Volleyball", fr: "Volley", es: "Voleibol", ja: "バレーボール", ko: "배구" },
-  "Masa Tenisi": { tr: "Masa Tenisi", en: "Table Tennis", ru: "Настольный теннис", de: "Tischtennis", fr: "Tennis de table", es: "Tenis de mesa", ja: "卓球", ko: "탁구" },
-  "Yüzme": { tr: "Yüzme", en: "Swimming", ru: "Плавание", de: "Schwimmen", fr: "Natation", es: "Natacion", ja: "水泳", ko: "수영" },
-  "Koşu": { tr: "Koşu", en: "Running", ru: "Бег", de: "Laufen", fr: "Course", es: "Running", ja: "ランニング", ko: "러닝" },
-  "Yürüyüş": { tr: "Yürüyüş", en: "Walking", ru: "Ходьба", de: "Spazieren", fr: "Marche", es: "Caminata", ja: "ウォーキング", ko: "걷기" },
-  "Bisiklet": { tr: "Bisiklet", en: "Cycling", ru: "Велоспорт", de: "Radfahren", fr: "Cyclisme", es: "Ciclismo", ja: "サイクリング", ko: "사이클링" },
-  "Kaykay / Paten": { tr: "Kaykay / Paten", en: "Skateboarding / Rollerblading", ru: "Скейт / Ролики", de: "Skateboard / Inlineskaten", fr: "Skate / Roller", es: "Skate / Patines", ja: "スケートボード / ローラー", ko: "스케이트보드 / 롤러" },
-  "Squash": { tr: "Squash", en: "Squash", ru: "Сквош", de: "Squash", fr: "Squash", es: "Squash", ja: "スカッシュ", ko: "스쿼시" },
-  "Pickleball": { tr: "Pickleball", en: "Pickleball", ru: "Пиклбол", de: "Pickleball", fr: "Pickleball", es: "Pickleball", ja: "ピックルボール", ko: "피클볼" },
-  "Padel": { tr: "Padel", en: "Padel", ru: "Падел", de: "Padel", fr: "Padel", es: "Padel", ja: "パデル", ko: "파델" },
-  "Balık Tutma": { tr: "Balık Tutma", en: "Fishing", ru: "Рыбалка", de: "Angeln", fr: "Peche", es: "Pesca", ja: "釣り", ko: "낚시" },
-  "Hiking (Doğa Yürüyüşü)": { tr: "Doğa Yürüyüşü", en: "Hiking", ru: "Поход", de: "Wandern", fr: "Randonnee", es: "Senderismo", ja: "ハイキング", ko: "하이킹" },
-  "Bilardo": { tr: "Bilardo", en: "Billiards", ru: "Бильярд", de: "Billard", fr: "Billard", es: "Billar", ja: "ビリヤード", ko: "당구" },
-  "Dart": { tr: "Dart", en: "Darts", ru: "Дартс", de: "Darts", fr: "Fléchettes", es: "Dardos", ja: "ダーツ", ko: "다트" },
-  "Yoga": { tr: "Yoga", en: "Yoga", ru: "Йога", de: "Yoga", fr: "Yoga", es: "Yoga", ja: "ヨガ", ko: "요가" },
-  "Pilates": { tr: "Pilates", en: "Pilates", ru: "Пилатес", de: "Pilates", fr: "Pilates", es: "Pilates", ja: "ピラティス", ko: "필라테스" },
-  "Dans": { tr: "Dans", en: "Dance", ru: "Танцы", de: "Tanz", fr: "Danse", es: "Baile", ja: "ダンス", ko: "댄스" },
-  "Fitness": { tr: "Fitness", en: "Fitness", ru: "Фитнес", de: "Fitness", fr: "Fitness", es: "Fitness", ja: "フィットネス", ko: "피트니스" },
-};
 
 const LISTING_TYPE_LABELS: Record<string, Partial<Record<AppLocale, string>>> = {
   RIVAL: { tr: "Rakip", en: "Rival", ru: "Соперник", de: "Gegner", fr: "Adversaire", es: "Rival", ja: "ライバル", ko: "상대" },
@@ -222,10 +198,7 @@ export function getDateFnsLocale(locale?: string): Locale {
 
 export function localizeSportName(sportName: string, locale?: string): string {
   const safeLocale = fallbackLocale(locale);
-  const labels = SPORT_NAME_LABELS[sportName];
-  if (!labels) return sportName;
-
-  return labels[safeLocale] ?? labels.en ?? labels.tr ?? sportName;
+  return localizeSportFromDbName(sportName, safeLocale);
 }
 
 export function localizeListingType(type: string, locale?: string): string {

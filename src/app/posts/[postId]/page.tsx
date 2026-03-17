@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
-import toast from "react-hot-toast";
+import toast from "@/lib/toast";
 
 export default function PostDetailPage() {
   const { postId } = useParams();

@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useCallback, useState } from "react";
-import toast from "react-hot-toast";
+import toast from "@/lib/toast";
 
 interface Bot {
   id: string;

@@ -59,6 +59,18 @@
     "all": "Alle",
     "back": "Zurück"
   },
+  "layout": {
+    "metadata": {
+      "title": "SporPartner - Sportpartner und Gegner finden",
+      "description": "Finde Partner oder Gegner für Sport! Fußball, Basketball, Tennis und mehr.",
+      "keywords": "sport,partner,gegner,fussball,basketball,tennis,sportpartner finden"
+    },
+    "skipToContent": "Zum Inhalt springen",
+    "brandName": "SporPartner",
+    "copyright": "© {year} SporPartner",
+    "privacyPolicy": "Datenschutzrichtlinie",
+    "termsOfUse": "Nutzungsbedingungen"
+  },
   "listings": {
     "title": "Sport-Anzeigen",
     "detail": "Inserat anzeigen",
@@ -68,7 +80,13 @@
       "RIVAL": "Gegner",
       "PARTNER": "Partner",
       "TRAINER": "Trainer",
-      "EQUIPMENT": "Ausrüstung"
+      "EQUIPMENT": "Ausrüstung",
+      "VENUE_RENTAL": "Platzmiete",
+      "VENUE_MEMBERSHIP": "Mitgliedschaft",
+      "VENUE_CLASS": "Kurs",
+      "VENUE_PRODUCT": "Produkt",
+      "VENUE_EVENT": "Event",
+      "VENUE_SERVICE": "Service"
     },
     "levels": {
       "BEGINNER": "Anfänger",
@@ -210,7 +228,81 @@
     "forgotPassword": "Passwort vergessen?",
     "noAccount": "Noch kein Konto?",
     "hasAccount": "Bereits ein Konto?",
-    "continueWith": "oder anmelden mit"
+    "continueWith": "oder anmelden mit",
+    "loginSuccess": "Anmeldung erfolgreich!",
+    "genericError": "Ein Fehler ist aufgetreten",
+    "emailPlaceholder": "beispiel@email.com",
+    "passwordPlaceholder": "••••••",
+    "register": {
+      "title": "Konto erstellen",
+      "step1Subtitle": "Gib deine Basisdaten ein",
+      "step2Subtitle": "Standort- und Profildaten",
+      "fullName": "Vollständiger Name",
+      "fullNamePlaceholder": "Vor- und Nachname",
+      "passwordMinPlaceholder": "Mindestens 8 Zeichen",
+      "passwordConfirm": "Passwort wiederholen",
+      "passwordConfirmPlaceholder": "Passwort erneut eingeben",
+      "continue": "Weiter →",
+      "gender": "Geschlecht",
+      "genderPlaceholder": "Auswählen",
+      "genderMale": "Männlich",
+      "genderFemale": "Weiblich",
+      "genderPreferNotToSay": "Keine Angabe",
+      "birthDate": "Geburtsdatum",
+      "phone": "Telefon",
+      "phonePlaceholder": "+49 XXX XXX XXXX",
+      "optional": "(optional)",
+      "back": "← Zurück",
+      "show": "Anzeigen",
+      "hide": "Ausblenden",
+      "submitFailed": "Registrierung fehlgeschlagen",
+      "submitSuccess": "Registrierung erfolgreich! Anmeldung läuft...",
+      "autoLoginFailed": "Automatische Anmeldung fehlgeschlagen, bitte manuell anmelden",
+      "retryError": "Ein Fehler ist aufgetreten, bitte erneut versuchen",
+      "rules": {
+        "min": "Mindestens 8 Zeichen",
+        "upper": "Großbuchstabe",
+        "lower": "Kleinbuchstabe",
+        "number": "Zahl",
+        "special": "Sonderzeichen"
+      },
+      "validation": {
+        "nameMin": "Name muss mindestens 2 Zeichen lang sein",
+        "emailInvalid": "Bitte gültige E-Mail eingeben",
+        "passwordMin": "Passwort muss mindestens 8 Zeichen lang sein",
+        "passwordUpper": "Passwort muss einen Großbuchstaben enthalten",
+        "passwordLower": "Passwort muss einen Kleinbuchstaben enthalten",
+        "passwordNumber": "Passwort muss eine Zahl enthalten",
+        "passwordSpecial": "Passwort muss ein Sonderzeichen enthalten (!@#$%^&*)",
+        "passwordMismatch": "Passwörter stimmen nicht überein",
+        "genderRequired": "Bitte Geschlecht auswählen",
+        "birthDateRequired": "Geburtsdatum ist erforderlich",
+        "countryRequired": "Bitte Land auswählen",
+        "cityRequired": "Bitte Stadt auswählen",
+        "districtRequired": "Bitte Bezirk auswählen"
+      }
+    },
+    "forgot": {
+      "title": "Passwort vergessen",
+      "subtitle": "Gib deine E-Mail-Adresse ein, wir senden dir einen Zurücksetzen-Link.",
+      "submit": "Zurücksetzen-Link senden",
+      "remembered": "Passwort wieder eingefallen?",
+      "sentTitle": "E-Mail gesendet!",
+      "sentBody": "Wir haben einen Zurücksetzen-Link an {email} gesendet. Bitte Posteingang prüfen.",
+      "notReceived": "Keine E-Mail erhalten?",
+      "tryAgain": "Erneut versuchen",
+      "backToLogin": "Zurück zur Anmeldung"
+    },
+    "reset": {
+      "title": "Neues Passwort festlegen",
+      "newPassword": "Neues Passwort",
+      "newPasswordPlaceholder": "Min. 8 Zeichen, Groß-/Kleinbuchstaben, Zahl, Sonderzeichen",
+      "submit": "Passwort aktualisieren",
+      "backToLogin": "← Zur Anmeldung",
+      "successTitle": "Passwort aktualisiert!",
+      "successToast": "Dein Passwort wurde aktualisiert!",
+      "redirecting": "Weiterleitung zur Anmeldeseite..."
+    }
   },
   "tournaments": {
     "title": "Turniere",

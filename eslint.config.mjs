@@ -27,6 +27,24 @@ const eslintConfig = defineConfig([
       "@typescript-eslint/ban-ts-comment": ["warn", { "ts-ignore": "allow-with-description" }],
       // React bileşenlerinde impure function — uyarı (Date.now() render içinde kabul edilebilir)
       "react-hooks/purity": "off",
+      // Tüm toast kullanımını merkezi wrapper üzerinden zorunlu kıl
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "react-hot-toast",
+              message: "react-hot-toast yerine '@/lib/toast' kullanın.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["src/components/Providers.tsx", "src/lib/toast.ts"],
+    rules: {
+      "no-restricted-imports": "off",
     },
   },
 ]);

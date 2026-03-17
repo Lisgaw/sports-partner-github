@@ -3,7 +3,7 @@
 import { use, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import toast from "react-hot-toast";
+import toast from "@/lib/toast";
 import { getListingDetail, updateListing } from "@/services/api";
 import { useLocations, useSports } from "@/hooks/useLocations";
 import type { ListingDetail } from "@/types";

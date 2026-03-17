@@ -3,7 +3,8 @@
 import { useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import toast from "react-hot-toast";
+import { useTranslations } from "next-intl";
+import toast from "@/lib/toast";
 import Button from "@/components/ui/Button";
 
 export default function ResetPasswordPage({
@@ -13,6 +14,7 @@ export default function ResetPasswordPage({
 }) {
   const { token } = use(params);
   const router = useRouter();
+  const t = useTranslations("auth");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,7 +26,7 @@ export default function ResetPasswordPage({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirm) {
-      toast.error("Şifreler eşleşmiyor");
+      toast.error(t("register.validation.passwordMismatch"));
       return;
     }
     setLoading(true);
@@ -37,13 +39,13 @@ export default function ResetPasswordPage({
       const data = await res.json();
       if (data.success) {
         setDone(true);
-        toast.success("Şifreniz güncellendi!");
+        toast.success(t("reset.successToast"));
         setTimeout(() => router.push("/auth/giris"), 2000);
       } else {
-        toast.error(data.error || "Bir hata oluştu");
+        toast.error(data.error || t("genericError"));
       }
     } catch {
-      toast.error("Bir hata oluştu");
+      toast.error(t("genericError"));
     } finally {
       setLoading(false);
     }
@@ -55,16 +57,16 @@ export default function ResetPasswordPage({
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 w-full max-w-md text-center">
           <div className="text-5xl mb-4">✅</div>
           <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-            Şifre Güncellendi!
+            {t("reset.successTitle")}
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mb-4">
-            Giriş sayfasına yönlendiriliyorsunuz...
+            {t("reset.redirecting")}
           </p>
           <Link
             href="/auth/giris"
             className="text-emerald-600 dark:text-emerald-400 font-semibold hover:underline"
           >
-            Giriş Yap
+            {t("signIn")}
           </Link>
         </div>
       </div>
@@ -75,7 +77,7 @@ export default function ResetPasswordPage({
     <div className="min-h-[70vh] flex items-center justify-center">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 w-full max-w-md">
         <h1 className="text-2xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6">
-          Yeni Şifre Belirle
+          {t("reset.title")}
         </h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -83,7 +85,7 @@ export default function ResetPasswordPage({
               htmlFor="password"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
             >
-              Yeni Şifre
+              {t("reset.newPassword")}
             </label>
             <input
               id="password"
@@ -92,7 +94,7 @@ export default function ResetPasswordPage({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className={inputClass}
-              placeholder="Min 8 karakter, büyük/küçük harf, rakam, özel karakter"
+              placeholder={t("reset.newPasswordPlaceholder")}
               autoComplete="new-password"
             />
           </div>
@@ -101,7 +103,7 @@ export default function ResetPasswordPage({
               htmlFor="confirm"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
             >
-              Şifre Tekrar
+              {t("register.passwordConfirm")}
             </label>
             <input
               id="confirm"
@@ -110,12 +112,12 @@ export default function ResetPasswordPage({
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               className={inputClass}
-              placeholder="••••••"
+              placeholder={t("passwordPlaceholder")}
               autoComplete="new-password"
             />
           </div>
           <Button type="submit" loading={loading} className="w-full">
-            Şifreyi Güncelle
+            {t("reset.submit")}
           </Button>
         </form>
         <p className="text-center text-gray-500 dark:text-gray-400 mt-4 text-sm">
@@ -123,7 +125,7 @@ export default function ResetPasswordPage({
             href="/auth/giris"
             className="text-emerald-600 dark:text-emerald-400 hover:underline"
           >
-            ← Giriş sayfasına dön
+            {t("reset.backToLogin")}
           </Link>
         </p>
       </div>

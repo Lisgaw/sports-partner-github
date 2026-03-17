@@ -6,7 +6,7 @@ import Link from "next/link";
 import { format, isAfter, startOfToday } from "date-fns";
 import { tr, enUS, de, es, fr, ja, ko, ru } from "date-fns/locale";
 import type { Locale } from "date-fns";
-import toast from "react-hot-toast";
+import toast from "@/lib/toast";
 import { useTranslations, useLocale } from "next-intl";
 
 const DATE_FNS_LOCALES: Record<string, Locale> = { tr, en: enUS, de, es, fr, ja, ko, ru };

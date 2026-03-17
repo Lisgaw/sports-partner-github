@@ -59,6 +59,18 @@
     "all": "Todos",
     "back": "Volver"
   },
+  "layout": {
+    "metadata": {
+      "title": "SporPartner - Encuentra compañeros y rivales deportivos",
+      "description": "Encuentra un compañero o rival para practicar deporte. Fútbol, baloncesto, tenis y más.",
+      "keywords": "deporte,companero,rival,futbol,baloncesto,tenis,encontrar companero deportivo"
+    },
+    "skipToContent": "Saltar al contenido",
+    "brandName": "SporPartner",
+    "copyright": "© {year} SporPartner",
+    "privacyPolicy": "Política de privacidad",
+    "termsOfUse": "Términos de uso"
+  },
   "listings": {
     "title": "Anuncios deportivos",
     "detail": "Ver anuncio",
@@ -68,7 +80,13 @@
       "RIVAL": "Rival",
       "PARTNER": "Compañero",
       "TRAINER": "Entrenador",
-      "EQUIPMENT": "Equipamiento"
+      "EQUIPMENT": "Equipamiento",
+      "VENUE_RENTAL": "Alquiler de cancha",
+      "VENUE_MEMBERSHIP": "Membresía",
+      "VENUE_CLASS": "Clase/curso",
+      "VENUE_PRODUCT": "Producto",
+      "VENUE_EVENT": "Evento",
+      "VENUE_SERVICE": "Servicio"
     },
     "levels": {
       "BEGINNER": "Principiante",
@@ -210,7 +228,81 @@
     "forgotPassword": "¿Olvidaste tu contraseña?",
     "noAccount": "¿No tienes cuenta?",
     "hasAccount": "¿Ya tienes cuenta?",
-    "continueWith": "o continuar con"
+    "continueWith": "o continuar con",
+    "loginSuccess": "¡Inicio de sesión exitoso!",
+    "genericError": "Se produjo un error",
+    "emailPlaceholder": "ejemplo@email.com",
+    "passwordPlaceholder": "••••••",
+    "register": {
+      "title": "Crear cuenta",
+      "step1Subtitle": "Ingresa tus datos básicos",
+      "step2Subtitle": "Tu ubicación y perfil",
+      "fullName": "Nombre completo",
+      "fullNamePlaceholder": "Tu nombre y apellido",
+      "passwordMinPlaceholder": "Al menos 8 caracteres",
+      "passwordConfirm": "Repetir contraseña",
+      "passwordConfirmPlaceholder": "Vuelve a escribir la contraseña",
+      "continue": "Continuar →",
+      "gender": "Género",
+      "genderPlaceholder": "Selecciona",
+      "genderMale": "Hombre",
+      "genderFemale": "Mujer",
+      "genderPreferNotToSay": "Prefiero no decirlo",
+      "birthDate": "Fecha de nacimiento",
+      "phone": "Teléfono",
+      "phonePlaceholder": "+34 XXX XXX XXXX",
+      "optional": "(opcional)",
+      "back": "← Atrás",
+      "show": "Mostrar",
+      "hide": "Ocultar",
+      "submitFailed": "Registro fallido",
+      "submitSuccess": "¡Registro exitoso! Iniciando sesión...",
+      "autoLoginFailed": "No se pudo iniciar sesión automáticamente, hazlo manualmente",
+      "retryError": "Se produjo un error, inténtalo de nuevo",
+      "rules": {
+        "min": "Al menos 8 caracteres",
+        "upper": "Mayúscula",
+        "lower": "Minúscula",
+        "number": "Número",
+        "special": "Carácter especial"
+      },
+      "validation": {
+        "nameMin": "El nombre debe tener al menos 2 caracteres",
+        "emailInvalid": "Introduce un correo válido",
+        "passwordMin": "La contraseña debe tener al menos 8 caracteres",
+        "passwordUpper": "La contraseña debe incluir una mayúscula",
+        "passwordLower": "La contraseña debe incluir una minúscula",
+        "passwordNumber": "La contraseña debe incluir un número",
+        "passwordSpecial": "La contraseña debe incluir un carácter especial (!@#$%^&*)",
+        "passwordMismatch": "Las contraseñas no coinciden",
+        "genderRequired": "Selecciona un género",
+        "birthDateRequired": "La fecha de nacimiento es obligatoria",
+        "countryRequired": "Selecciona un país",
+        "cityRequired": "Selecciona una ciudad",
+        "districtRequired": "Selecciona un distrito"
+      }
+    },
+    "forgot": {
+      "title": "Olvidé mi contraseña",
+      "subtitle": "Ingresa tu correo y te enviaremos un enlace para restablecerla.",
+      "submit": "Enviar enlace de restablecimiento",
+      "remembered": "¿Recordaste tu contraseña?",
+      "sentTitle": "¡Correo enviado!",
+      "sentBody": "Enviamos un enlace de restablecimiento a {email}. Revisa tu bandeja.",
+      "notReceived": "¿No llegó el correo?",
+      "tryAgain": "Intentar de nuevo",
+      "backToLogin": "Volver a iniciar sesión"
+    },
+    "reset": {
+      "title": "Crear nueva contraseña",
+      "newPassword": "Nueva contraseña",
+      "newPasswordPlaceholder": "Mínimo 8 caracteres, mayúscula/minúscula, número y especial",
+      "submit": "Actualizar contraseña",
+      "backToLogin": "← Volver al inicio de sesión",
+      "successTitle": "¡Contraseña actualizada!",
+      "successToast": "¡Tu contraseña fue actualizada!",
+      "redirecting": "Redirigiendo al inicio de sesión..."
+    }
   },
   "tournaments": {
     "title": "Torneos",

@@ -6,7 +6,7 @@ import Navbar from "@/components/Navbar";
 import BottomNav from "@/components/BottomNav";
 import PWAInstallBanner from "@/components/PWAInstallBanner";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getMessages } from "next-intl/server";
+import { getLocale, getMessages, getTranslations } from "next-intl/server";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,24 +18,45 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "SporPartner - Spor Partneri & Rakip Bul",
-  description:
-    "Spor yapmak için partner veya rakip bul! Futbol, basketbol, tenis ve daha fazlası.",
-  keywords: ["spor", "partner", "rakip", "futbol", "basketbol", "tenis", "spor partneri bul"],
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "SporPartner",
-  },
-  openGraph: {
-    title: "SporPartner - Spor Partneri & Rakip Bul",
-    description: "Spor yapmak için partner veya rakip bul!",
-    type: "website",
-    locale: "tr_TR",
-  },
+const OPEN_GRAPH_LOCALE_MAP: Record<string, string> = {
+  tr: "tr_TR",
+  en: "en_US",
+  ru: "ru_RU",
+  de: "de_DE",
+  fr: "fr_FR",
+  es: "es_ES",
+  ja: "ja_JP",
+  ko: "ko_KR",
 };
+
+const METADATA_KEYWORDS_FALLBACK = ["sports", "partner", "rival", "football", "basketball", "tennis"];
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "layout" });
+  const keywords = t("metadata.keywords")
+    .split(",")
+    .map((keyword) => keyword.trim())
+    .filter(Boolean);
+
+  return {
+    title: t("metadata.title"),
+    description: t("metadata.description"),
+    keywords: keywords.length > 0 ? keywords : METADATA_KEYWORDS_FALLBACK,
+    manifest: "/manifest.json",
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: t("brandName"),
+    },
+    openGraph: {
+      title: t("metadata.title"),
+      description: t("metadata.description"),
+      type: "website",
+      locale: OPEN_GRAPH_LOCALE_MAP[locale] ?? "en_US",
+    },
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -44,6 +65,8 @@ export default async function RootLayout({
 }>) {
   const locale = await getLocale();
   const messages = await getMessages();
+  const tLayout = await getTranslations({ locale, namespace: "layout" });
+
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
@@ -66,7 +89,7 @@ export default async function RootLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>
             <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-2 focus:left-2 focus:bg-emerald-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold">
-              İçeriğe atla
+              {tLayout("skipToContent")}
             </a>
             <Navbar />
             <main id="main-content" className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-8">{children}</main>
@@ -74,12 +97,12 @@ export default async function RootLayout({
               <div className="max-w-6xl mx-auto px-4 py-3 md:py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-500 dark:text-gray-400">
                 <div className="flex items-center gap-2">
                   <span className="w-5 h-5 bg-gradient-to-br from-emerald-500 to-teal-600 rounded flex items-center justify-center text-white text-[9px] font-black">SP</span>
-                  <span className="font-medium">© {new Date().getFullYear()} SporPartner</span>
+                  <span className="font-medium">{tLayout("copyright", { year: new Date().getFullYear() })}</span>
                 </div>
                 <nav className="flex items-center gap-4">
-                  <a href="/gizlilik-politikasi" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors font-medium">Gizlilik Politikası</a>
+                  <a href="/gizlilik-politikasi" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors font-medium">{tLayout("privacyPolicy")}</a>
                   <span className="text-gray-300 dark:text-gray-600">•</span>
-                  <a href="/kullanim-sartlari" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors font-medium">Kullanım Şartları</a>
+                  <a href="/kullanim-sartlari" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors font-medium">{tLayout("termsOfUse")}</a>
                 </nav>
               </div>
             </footer>

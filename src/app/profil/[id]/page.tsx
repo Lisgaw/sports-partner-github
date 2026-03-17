@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { format, differenceInYears } from "date-fns";
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
-import toast from "react-hot-toast";
+import toast from "@/lib/toast";
 import { getPublicProfile, submitRating, getUserRatings, toggleFollow, getFollowStats, getLeaderboard, startDirectConversation, removeFollower } from "@/services/api";
 import { APIError } from "@/services/api";
 import type { PublicProfile, Rating, Badge } from "@/types";

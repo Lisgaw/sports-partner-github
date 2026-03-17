@@ -1,6 +1,6 @@
 "use client";
 
-import toast from "react-hot-toast";
+import toast from "@/lib/toast";
 import { useTranslations, useLocale } from "next-intl";
 import Button from "@/components/ui/Button";
 import { localizeSportName } from "@/lib/localized-ui";

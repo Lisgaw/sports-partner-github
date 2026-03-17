@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
-import toast from "react-hot-toast";
+import toast from "@/lib/toast";
 import type { ListingDetail, ListingResponse, ListingSummary } from "@/types";
 import ListingCard from "@/components/ListingCard";
 import { LEVEL_LABELS_WITH_ICON, STATUS_LABELS, ALLOWED_GENDER_LABELS } from "@/types";

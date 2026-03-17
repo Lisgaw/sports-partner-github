@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { format, formatDistanceToNow } from "date-fns";
 import { useLocale } from "next-intl";
-import toast from "react-hot-toast";
+import toast from "@/lib/toast";
 import { getDateFnsLocale, localizeListingType, localizeSportName, resolveAppLocale } from "@/lib/localized-ui";
 
 // ─── Tipler ────────────────────────────────────────────────────────────────────

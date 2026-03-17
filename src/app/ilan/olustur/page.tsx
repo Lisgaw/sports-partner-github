@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import toast from "react-hot-toast";
+import toast from "@/lib/toast";
 import { useLocale, useTranslations } from "next-intl";
 import { localizeSportName } from "@/lib/localized-ui";
 import { useLocations, useSports } from "@/hooks/useLocations";

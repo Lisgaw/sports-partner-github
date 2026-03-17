@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import toast from "react-hot-toast";
+import { useTranslations } from "next-intl";
+import toast from "@/lib/toast";
 import Button from "@/components/ui/Button";
 
 type Step = "email" | "sent";
 
 export default function ForgotPasswordPage() {
+  const t = useTranslations("auth");
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,10 +27,10 @@ export default function ForgotPasswordPage() {
       if (data.success) {
         setStep("sent");
       } else {
-        toast.error(data.error || "Bir hata oluştu");
+        toast.error(data.error || t("genericError"));
       }
     } catch {
-      toast.error("Bir hata oluştu");
+      toast.error(t("genericError"));
     } finally {
       setLoading(false);
     }
@@ -42,21 +44,21 @@ export default function ForgotPasswordPage() {
       <div className="min-h-[70vh] flex items-center justify-center">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 w-full max-w-md text-center">
           <div className="text-6xl mb-4">📬</div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">E-posta Gönderildi!</h1>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">{t("forgot.sentTitle")}</h1>
           <p className="text-gray-500 dark:text-gray-400 mb-6">
-            <strong>{email}</strong> adresine şifre sıfırlama bağlantısı gönderdik. Gelen kutunuzu kontrol edin.
+            {t("forgot.sentBody", { email })}
           </p>
           <p className="text-sm text-gray-400 dark:text-gray-500 mb-6">
-            E-posta gelmedi mi?{" "}
+            {t("forgot.notReceived")}{" "}
             <button
               onClick={() => setStep("email")}
               className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium"
             >
-              Tekrar dene
+              {t("forgot.tryAgain")}
             </button>
           </p>
           <Link href="/auth/giris">
-            <Button variant="secondary" className="w-full">Giriş Sayfasına Dön</Button>
+            <Button variant="secondary" className="w-full">{t("forgot.backToLogin")}</Button>
           </Link>
         </div>
       </div>
@@ -68,16 +70,16 @@ export default function ForgotPasswordPage() {
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 w-full max-w-md">
         <div className="text-center mb-6">
           <div className="text-5xl mb-3">🔑</div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Şifremi Unuttum</h1>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">{t("forgot.title")}</h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-            E-posta adresinizi girin, size sıfırlama bağlantısı gönderelim.
+            {t("forgot.subtitle")}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              E-posta
+              {t("email")}
             </label>
             <input
               id="email"
@@ -86,19 +88,19 @@ export default function ForgotPasswordPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={inputClass}
-              placeholder="ornek@email.com"
+              placeholder={t("emailPlaceholder")}
               autoComplete="email"
             />
           </div>
           <Button type="submit" loading={loading} className="w-full">
-            Sıfırlama Bağlantısı Gönder
+            {t("forgot.submit")}
           </Button>
         </form>
 
         <p className="text-center text-gray-600 dark:text-gray-400 mt-4 text-sm">
-          Şifrenizi hatırladınız mı?{" "}
+          {t("forgot.remembered")}{" "}
           <Link href="/auth/giris" className="text-emerald-600 dark:text-emerald-400 font-semibold hover:underline">
-            Giriş Yap
+            {t("signIn")}
           </Link>
         </p>
       </div>

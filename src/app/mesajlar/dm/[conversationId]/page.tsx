@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
-import toast from "react-hot-toast";
+import toast from "@/lib/toast";
 import { useTranslations } from "next-intl";
 import { getDirectMessages, sendDirectMessage } from "@/services/api";
 import { useNotifications } from "@/hooks/useNotifications";

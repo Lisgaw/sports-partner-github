@@ -14,7 +14,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 import Dropdown from "@/components/ui/Dropdown";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useLocale, useTranslations } from "next-intl";
-import toast from "react-hot-toast";
+import toast from "@/lib/toast";
 
 const ACTIVITY_LABELS = {
   tr: "Aktivitelerim",

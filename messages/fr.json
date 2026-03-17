@@ -59,6 +59,18 @@
     "all": "Tous",
     "back": "Retour"
   },
+  "layout": {
+    "metadata": {
+      "title": "SporPartner - Trouver des partenaires et adversaires sportifs",
+      "description": "Trouvez un partenaire ou un adversaire pour le sport. Football, basket, tennis et plus.",
+      "keywords": "sport,partenaire,adversaire,football,basket,tennis,trouver partenaire sportif"
+    },
+    "skipToContent": "Aller au contenu",
+    "brandName": "SporPartner",
+    "copyright": "© {year} SporPartner",
+    "privacyPolicy": "Politique de confidentialité",
+    "termsOfUse": "Conditions d'utilisation"
+  },
   "listings": {
     "title": "Annonces sportives",
     "detail": "Voir l'annonce",
@@ -68,7 +80,13 @@
       "RIVAL": "Adversaire",
       "PARTNER": "Partenaire",
       "TRAINER": "Entraîneur",
-      "EQUIPMENT": "Équipement"
+      "EQUIPMENT": "Équipement",
+      "VENUE_RENTAL": "Location de terrain",
+      "VENUE_MEMBERSHIP": "Adhésion",
+      "VENUE_CLASS": "Cours",
+      "VENUE_PRODUCT": "Produit",
+      "VENUE_EVENT": "Événement",
+      "VENUE_SERVICE": "Service"
     },
     "levels": {
       "BEGINNER": "Débutant",
@@ -210,7 +228,81 @@
     "forgotPassword": "Mot de passe oublié ?",
     "noAccount": "Pas encore de compte ?",
     "hasAccount": "Déjà un compte ?",
-    "continueWith": "ou se connecter avec"
+    "continueWith": "ou se connecter avec",
+    "loginSuccess": "Connexion réussie !",
+    "genericError": "Une erreur s'est produite",
+    "emailPlaceholder": "exemple@email.com",
+    "passwordPlaceholder": "••••••",
+    "register": {
+      "title": "Créer un compte",
+      "step1Subtitle": "Saisissez vos informations de base",
+      "step2Subtitle": "Votre localisation et profil",
+      "fullName": "Nom complet",
+      "fullNamePlaceholder": "Votre nom et prénom",
+      "passwordMinPlaceholder": "Au moins 8 caractères",
+      "passwordConfirm": "Confirmer le mot de passe",
+      "passwordConfirmPlaceholder": "Saisissez à nouveau le mot de passe",
+      "continue": "Continuer →",
+      "gender": "Genre",
+      "genderPlaceholder": "Sélectionner",
+      "genderMale": "Homme",
+      "genderFemale": "Femme",
+      "genderPreferNotToSay": "Je préfère ne pas répondre",
+      "birthDate": "Date de naissance",
+      "phone": "Téléphone",
+      "phonePlaceholder": "+33 X XX XX XX XX",
+      "optional": "(optionnel)",
+      "back": "← Retour",
+      "show": "Afficher",
+      "hide": "Masquer",
+      "submitFailed": "Échec de l'inscription",
+      "submitSuccess": "Inscription réussie ! Connexion en cours...",
+      "autoLoginFailed": "Connexion automatique impossible, veuillez vous connecter manuellement",
+      "retryError": "Une erreur s'est produite, veuillez réessayer",
+      "rules": {
+        "min": "Au moins 8 caractères",
+        "upper": "Majuscule",
+        "lower": "Minuscule",
+        "number": "Chiffre",
+        "special": "Caractère spécial"
+      },
+      "validation": {
+        "nameMin": "Le nom doit contenir au moins 2 caractères",
+        "emailInvalid": "Veuillez saisir un e-mail valide",
+        "passwordMin": "Le mot de passe doit contenir au moins 8 caractères",
+        "passwordUpper": "Le mot de passe doit contenir une majuscule",
+        "passwordLower": "Le mot de passe doit contenir une minuscule",
+        "passwordNumber": "Le mot de passe doit contenir un chiffre",
+        "passwordSpecial": "Le mot de passe doit contenir un caractère spécial (!@#$%^&*)",
+        "passwordMismatch": "Les mots de passe ne correspondent pas",
+        "genderRequired": "Veuillez sélectionner un genre",
+        "birthDateRequired": "La date de naissance est requise",
+        "countryRequired": "Veuillez sélectionner un pays",
+        "cityRequired": "Veuillez sélectionner une ville",
+        "districtRequired": "Veuillez sélectionner un district"
+      }
+    },
+    "forgot": {
+      "title": "Mot de passe oublié",
+      "subtitle": "Entrez votre e-mail et nous vous enverrons un lien de réinitialisation.",
+      "submit": "Envoyer le lien de réinitialisation",
+      "remembered": "Vous vous souvenez du mot de passe ?",
+      "sentTitle": "E-mail envoyé !",
+      "sentBody": "Nous avons envoyé un lien de réinitialisation à {email}. Vérifiez votre boîte de réception.",
+      "notReceived": "Vous n'avez pas reçu l'e-mail ?",
+      "tryAgain": "Réessayer",
+      "backToLogin": "Retour à la connexion"
+    },
+    "reset": {
+      "title": "Définir un nouveau mot de passe",
+      "newPassword": "Nouveau mot de passe",
+      "newPasswordPlaceholder": "Min. 8 caractères, maj/min, chiffre, caractère spécial",
+      "submit": "Mettre à jour le mot de passe",
+      "backToLogin": "← Retour à la connexion",
+      "successTitle": "Mot de passe mis à jour !",
+      "successToast": "Votre mot de passe a été mis à jour !",
+      "redirecting": "Redirection vers la page de connexion..."
+    }
   },
   "tournaments": {
     "title": "Tournois",

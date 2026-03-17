@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
-import toast from "react-hot-toast";
+import toast from "@/lib/toast";
 import { useTranslations } from "next-intl";
 import { getConversations } from "@/services/api";
 import type { Conversation } from "@/types";

@@ -4,13 +4,15 @@ import { useState, useEffect } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import toast from "react-hot-toast";
+import { useTranslations } from "next-intl";
+import toast from "@/lib/toast";
 import type { LoginForm } from "@/types";
 import Button from "@/components/ui/Button";
 
 export default function LoginPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
+  const t = useTranslations("auth");
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState<LoginForm>({ email: "", password: "" });
 
@@ -37,12 +39,12 @@ export default function LoginPage() {
       if (res?.error) {
         toast.error(res.error);
       } else {
-        toast.success("Giriş başarılı!");
+        toast.success(t("loginSuccess"));
         router.refresh();
         // Yönlendirme useEffect tarafından yapılacak (onboardingDone kontrolüyle)
       }
     } catch {
-      toast.error("Bir hata oluştu");
+      toast.error(t("genericError"));
     } finally {
       setLoading(false);
     }
@@ -54,12 +56,12 @@ export default function LoginPage() {
     <div className="min-h-[70vh] flex items-center justify-center">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 w-full max-w-md">
         <h1 className="text-2xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6">
-          Giriş Yap
+          {t("signIn")}
         </h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              E-posta
+              {t("email")}
             </label>
             <input
               id="email"
@@ -68,13 +70,13 @@ export default function LoginPage() {
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               className={inputClass}
-              placeholder="ornek@email.com"
+              placeholder={t("emailPlaceholder")}
               autoComplete="email"
             />
           </div>
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Şifre
+              {t("password")}
             </label>
             <input
               id="password"
@@ -83,17 +85,17 @@ export default function LoginPage() {
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               className={inputClass}
-              placeholder="••••••"
+              placeholder={t("passwordPlaceholder")}
               autoComplete="current-password"
             />
           </div>
           <Button type="submit" loading={loading} className="w-full">
-            Giriş Yap
+            {t("signIn")}
           </Button>
         </form>
         <div className="mt-3 text-center">
           <Link href="/auth/sifre-sifirla" className="text-sm text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline">
-            Şifremi unuttum
+            {t("forgotPassword")}
           </Link>
         </div>
 
@@ -101,7 +103,7 @@ export default function LoginPage() {
         <div className="mt-4">
           <div className="relative flex items-center gap-3 my-3">
             <div className="flex-1 border-t border-gray-200 dark:border-gray-600" />
-            <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0">veya şununla devam et</span>
+            <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0">{t("continueWith")}</span>
             <div className="flex-1 border-t border-gray-200 dark:border-gray-600" />
           </div>
           <div className="flex gap-3">
@@ -132,9 +134,9 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-gray-600 dark:text-gray-400 mt-4 text-sm">
-          Hesabınız yok mu?{" "}
+          {t("noAccount")}{" "}
           <Link href="/auth/kayit" className="text-emerald-600 dark:text-emerald-400 font-semibold hover:underline">
-            Kayıt Ol
+            {t("signUp")}
           </Link>
         </p>
       </div>

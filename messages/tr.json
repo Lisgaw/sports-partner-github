@@ -59,6 +59,18 @@
     "all": "Tümü",
     "back": "Geri"
   },
+  "layout": {
+    "metadata": {
+      "title": "SporPartner - Spor Partneri & Rakip Bul",
+      "description": "Spor yapmak için partner veya rakip bul! Futbol, basketbol, tenis ve daha fazlası.",
+      "keywords": "spor,partner,rakip,futbol,basketbol,tenis,spor partneri bul"
+    },
+    "skipToContent": "İçeriğe atla",
+    "brandName": "SporPartner",
+    "copyright": "© {year} SporPartner",
+    "privacyPolicy": "Gizlilik Politikası",
+    "termsOfUse": "Kullanım Şartları"
+  },
   "listings": {
     "title": "Spor İlanları",
     "detail": "İlanı Gör",
@@ -216,7 +228,81 @@
     "forgotPassword": "Şifremi unuttum",
     "noAccount": "Hesabınız yok mu?",
     "hasAccount": "Zaten hesabınız var mı?",
-    "continueWith": "veya şununla devam et"
+    "continueWith": "veya şununla devam et",
+    "loginSuccess": "Giriş başarılı!",
+    "genericError": "Bir hata oluştu",
+    "emailPlaceholder": "ornek@email.com",
+    "passwordPlaceholder": "••••••",
+    "register": {
+      "title": "Hesap Oluştur",
+      "step1Subtitle": "Temel bilgilerini gir",
+      "step2Subtitle": "Konum ve profil bilgilerin",
+      "fullName": "Ad Soyad",
+      "fullNamePlaceholder": "Adınız Soyadınız",
+      "passwordMinPlaceholder": "En az 8 karakter",
+      "passwordConfirm": "Şifre Tekrar",
+      "passwordConfirmPlaceholder": "Şifrenizi tekrar giriniz",
+      "continue": "Devam Et →",
+      "gender": "Cinsiyet",
+      "genderPlaceholder": "Seçiniz",
+      "genderMale": "Erkek",
+      "genderFemale": "Kadın",
+      "genderPreferNotToSay": "Belirtmek istemiyorum",
+      "birthDate": "Doğum Tarihi",
+      "phone": "Telefon",
+      "phonePlaceholder": "05XX XXX XX XX",
+      "optional": "(opsiyonel)",
+      "back": "← Geri",
+      "show": "Göster",
+      "hide": "Gizle",
+      "submitFailed": "Kayıt başarısız",
+      "submitSuccess": "Kayıt başarılı! Giriş yapılıyor...",
+      "autoLoginFailed": "Giriş yapılamadı, lütfen manuel giriş yapınız",
+      "retryError": "Bir hata oluştu, tekrar deneyiniz",
+      "rules": {
+        "min": "En az 8 karakter",
+        "upper": "Büyük harf",
+        "lower": "Küçük harf",
+        "number": "Rakam",
+        "special": "Özel karakter"
+      },
+      "validation": {
+        "nameMin": "İsim en az 2 karakter olmalı",
+        "emailInvalid": "Geçerli bir e-posta giriniz",
+        "passwordMin": "Şifre en az 8 karakter olmalı",
+        "passwordUpper": "Şifre en az bir büyük harf içermeli",
+        "passwordLower": "Şifre en az bir küçük harf içermeli",
+        "passwordNumber": "Şifre en az bir rakam içermeli",
+        "passwordSpecial": "Şifre en az bir özel karakter içermeli (!@#$%^&*)",
+        "passwordMismatch": "Şifreler eşleşmiyor",
+        "genderRequired": "Lütfen cinsiyet seçiniz",
+        "birthDateRequired": "Doğum tarihi gereklidir",
+        "countryRequired": "Lütfen ülke seçiniz",
+        "cityRequired": "Lütfen şehir seçiniz",
+        "districtRequired": "Lütfen ilçe seçiniz"
+      }
+    },
+    "forgot": {
+      "title": "Şifremi Unuttum",
+      "subtitle": "E-posta adresinizi girin, size sıfırlama bağlantısı gönderelim.",
+      "submit": "Sıfırlama Bağlantısı Gönder",
+      "remembered": "Şifrenizi hatırladınız mı?",
+      "sentTitle": "E-posta Gönderildi!",
+      "sentBody": "{email} adresine şifre sıfırlama bağlantısı gönderdik. Gelen kutunuzu kontrol edin.",
+      "notReceived": "E-posta gelmedi mi?",
+      "tryAgain": "Tekrar dene",
+      "backToLogin": "Giriş Sayfasına Dön"
+    },
+    "reset": {
+      "title": "Yeni Şifre Belirle",
+      "newPassword": "Yeni Şifre",
+      "newPasswordPlaceholder": "Min 8 karakter, büyük/küçük harf, rakam, özel karakter",
+      "submit": "Şifreyi Güncelle",
+      "backToLogin": "← Giriş sayfasına dön",
+      "successTitle": "Şifre Güncellendi!",
+      "successToast": "Şifreniz güncellendi!",
+      "redirecting": "Giriş sayfasına yönlendiriliyorsunuz..."
+    }
   },
   "tournaments": {
     "title": "Turnuvalar",

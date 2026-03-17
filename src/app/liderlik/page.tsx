@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import toast from "react-hot-toast";
+import toast from "@/lib/toast";
 import { getLeaderboard, getSports } from "@/services/api";
 import type { LeaderboardEntry, Sport } from "@/types";
 

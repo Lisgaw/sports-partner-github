@@ -59,6 +59,18 @@
     "all": "All",
     "back": "Back"
   },
+  "layout": {
+    "metadata": {
+      "title": "SporPartner - Find Sports Partners & Rivals",
+      "description": "Find a partner or rival for sports! Football, basketball, tennis and more.",
+      "keywords": "sports,partner,rival,football,basketball,tennis,find sports partner"
+    },
+    "skipToContent": "Skip to content",
+    "brandName": "SporPartner",
+    "copyright": "© {year} SporPartner",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfUse": "Terms of Use"
+  },
   "listings": {
     "title": "Sports Listings",
     "detail": "View Listing",
@@ -216,7 +228,81 @@
     "forgotPassword": "Forgot password",
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?",
-    "continueWith": "or continue with"
+    "continueWith": "or continue with",
+    "loginSuccess": "Login successful!",
+    "genericError": "An error occurred",
+    "emailPlaceholder": "example@email.com",
+    "passwordPlaceholder": "••••••",
+    "register": {
+      "title": "Create Account",
+      "step1Subtitle": "Enter your basic information",
+      "step2Subtitle": "Your location and profile details",
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "Your full name",
+      "passwordMinPlaceholder": "At least 8 characters",
+      "passwordConfirm": "Repeat Password",
+      "passwordConfirmPlaceholder": "Re-enter your password",
+      "continue": "Continue →",
+      "gender": "Gender",
+      "genderPlaceholder": "Select",
+      "genderMale": "Male",
+      "genderFemale": "Female",
+      "genderPreferNotToSay": "Prefer not to say",
+      "birthDate": "Date of Birth",
+      "phone": "Phone",
+      "phonePlaceholder": "+1 XXX XXX XXXX",
+      "optional": "(optional)",
+      "back": "← Back",
+      "show": "Show",
+      "hide": "Hide",
+      "submitFailed": "Registration failed",
+      "submitSuccess": "Registration successful! Signing you in...",
+      "autoLoginFailed": "Could not sign in automatically, please sign in manually",
+      "retryError": "An error occurred, please try again",
+      "rules": {
+        "min": "At least 8 characters",
+        "upper": "Uppercase letter",
+        "lower": "Lowercase letter",
+        "number": "Number",
+        "special": "Special character"
+      },
+      "validation": {
+        "nameMin": "Name must be at least 2 characters",
+        "emailInvalid": "Please enter a valid email",
+        "passwordMin": "Password must be at least 8 characters",
+        "passwordUpper": "Password must include an uppercase letter",
+        "passwordLower": "Password must include a lowercase letter",
+        "passwordNumber": "Password must include a number",
+        "passwordSpecial": "Password must include a special character (!@#$%^&*)",
+        "passwordMismatch": "Passwords do not match",
+        "genderRequired": "Please select a gender",
+        "birthDateRequired": "Date of birth is required",
+        "countryRequired": "Please select a country",
+        "cityRequired": "Please select a city",
+        "districtRequired": "Please select a district"
+      }
+    },
+    "forgot": {
+      "title": "Forgot Password",
+      "subtitle": "Enter your email address and we'll send you a reset link.",
+      "submit": "Send Reset Link",
+      "remembered": "Remembered your password?",
+      "sentTitle": "Email Sent!",
+      "sentBody": "We sent a password reset link to {email}. Please check your inbox.",
+      "notReceived": "Didn't receive an email?",
+      "tryAgain": "Try again",
+      "backToLogin": "Back to Login"
+    },
+    "reset": {
+      "title": "Set New Password",
+      "newPassword": "New Password",
+      "newPasswordPlaceholder": "Min 8 characters, upper/lowercase, number, special character",
+      "submit": "Update Password",
+      "backToLogin": "← Back to login",
+      "successTitle": "Password Updated!",
+      "successToast": "Your password has been updated!",
+      "redirecting": "Redirecting to login page..."
+    }
   },
   "tournaments": {
     "title": "Tournaments",

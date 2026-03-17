@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { format, formatDistanceToNow } from "date-fns";
 import { tr } from "date-fns/locale";
-import toast from "react-hot-toast";
+import toast from "@/lib/toast";
 import Button from "@/components/ui/Button";
 import { LEVEL_LABELS } from "@/types";
 

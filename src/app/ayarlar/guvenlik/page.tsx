@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { signOut } from "next-auth/react";
-import toast from "react-hot-toast";
+import toast from "@/lib/toast";
 import { updateProfile } from "@/services/api";
 import Button from "@/components/ui/Button";
 

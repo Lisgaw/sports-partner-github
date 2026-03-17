@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { tr as trLocale, enUS, de as deLocale, es as esLocale, fr as frLocale, ja as jaLocale, ko as koLocale, ru as ruLocale } from "date-fns/locale";
 import { useLocale, useTranslations } from "next-intl";
-import toast from "react-hot-toast";
+import toast from "@/lib/toast";
 import ReactionButton from "@/components/social/ReactionButton";
 import LikesModal from "@/components/social/LikesModal";
 import CommentThread from "@/components/social/CommentThread";

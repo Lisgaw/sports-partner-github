@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import toast from "react-hot-toast";
+import toast from "@/lib/toast";
 
 interface ReferralData {
   code: string;

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+import toast from "@/lib/toast";
 import CommunityCard, { CommunityCardData, CommunityType } from "@/components/CommunityCard";
 import { useLocale, useTranslations } from "next-intl";
 import { localizeSportName } from "@/lib/localized-ui";

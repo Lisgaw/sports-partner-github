@@ -59,6 +59,18 @@
     "all": "Все",
     "back": "Назад"
   },
+  "layout": {
+    "metadata": {
+      "title": "SporPartner - Найди спортивных партнеров и соперников",
+      "description": "Найдите партнера или соперника для спорта. Футбол, баскетбол, теннис и многое другое.",
+      "keywords": "спорт,партнер,соперник,футбол,баскетбол,теннис,найти спортивного партнера"
+    },
+    "skipToContent": "Перейти к содержимому",
+    "brandName": "SporPartner",
+    "copyright": "© {year} SporPartner",
+    "privacyPolicy": "Политика конфиденциальности",
+    "termsOfUse": "Условия использования"
+  },
   "listings": {
     "title": "Спортивные объявления",
     "detail": "Просмотреть",
@@ -68,7 +80,13 @@
       "RIVAL": "Соперник",
       "PARTNER": "Партнёр",
       "TRAINER": "Тренер",
-      "EQUIPMENT": "Экипировка"
+      "EQUIPMENT": "Экипировка",
+      "VENUE_RENTAL": "Аренда площадки",
+      "VENUE_MEMBERSHIP": "Абонемент",
+      "VENUE_CLASS": "Занятие/курс",
+      "VENUE_PRODUCT": "Товар",
+      "VENUE_EVENT": "Событие",
+      "VENUE_SERVICE": "Услуга"
     },
     "levels": {
       "BEGINNER": "Начинающий",
@@ -210,7 +228,81 @@
     "forgotPassword": "Забыли пароль?",
     "noAccount": "Нет аккаунта?",
     "hasAccount": "Уже есть аккаунт?",
-    "continueWith": "или войти через"
+    "continueWith": "или войти через",
+    "loginSuccess": "Вход выполнен успешно!",
+    "genericError": "Произошла ошибка",
+    "emailPlaceholder": "example@email.com",
+    "passwordPlaceholder": "••••••",
+    "register": {
+      "title": "Создать аккаунт",
+      "step1Subtitle": "Введите основные данные",
+      "step2Subtitle": "Данные профиля и местоположения",
+      "fullName": "Имя и фамилия",
+      "fullNamePlaceholder": "Ваше имя",
+      "passwordMinPlaceholder": "Минимум 8 символов",
+      "passwordConfirm": "Повторите пароль",
+      "passwordConfirmPlaceholder": "Введите пароль еще раз",
+      "continue": "Продолжить →",
+      "gender": "Пол",
+      "genderPlaceholder": "Выберите",
+      "genderMale": "Мужской",
+      "genderFemale": "Женский",
+      "genderPreferNotToSay": "Предпочитаю не указывать",
+      "birthDate": "Дата рождения",
+      "phone": "Телефон",
+      "phonePlaceholder": "+7 XXX XXX XX XX",
+      "optional": "(необязательно)",
+      "back": "← Назад",
+      "show": "Показать",
+      "hide": "Скрыть",
+      "submitFailed": "Регистрация не удалась",
+      "submitSuccess": "Регистрация успешна! Выполняется вход...",
+      "autoLoginFailed": "Не удалось войти автоматически, выполните вход вручную",
+      "retryError": "Произошла ошибка, попробуйте снова",
+      "rules": {
+        "min": "Минимум 8 символов",
+        "upper": "Заглавная буква",
+        "lower": "Строчная буква",
+        "number": "Цифра",
+        "special": "Спецсимвол"
+      },
+      "validation": {
+        "nameMin": "Имя должно содержать минимум 2 символа",
+        "emailInvalid": "Введите корректный e-mail",
+        "passwordMin": "Пароль должен быть не короче 8 символов",
+        "passwordUpper": "Пароль должен содержать заглавную букву",
+        "passwordLower": "Пароль должен содержать строчную букву",
+        "passwordNumber": "Пароль должен содержать цифру",
+        "passwordSpecial": "Пароль должен содержать спецсимвол (!@#$%^&*)",
+        "passwordMismatch": "Пароли не совпадают",
+        "genderRequired": "Выберите пол",
+        "birthDateRequired": "Дата рождения обязательна",
+        "countryRequired": "Выберите страну",
+        "cityRequired": "Выберите город",
+        "districtRequired": "Выберите район"
+      }
+    },
+    "forgot": {
+      "title": "Забыли пароль",
+      "subtitle": "Введите e-mail, и мы отправим ссылку для сброса.",
+      "submit": "Отправить ссылку для сброса",
+      "remembered": "Вспомнили пароль?",
+      "sentTitle": "Письмо отправлено!",
+      "sentBody": "Мы отправили ссылку для сброса на {email}. Проверьте входящие.",
+      "notReceived": "Письмо не пришло?",
+      "tryAgain": "Повторить",
+      "backToLogin": "Назад ко входу"
+    },
+    "reset": {
+      "title": "Установить новый пароль",
+      "newPassword": "Новый пароль",
+      "newPasswordPlaceholder": "Мин. 8 символов, верх/низ, цифра, спецсимвол",
+      "submit": "Обновить пароль",
+      "backToLogin": "← Назад ко входу",
+      "successTitle": "Пароль обновлен!",
+      "successToast": "Ваш пароль был обновлен!",
+      "redirecting": "Переход на страницу входа..."
+    }
   },
   "tournaments": {
     "title": "Турниры",
