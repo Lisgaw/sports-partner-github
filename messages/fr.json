@@ -854,5 +854,26 @@
     "priceMin": "Min",
     "priceMax": "Max",
     "recurring": "🔄 Récurrent"
+  },
+  "referralPage": {
+    "copySuccess": "Lien d'invitation copi\u00e9 !",
+    "genericError": "Une erreur s'est produite",
+    "title": "\uD83C\uDF81 Inviter des amis",
+    "subtitle": "Invitez vos amis et obtenez tous les deux +50 points !",
+    "yourCode": "Votre code d'invitation",
+    "copyLink": "\uD83D\uDCCB Copier le lien",
+    "joinedCountSuffix": "personnes ont rejoint avec votre invitation",
+    "invitedUsers": "Personnes que vous avez invit\u00e9es",
+    "haveCode": "Avez-vous un code d'invitation ?",
+    "apply": "Appliquer"
+  },
+  "locationSelector": {
+    "country": "Pays",
+    "countrySelect": "Sélectionner un pays",
+    "city": "Ville",
+    "cityOptional": "(facultatif)",
+    "citySelect": "Sélectionner une ville",
+    "district": "Arrondissement",
+    "districtSelect": "Sélectionner un arrondissement (facultatif)"
   }
 }

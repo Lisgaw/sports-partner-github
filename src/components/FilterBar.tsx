@@ -41,12 +41,45 @@ export default function FilterBar({ onFilterChange, initialLocations, initialSpo
 
   const isFirstRender = useRef(true);
 
-  // Auto-select Turkey when locations load (works across any DB environment)
+  // Prefer the visitor's country from Vercel geo headers and fall back to Turkey.
   useEffect(() => {
-    if (locations.length > 0 && !selectedCountry) {
-      const turkey = locations.find((l) => l.name === "Türkiye");
-      if (turkey) setSelectedCountry(turkey.id);
+    if (locations.length === 0 || selectedCountry) {
+      return;
     }
+
+    let cancelled = false;
+
+    const applyCountrySelection = async () => {
+      try {
+        const response = await fetch("/api/geo", { cache: "no-store" });
+        const data = (await response.json()) as { country?: string };
+        const code = data.country?.toUpperCase();
+        const matchedCountry = locations.find((location) => location.code?.toUpperCase() === code);
+        const fallbackCountry = locations.find((location) => location.code?.toUpperCase() === "TR")
+          ?? locations.find((location) => location.name === "Türkiye");
+
+        if (!cancelled) {
+          const initialCountry = matchedCountry ?? fallbackCountry;
+          if (initialCountry) {
+            setSelectedCountry(initialCountry.id);
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          const fallbackCountry = locations.find((location) => location.code?.toUpperCase() === "TR")
+            ?? locations.find((location) => location.name === "Türkiye");
+          if (fallbackCountry) {
+            setSelectedCountry(fallbackCountry.id);
+          }
+        }
+      }
+    };
+
+    void applyCountrySelection();
+
+    return () => {
+      cancelled = true;
+    };
   }, [locations, selectedCountry]);
 
   const filterInput = useMemo(

@@ -21,6 +21,18 @@ function getLocaleCookie(): string {
   return match ? decodeURIComponent(match[1]) : nextLocaleMatch ? decodeURIComponent(nextLocaleMatch[1]) : "tr";
 }
 
+async function persistLocale(locale: string): Promise<void> {
+  try {
+    await fetch("/api/locale", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ locale }),
+    });
+  } catch {
+    // Locale cookie write failures should not block UI updates.
+  }
+}
+
 export default function LanguageSwitcher({
   mode = "compact",
   onSelect,
@@ -30,13 +42,9 @@ export default function LanguageSwitcher({
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [current, setCurrent] = useState("tr");
+  const [current, setCurrent] = useState(getLocaleCookie);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setCurrent(getLocaleCookie());
-  }, []);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -46,9 +54,8 @@ export default function LanguageSwitcher({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const switchLocale = (locale: string) => {
-    document.cookie = `locale=${locale};path=/;max-age=31536000;SameSite=Lax`;
-    document.cookie = `NEXT_LOCALE=${locale};path=/;max-age=31536000;SameSite=Lax`;
+  const switchLocale = async (locale: string) => {
+    await persistLocale(locale);
     setCurrent(locale);
     setOpen(false);
     onSelect?.();

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useLocations } from "@/hooks/useLocations";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 interface LocationSelectorProps {
   countryId: string;
@@ -32,21 +32,16 @@ export default function LocationSelector({
   error,
 }: LocationSelectorProps) {
   const locale = useLocale();
-  const isTr = locale === "tr";
+  const t = useTranslations("locationSelector");
 
-  const text = {
-    country: isTr ? "Ülke" : "Country",
-    countrySelect: isTr ? "Ülke Seçiniz" : "Select Country",
-    city: isTr ? "Şehir" : "City",
-    cityOptional: isTr ? "(opsiyonel)" : "(optional)",
-    citySelect: isTr ? "Şehir Seçiniz" : "Select City",
-    district: isTr ? "İlçe" : "District",
-    districtSelect: isTr ? "İlçe Seçiniz (opsiyonel)" : "Select District (optional)",
-  };
+  const displayNames = useMemo(
+    () => new Intl.DisplayNames([locale], { type: "region" }),
+    [locale]
+  );
 
   const { locations, loading } = useLocations();
 
-  const countries = locations || [];
+  const countries = useMemo(() => locations || [], [locations]);
   
   const cities = useMemo(() => {
     return countries.find((c) => c.id === countryId)?.cities || [];
@@ -64,17 +59,17 @@ export default function LocationSelector({
     <div className={className}>
       {/* Ülke Seçimi */}
       <div>
-        {showLabels && <label className={labelClass}>{text.country}</label>}
+        {showLabels && <label className={labelClass}>{t("country")}</label>}
         <select
           value={countryId}
           onChange={(e) => onChange({ countryId: e.target.value, cityId: "", districtId: "" })}
           disabled={disabled || loading}
           className={`${selectClass} ${error?.country ? "border-red-500" : ""}`}
         >
-          <option value="">{showLabels ? text.countrySelect : text.country}</option>
+          <option value="">{showLabels ? t("countrySelect") : t("country")}</option>
           {countries.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.name}
+              {(c.code ? displayNames.of(c.code) : null) ?? c.name}
             </option>
           ))}
         </select>
@@ -83,14 +78,14 @@ export default function LocationSelector({
 
       {/* Şehir Seçimi */}
       <div>
-        {showLabels && <label className={labelClass}>{text.city} <span className="font-normal text-xs text-gray-400">{text.cityOptional}</span></label>}
+        {showLabels && <label className={labelClass}>{t("city")} <span className="font-normal text-xs text-gray-400">{t("cityOptional")}</span></label>}
         <select
           value={cityId}
           onChange={(e) => onChange({ cityId: e.target.value, districtId: "" })}
           disabled={disabled || loading || !countryId}
           className={`${selectClass} ${error?.city ? "border-red-500" : ""}`}
         >
-          <option value="">{showLabels ? text.citySelect : text.city}</option>
+          <option value="">{showLabels ? t("citySelect") : t("city")}</option>
           {cities.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
@@ -103,14 +98,14 @@ export default function LocationSelector({
       {/* İlçe Seçimi — şehirde ilçe verisi varsa göster */}
       {districts.length > 0 && (
       <div>
-        {showLabels && <label className={labelClass}>{text.district} <span className="text-gray-400 font-normal text-xs">{text.cityOptional}</span></label>}
+        {showLabels && <label className={labelClass}>{t("district")} <span className="text-gray-400 font-normal text-xs">{t("cityOptional")}</span></label>}
         <select
           value={districtId}
           onChange={(e) => onChange({ districtId: e.target.value })}
           disabled={disabled || loading || !cityId}
           className={`${selectClass} ${error?.district ? "border-red-500" : ""}`}
         >
-          <option value="">{showLabels ? text.districtSelect : text.district}</option>
+          <option value="">{showLabels ? t("districtSelect") : t("district")}</option>
           {districts.map((d) => (
             <option key={d.id} value={d.id}>
               {d.name}

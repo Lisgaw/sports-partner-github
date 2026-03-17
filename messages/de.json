@@ -854,5 +854,26 @@
     "priceMin": "Min",
     "priceMax": "Max",
     "recurring": "🔄 Wiederkehrend"
+  },
+  "referralPage": {
+    "copySuccess": "Einladungslink kopiert!",
+    "genericError": "Etwas ist schiefgelaufen",
+    "title": "\uD83C\uDF81 Freunde einladen",
+    "subtitle": "Lade deine Freunde ein und ihr bekommt beide +50 Punkte!",
+    "yourCode": "Dein Einladungscode",
+    "copyLink": "\uD83D\uDCCB Link kopieren",
+    "joinedCountSuffix": "Personen sind mit deiner Einladung beigetreten",
+    "invitedUsers": "Eingeladene Personen",
+    "haveCode": "Hast du einen Einladungscode?",
+    "apply": "Anwenden"
+  },
+  "locationSelector": {
+    "country": "Land",
+    "countrySelect": "Land auswählen",
+    "city": "Stadt",
+    "cityOptional": "(optional)",
+    "citySelect": "Stadt auswählen",
+    "district": "Bezirk",
+    "districtSelect": "Bezirk auswählen (optional)"
   }
 }

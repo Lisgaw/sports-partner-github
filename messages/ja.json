@@ -854,5 +854,26 @@
     "priceMin": "最小",
     "priceMax": "最大",
     "recurring": "🔄 定期"
+  },
+  "referralPage": {
+    "copySuccess": "\u62db\u5f85\u30ea\u30f3\u30af\u3092\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f\uff01",
+    "genericError": "\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f",
+    "title": "\uD83C\uDF81 \u53cb\u9054\u3092\u62db\u5f85",
+    "subtitle": "\u53cb\u9054\u3092\u62db\u5f85\u3057\u3066\u3001\u304a\u4e92\u3044\u306b+50\u30dd\u30a4\u30f3\u30c8\u3092\u7372\u5f97\u3057\u307e\u3057\u3087\u3046\uff01",
+    "yourCode": "\u3042\u306a\u305f\u306e\u62db\u5f85\u30b3\u30fc\u30c9",
+    "copyLink": "\uD83D\uDCCB \u30ea\u30f3\u30af\u3092\u30b3\u30d4\u30fc",
+    "joinedCountSuffix": "\u4eba\u304c\u3042\u306a\u305f\u306e\u62db\u5f85\u3067\u53c2\u52a0\u3057\u307e\u3057\u305f",
+    "invitedUsers": "\u62db\u5f85\u3057\u305f\u4eba",
+    "haveCode": "\u62db\u5f85\u30b3\u30fc\u30c9\u3092\u304a\u6301\u3061\u3067\u3059\u304b\uff1f",
+    "apply": "\u9069\u7528"
+  },
+  "locationSelector": {
+    "country": "国",
+    "countrySelect": "国を選択",
+    "city": "都市",
+    "cityOptional": "（任意）",
+    "citySelect": "都市を選択",
+    "district": "地区",
+    "districtSelect": "地区を選択（任意）"
   }
 }

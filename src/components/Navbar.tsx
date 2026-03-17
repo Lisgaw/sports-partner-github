@@ -5,6 +5,7 @@ import React from "react";
 
 import { createPortal } from "react-dom";
 import Link from "next/link";
+import Image from "next/image";
 import { useActivityCount } from "@/hooks/useActivityCount";
 import { useSession, signOut } from "next-auth/react";
 import { useState, useEffect, useRef } from "react";
@@ -19,9 +20,12 @@ export default function Navbar() {
   const { data: session } = useSession();
   const pathname = usePathname();
   const router = useRouter();
-  const [darkMode, setDarkMode] = useState(false);
-  const [portalMounted, setPortalMounted] = useState(false);
-  useEffect(() => { setPortalMounted(true); }, []);
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const stored = localStorage.getItem("theme");
+    return stored === "dark" || (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  });
+  const portalMounted = typeof document !== "undefined";
   const [notifOpen, setNotifOpen] = useState(false);
   const [discoverOpen, setDiscoverOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
@@ -32,7 +36,6 @@ export default function Navbar() {
   const moreRef = useRef<HTMLDivElement>(null);
   const moreSheetRef = useRef<HTMLDivElement>(null);
   const [langExpanded, setLangExpanded] = useState(false);
-  const [inviteCopied, setInviteCopied] = useState(false);
 
   // Gerçek zamanlı bildirimler — NotificationContext'ten (SSE Providers.tsx'de açık)
   const { notifications, unreadCount, unreadMessages, markAllRead, refresh: refreshNotifs } = useNotifications();
@@ -45,12 +48,9 @@ export default function Navbar() {
   }, [session]);
 
   useEffect(() => {
-    const stored = localStorage.getItem("theme");
-    if (stored === "dark" || (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-      setDarkMode(true);
-      document.documentElement.classList.add("dark");
-    }
-  }, []);
+    document.documentElement.classList.toggle("dark", darkMode);
+    localStorage.setItem("theme", darkMode ? "dark" : "light");
+  }, [darkMode]);
 
   useEffect(() => {
     if (!notifOpen && !discoverOpen && !moreOpen) return;
@@ -82,15 +82,7 @@ export default function Navbar() {
   };
 
   const toggleDarkMode = () => {
-    const next = !darkMode;
-    setDarkMode(next);
-    if (next) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
+    setDarkMode((prev) => !prev);
   };
 
   const t = useTranslations("nav");
@@ -240,7 +232,14 @@ export default function Navbar() {
                   align="right"
                   trigger={
                     <span className="inline-flex items-center gap-2 cursor-pointer p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                      <img src={session.user?.image || "/icons/avatar.svg"} alt="Profil" className="w-8 h-8 rounded-full border-2 border-emerald-200 dark:border-emerald-700 shadow-sm" />
+                      <Image
+                        src={session.user?.image || "/icons/avatar.svg"}
+                        alt="Profil"
+                        width={32}
+                        height={32}
+                        unoptimized
+                        className="w-8 h-8 rounded-full border-2 border-emerald-200 dark:border-emerald-700 shadow-sm"
+                      />
                       <span className="hidden md:inline text-sm font-semibold text-gray-700 dark:text-gray-200">{session.user?.name}</span>
                     </span>
                   }
@@ -291,7 +290,14 @@ export default function Navbar() {
                           {/* Profile row */}
                           <div className="flex items-center justify-between gap-3 pb-4 border-b border-gray-100 dark:border-gray-800">
                             <div className="flex items-center gap-3 min-w-0">
-                              <img src={session.user?.image || "/icons/avatar.svg"} alt="Profil" className="h-12 w-12 rounded-2xl border-2 border-emerald-200 object-cover shadow-sm dark:border-emerald-700" />
+                              <Image
+                                src={session.user?.image || "/icons/avatar.svg"}
+                                alt="Profil"
+                                width={48}
+                                height={48}
+                                unoptimized
+                                className="h-12 w-12 rounded-2xl border-2 border-emerald-200 object-cover shadow-sm dark:border-emerald-700"
+                              />
                               <div className="min-w-0">
                                 <p className="truncate text-sm font-bold text-gray-900 dark:text-gray-100">{session.user?.name}</p>
                                 <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">SporPartner</p>
@@ -339,16 +345,13 @@ export default function Navbar() {
                                   {unreadCount > 0 && <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red-500 rounded-full text-white text-[9px] font-bold flex items-center justify-center px-0.5">{unreadCount}</span>}
                                 </div>
                               ), label: t("notifications") },
-                              { action: () => {
-                                  const url = `${window.location.origin}/profil/${(session.user as any)?.username || ""}`;
-                                  navigator.clipboard.writeText(url).then(() => { setInviteCopied(true); setTimeout(() => setInviteCopied(false), 2000); });
-                                }, icon: (
+                              { href: "/ayarlar/davet", icon: (
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
-                              ), id: "invite", label: t(inviteCopied ? "copied" : "invite") },
+                              ), label: t("invite") },
                               { href: "/liderlik", icon: (
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
                               ), label: t("leaderboard") },
-                            ] as Array<{ href?: string; action?: () => void; icon: React.ReactNode; label: string; id?: string }>).map((item) => (
+                            ] as Array<{ href?: string; action?: () => void; icon: React.ReactNode; label: string }>).map((item) => (
                               item.href ? (
                                 <Link
                                   key={item.label}
@@ -364,9 +367,7 @@ export default function Navbar() {
                                   key={item.label}
                                   type="button"
                                   onClick={item.action}
-                                  className={`flex flex-col items-center justify-center gap-1.5 rounded-2xl px-2 py-3 text-xs font-semibold transition ${
-                                    (inviteCopied && item.id === "invite") ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300" : "bg-gray-50 text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400"
-                                  }`}
+                                  className="flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-gray-50 px-2 py-3 text-xs font-semibold text-gray-600 transition hover:bg-emerald-50 hover:text-emerald-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400"
                                 >
                                   <span className="text-gray-500 dark:text-gray-400">{item.icon}</span>
                                   {item.label}

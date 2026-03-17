@@ -860,5 +860,26 @@
     "priceMin": "Min ₺",
     "priceMax": "Max ₺",
     "recurring": "🔄 Tekrarlayan"
+  },
+  "referralPage": {
+    "copySuccess": "Davet linki kopyaland\u0131!",
+    "genericError": "Bir hata olu\u015ftu",
+    "title": "\uD83C\uDF81 Arkada\u015f\u0131n\u0131 Davet Et",
+    "subtitle": "Arkada\u015flar\u0131n\u0131 davet et, her ikisi de +50 puan kazans\u0131n!",
+    "yourCode": "Senin Davet Kodun",
+    "copyLink": "\uD83D\uDCCB Linki Kopyala",
+    "joinedCountSuffix": "ki\u015fi senin davetin ile kat\u0131ld\u0131",
+    "invitedUsers": "Davet Ettiklerin",
+    "haveCode": "Bir Davet Kodun Var m\u0131?",
+    "apply": "Uygula"
+  },
+  "locationSelector": {
+    "country": "Ülke",
+    "countrySelect": "Ülke Seçiniz",
+    "city": "Şehir",
+    "cityOptional": "(opsiyonel)",
+    "citySelect": "Şehir Seçiniz",
+    "district": "İlçe",
+    "districtSelect": "İlçe Seçiniz (opsiyonel)"
   }
 }

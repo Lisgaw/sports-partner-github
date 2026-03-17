@@ -860,5 +860,26 @@
     "priceMin": "Min",
     "priceMax": "Max",
     "recurring": "🔄 Recurring"
+  },
+  "referralPage": {
+    "copySuccess": "Invite link copied!",
+    "genericError": "Something went wrong",
+    "title": "\uD83C\uDF81 Invite Friends",
+    "subtitle": "Invite your friends and both of you get +50 points!",
+    "yourCode": "Your Invite Code",
+    "copyLink": "\uD83D\uDCCB Copy Link",
+    "joinedCountSuffix": "people joined with your invite",
+    "invitedUsers": "People You Invited",
+    "haveCode": "Do You Have an Invite Code?",
+    "apply": "Apply"
+  },
+  "locationSelector": {
+    "country": "Country",
+    "countrySelect": "Select Country",
+    "city": "City",
+    "cityOptional": "(optional)",
+    "citySelect": "Select City",
+    "district": "District",
+    "districtSelect": "Select District (optional)"
   }
 }

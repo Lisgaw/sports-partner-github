@@ -43,9 +43,9 @@ function PrivacySelector({
   t: ReturnType<typeof useTranslations<"settings.privacyPage">>;
 }) {
   const levels = [
-    { value: "EVERYONE" as PrivacyLevel, icon: "ğŸŒ", label: t("levelEveryone"), desc: t("levelEveryoneDesc") },
-    { value: "FOLLOWERS" as PrivacyLevel, icon: "ğŸ‘¥", label: t("levelFollowers"), desc: t("levelFollowersDesc") },
-    { value: "NOBODY" as PrivacyLevel, icon: "ğŸš«", label: t("levelNobody"), desc: t("levelNobodyDesc") },
+    { value: "EVERYONE" as PrivacyLevel, icon: "🌍", label: t("levelEveryone"), desc: t("levelEveryoneDesc") },
+    { value: "FOLLOWERS" as PrivacyLevel, icon: "👥", label: t("levelFollowers"), desc: t("levelFollowersDesc") },
+    { value: "NOBODY" as PrivacyLevel, icon: "🚫", label: t("levelNobody"), desc: t("levelNobodyDesc") },
   ];
   return (
     <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl space-y-3">
@@ -229,7 +229,7 @@ export default function GizlilikPage() {
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6">
         <div className="flex items-center gap-3 mb-1">
-          <span className="text-2xl">ğŸ›¡ï¸</span>
+          <span className="text-2xl">🛡️</span>
           <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">{t("title")}</h2>
         </div>
         <p className="text-sm text-gray-500 dark:text-gray-400 ml-10">
@@ -246,7 +246,7 @@ export default function GizlilikPage() {
         <PrivacySelector
           label={t("whoCanMessage")}
           description={t("whoCanMessageDesc")}
-          icon="ğŸ’¬"
+          icon="💬"
           value={settings.whoCanMessage}
           onChange={(v) => setSettings((s) => ({ ...s, whoCanMessage: v }))}
           disabled={saving}
@@ -256,7 +256,7 @@ export default function GizlilikPage() {
         <PrivacySelector
           label={t("whoCanChallenge")}
           description={t("whoCanChallengeDesc")}
-          icon="âš”ï¸"
+          icon="⚔️"
           value={settings.whoCanChallenge}
           onChange={(v) => setSettings((s) => ({ ...s, whoCanChallenge: v }))}
           disabled={saving}
@@ -266,7 +266,7 @@ export default function GizlilikPage() {
         <PrivacySelector
           label={t("profileVisibility")}
           description={t("profileVisibilityDesc")}
-          icon="ğŸ‘ï¸"
+          icon="👁️"
           value={settings.profileVisibility}
           onChange={(v) => setSettings((s) => ({ ...s, profileVisibility: v }))}
           disabled={saving}
@@ -276,7 +276,7 @@ export default function GizlilikPage() {
         <PrivacySelector
           label={t("socialLinksVisibility")}
           description={t("socialLinksVisibilityDesc")}
-          icon="ğŸ”—"
+          icon="🔗"
           value={settings.socialLinksVisibility}
           onChange={(v) => setSettings((s) => ({ ...s, socialLinksVisibility: v }))}
           disabled={saving}
@@ -286,7 +286,7 @@ export default function GizlilikPage() {
         {/* Private Profile */}
         <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
           <div className="flex items-start gap-3">
-            <span className="text-xl mt-0.5">ğŸ”’</span>
+            <span className="text-xl mt-0.5">🔒</span>
             <div>
               <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{t("privateProfile")}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
@@ -304,7 +304,7 @@ export default function GizlilikPage() {
         {/* Leaderboard */}
         <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
           <div className="flex items-start gap-3">
-            <span className="text-xl mt-0.5">ğŸ†</span>
+            <span className="text-xl mt-0.5">🏆</span>
             <div>
               <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{t("leaderboard")}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
@@ -389,7 +389,7 @@ export default function GizlilikPage() {
           </div>
           {followRequests.length === 0 ? (
             <div className="py-8 text-center bg-gray-50 dark:bg-gray-700/30 rounded-xl">
-              <span className="text-3xl">ğŸ””</span>
+              <span className="text-3xl">🔔</span>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t("noFollowRequests")}</p>
             </div>
           ) : (
@@ -402,7 +402,7 @@ export default function GizlilikPage() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{req.user.name}</p>
-                      {req.user.city && <p className="text-xs text-gray-400 truncate">ğŸ“ {req.user.city.name}</p>}
+                      {req.user.city && <p className="text-xs text-gray-400 truncate">🌍 {req.user.city.name}</p>}
                     </div>
                   </div>
                   <div className="flex gap-2 shrink-0">
@@ -411,14 +411,14 @@ export default function GizlilikPage() {
                       disabled={processingFollowId === req.followId}
                       className="text-xs font-semibold bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg transition disabled:opacity-50"
                     >
-                      {processingFollowId === req.followId ? "â€¦" : t("accept")}
+                      {processingFollowId === req.followId ? "…" : t("accept")}
                     </button>
                     <button
                       onClick={() => handleFollowRequest(req.followId, "REJECT")}
                       disabled={processingFollowId === req.followId}
                       className="text-xs font-semibold border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-red-300 hover:text-red-500 px-3 py-1.5 rounded-lg transition disabled:opacity-50"
                     >
-                      {processingFollowId === req.followId ? "â€¦" : t("reject")}
+                      {processingFollowId === req.followId ? "…" : t("reject")}
                     </button>
                   </div>
                 </div>
@@ -448,7 +448,7 @@ export default function GizlilikPage() {
 
         {blockedUsers.length === 0 ? (
           <div className="py-10 text-center bg-gray-50 dark:bg-gray-700/30 rounded-xl">
-            <span className="text-4xl">ğŸ¤</span>
+            <span className="text-4xl">🤝</span>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t("noBlockedUsers")}</p>
           </div>
         ) : (
@@ -482,7 +482,7 @@ export default function GizlilikPage() {
                   disabled={unblockingId === block.blocked.id}
                   className="text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 border border-gray-200 dark:border-gray-600 hover:border-red-300 dark:hover:border-red-700 px-3 py-1.5 rounded-lg transition disabled:opacity-50"
                 >
-                  {unblockingId === block.blocked.id ? "â€¦" : t("unblock")}
+                  {unblockingId === block.blocked.id ? "…" : t("unblock")}
                 </button>
               </div>
             ))}
