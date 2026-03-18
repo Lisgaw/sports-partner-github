@@ -69,7 +69,7 @@ const STATUS_COLORS: Record<string, string> = {
   ACCEPTED:  "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
   REJECTED:  "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400",
 };
-const STATUS_LABELS: Record<"tr" | "en" | "ru", Record<string, string>> = {
+const STATUS_LABELS: Record<string, Record<string, string>> = {
   tr: {
     OPEN: "Açık", MATCHED: "Eşleşti", CLOSED: "Kapandı", CANCELLED: "İptal",
     SCHEDULED: "Planlandı", ONGOING: "Devam Ediyor", COMPLETED: "Tamamlandı",
@@ -84,6 +84,31 @@ const STATUS_LABELS: Record<"tr" | "en" | "ru", Record<string, string>> = {
     OPEN: "Открыто", MATCHED: "Есть матч", CLOSED: "Закрыто", CANCELLED: "Отменено",
     SCHEDULED: "Запланировано", ONGOING: "Идет", COMPLETED: "Завершено",
     PENDING: "Ожидает", ACCEPTED: "Принято", REJECTED: "Отклонено",
+  },
+  de: {
+    OPEN: "Offen", MATCHED: "Zugeordnet", CLOSED: "Geschlossen", CANCELLED: "Abgesagt",
+    SCHEDULED: "Geplant", ONGOING: "Laufend", COMPLETED: "Abgeschlossen",
+    PENDING: "Ausstehend", ACCEPTED: "Akzeptiert", REJECTED: "Abgelehnt",
+  },
+  fr: {
+    OPEN: "Ouvert", MATCHED: "Apparié", CLOSED: "Fermé", CANCELLED: "Annulé",
+    SCHEDULED: "Planifié", ONGOING: "En cours", COMPLETED: "Terminé",
+    PENDING: "En attente", ACCEPTED: "Accepté", REJECTED: "Refusé",
+  },
+  es: {
+    OPEN: "Abierto", MATCHED: "Emparejado", CLOSED: "Cerrado", CANCELLED: "Cancelado",
+    SCHEDULED: "Programado", ONGOING: "En curso", COMPLETED: "Completado",
+    PENDING: "Pendiente", ACCEPTED: "Aceptado", REJECTED: "Rechazado",
+  },
+  ja: {
+    OPEN: "募集中", MATCHED: "マッチ済", CLOSED: "終了", CANCELLED: "キャンセル",
+    SCHEDULED: "予定", ONGOING: "進行中", COMPLETED: "完了",
+    PENDING: "保留", ACCEPTED: "承認済", REJECTED: "却下",
+  },
+  ko: {
+    OPEN: "모집중", MATCHED: "매칭됨", CLOSED: "마감", CANCELLED: "취소됨",
+    SCHEDULED: "예정됨", ONGOING: "진행중", COMPLETED: "완료",
+    PENDING: "대기중", ACCEPTED: "수락됨", REJECTED: "거절됨",
   },
 };
 const PAGE_COPY = {
@@ -124,6 +149,7 @@ const PAGE_COPY = {
     reject: "Red",
     incomingChallenges: "Gelen Teklifler",
     outgoingChallenges: "Gönderilen Teklifler",
+    ratePartner: "⭐ Puan ver",
   },
   en: {
     title: "My Activities",
@@ -162,6 +188,7 @@ const PAGE_COPY = {
     reject: "Reject",
     incomingChallenges: "Incoming Challenges",
     outgoingChallenges: "Outgoing Challenges",
+    ratePartner: "⭐ Rate",
   },
   ru: {
     title: "Мои активности",
@@ -200,10 +227,206 @@ const PAGE_COPY = {
     reject: "Отклонить",
     incomingChallenges: "Входящие вызовы",
     outgoingChallenges: "Исходящие вызовы",
+    ratePartner: "⭐ Оценить",
+  },
+  de: {
+    title: "Meine Aktivitäten",
+    subtitle: "Verwalte deine Anzeigen, Bewerbungen, Matches und Herausforderungen an einem Ort.",
+    tabMatches: "Matches",
+    tabListings: "Meine Anzeigen",
+    tabResponses: "Meine Bewerbungen",
+    tabChallenges: "Herausforderungen",
+    noMatches: "Noch keine Matches.",
+    noListings: "Du hast noch keine Anzeige erstellt.",
+    noResponses: "Du hast noch auf keine Anzeige geantwortet.",
+    noChallenges: "Keine ausstehenden Herausforderungen.",
+    loadFailed: "Daten konnten nicht geladen werden",
+    confirmCloseListing: "Anzeige schließen? Ausstehende Bewerbungen werden abgelehnt.",
+    listingClosed: "Anzeige geschlossen",
+    actionFailed: "Aktion fehlgeschlagen",
+    genericError: "Ein Fehler ist aufgetreten",
+    responseAccepted: "✅ Bewerbung angenommen!",
+    responseRejected: "Bewerbung abgelehnt",
+    matchApproved: "✅ Match bestätigt!",
+    reportForwarded: "⚠️ Meldung gesendet.",
+    challengeAccepted: "✅ Herausforderung angenommen!",
+    challengeRejected: "Herausforderung abgelehnt",
+    approvalNeeded: "⚡ Bestätigung erforderlich",
+    messages: "Nachrichten",
+    expiredMatchPrompt: "Das Match-Datum ist abgelaufen. Bitte bestätigen oder melden.",
+    approveMatch: "✅ Match bestätigen",
+    reportNoShow: "🚫 Nichterscheinen melden",
+    reportSent: "Meldung gesendet.",
+    newListing: "+ Neue Anzeige",
+    applications: "Bewerbungen",
+    detailsApplications: "📋 Details / Bewerbungen",
+    closeListing: "🔒 Anzeige schließen",
+    pendingResponses: "⚠️ Ausstehende Antworten",
+    accept: "Annehmen",
+    reject: "Ablehnen",
+    incomingChallenges: "Eingehende Herausforderungen",
+    outgoingChallenges: "Gesendete Herausforderungen",
+    ratePartner: "⭐ Bewerten",
+  },
+  fr: {
+    title: "Mes activités",
+    subtitle: "Gérez vos annonces, candidatures, matchs et défis en un seul endroit.",
+    tabMatches: "Matchs",
+    tabListings: "Mes annonces",
+    tabResponses: "Mes candidatures",
+    tabChallenges: "Défis",
+    noMatches: "Aucun match pour le moment.",
+    noListings: "Vous n'avez pas encore créé d'annonce.",
+    noResponses: "Vous n'avez pas encore postulé.",
+    noChallenges: "Aucun défi en attente.",
+    loadFailed: "Impossible de charger les données",
+    confirmCloseListing: "Fermer cette annonce ? Les candidatures en attente seront refusées.",
+    listingClosed: "Annonce fermée",
+    actionFailed: "Action échouée",
+    genericError: "Une erreur est survenue",
+    responseAccepted: "✅ Candidature acceptée !",
+    responseRejected: "Candidature refusée",
+    matchApproved: "✅ Match confirmé !",
+    reportForwarded: "⚠️ Signalement envoyé.",
+    challengeAccepted: "✅ Défi accepté !",
+    challengeRejected: "Défi refusé",
+    approvalNeeded: "⚡ Confirmation requise",
+    messages: "messages",
+    expiredMatchPrompt: "La date du match est passée. Veuillez confirmer ou signaler.",
+    approveMatch: "✅ Confirmer le match",
+    reportNoShow: "🚫 Signaler une absence",
+    reportSent: "Signalement envoyé.",
+    newListing: "+ Nouvelle annonce",
+    applications: "candidatures",
+    detailsApplications: "📋 Détails / Candidatures",
+    closeListing: "🔒 Fermer l'annonce",
+    pendingResponses: "⚠️ Réponses en attente",
+    accept: "Accepter",
+    reject: "Refuser",
+    incomingChallenges: "Défis reçus",
+    outgoingChallenges: "Défis envoyés",
+    ratePartner: "⭐ Noter",
+  },
+  es: {
+    title: "Mis actividades",
+    subtitle: "Gestiona tus anuncios, solicitudes, partidos y desafíos en un solo lugar.",
+    tabMatches: "Partidos",
+    tabListings: "Mis anuncios",
+    tabResponses: "Mis solicitudes",
+    tabChallenges: "Desafíos",
+    noMatches: "Aún no tienes partidos.",
+    noListings: "Aún no has creado un anuncio.",
+    noResponses: "Aún no has respondido a un anuncio.",
+    noChallenges: "No hay desafíos pendientes.",
+    loadFailed: "No se pudieron cargar los datos",
+    confirmCloseListing: "¿Cerrar este anuncio? Las solicitudes pendientes serán rechazadas.",
+    listingClosed: "Anuncio cerrado",
+    actionFailed: "Acción fallida",
+    genericError: "Algo salió mal",
+    responseAccepted: "✅ ¡Solicitud aceptada!",
+    responseRejected: "Solicitud rechazada",
+    matchApproved: "✅ ¡Partido confirmado!",
+    reportForwarded: "⚠️ Reporte enviado.",
+    challengeAccepted: "✅ ¡Desafío aceptado!",
+    challengeRejected: "Desafío rechazado",
+    approvalNeeded: "⚡ Confirmación requerida",
+    messages: "mensajes",
+    expiredMatchPrompt: "La fecha del partido ha pasado. Confirma o reporta.",
+    approveMatch: "✅ Confirmar partido",
+    reportNoShow: "🚫 Reportar ausencia",
+    reportSent: "Reporte enviado.",
+    newListing: "+ Nuevo anuncio",
+    applications: "solicitudes",
+    detailsApplications: "📋 Detalles / Solicitudes",
+    closeListing: "🔒 Cerrar anuncio",
+    pendingResponses: "⚠️ Respuestas pendientes",
+    accept: "Aceptar",
+    reject: "Rechazar",
+    incomingChallenges: "Desafíos recibidos",
+    outgoingChallenges: "Desafíos enviados",
+    ratePartner: "⭐ Calificar",
+  },
+  ja: {
+    title: "マイアクティビティ",
+    subtitle: "募集、応募、マッチ、チャレンジを一元管理。",
+    tabMatches: "マッチ",
+    tabListings: "マイ募集",
+    tabResponses: "マイ応募",
+    tabChallenges: "チャレンジ",
+    noMatches: "まだマッチはありません。",
+    noListings: "まだ募集を作成していません。",
+    noResponses: "まだ応募していません。",
+    noChallenges: "保留中のチャレンジはありません。",
+    loadFailed: "データを読み込めませんでした",
+    confirmCloseListing: "この募集を閉じますか？保留中の応募は却下されます。",
+    listingClosed: "募集を閉じました",
+    actionFailed: "操作に失敗しました",
+    genericError: "エラーが発生しました",
+    responseAccepted: "✅ 応募を承認しました！",
+    responseRejected: "応募を却下しました",
+    matchApproved: "✅ マッチを承認しました！",
+    reportForwarded: "⚠️ 報告を送信しました。",
+    challengeAccepted: "✅ チャレンジを承認しました！",
+    challengeRejected: "チャレンジを却下しました",
+    approvalNeeded: "⚡ 確認が必要です",
+    messages: "メッセージ",
+    expiredMatchPrompt: "マッチ日が過ぎました。実施済みなら承認、そうでなければ報告してください。",
+    approveMatch: "✅ マッチを承認",
+    reportNoShow: "🚫 不参加を報告",
+    reportSent: "報告を送信しました。",
+    newListing: "+ 新規募集",
+    applications: "応募",
+    detailsApplications: "📋 詳細 / 応募",
+    closeListing: "🔒 募集を閉じる",
+    pendingResponses: "⚠️ 保留中の応答",
+    accept: "承認",
+    reject: "却下",
+    incomingChallenges: "受信チャレンジ",
+    outgoingChallenges: "送信チャレンジ",
+    ratePartner: "⭐ 評価",
+  },
+  ko: {
+    title: "내 활동",
+    subtitle: "게시물, 지원, 매치 및 도전을 한 곳에서 관리하세요.",
+    tabMatches: "매치",
+    tabListings: "내 게시물",
+    tabResponses: "내 지원",
+    tabChallenges: "도전",
+    noMatches: "아직 매치가 없습니다.",
+    noListings: "아직 게시물을 만들지 않았습니다.",
+    noResponses: "아직 지원하지 않았습니다.",
+    noChallenges: "대기 중인 도전이 없습니다.",
+    loadFailed: "데이터를 불러올 수 없습니다",
+    confirmCloseListing: "이 게시물을 닫으시겠습니까? 대기 중인 지원은 거절됩니다.",
+    listingClosed: "게시물이 닫혔습니다",
+    actionFailed: "작업 실패",
+    genericError: "오류가 발생했습니다",
+    responseAccepted: "✅ 지원이 수락되었습니다!",
+    responseRejected: "지원이 거절되었습니다",
+    matchApproved: "✅ 매치가 승인되었습니다!",
+    reportForwarded: "⚠️ 신고가 전송되었습니다.",
+    challengeAccepted: "✅ 도전이 수락되었습니다!",
+    challengeRejected: "도전이 거절되었습니다",
+    approvalNeeded: "⚡ 확인 필요",
+    messages: "메시지",
+    expiredMatchPrompt: "매치 날짜가 지났습니다. 진행되었다면 승인하고, 아니면 신고해주세요.",
+    approveMatch: "✅ 매치 승인",
+    reportNoShow: "🚫 불참 신고",
+    reportSent: "신고가 전송되었습니다.",
+    newListing: "+ 새 게시물",
+    applications: "지원",
+    detailsApplications: "📋 상세 / 지원",
+    closeListing: "🔒 게시물 닫기",
+    pendingResponses: "⚠️ 대기 중인 응답",
+    accept: "수락",
+    reject: "거절",
+    incomingChallenges: "받은 도전",
+    outgoingChallenges: "보낸 도전",
+    ratePartner: "⭐ 평가",
   },
 } as const;
 
-function StatusBadge({ status, locale }: { status: string; locale: "tr" | "en" | "ru" }) {
+function StatusBadge({ status, locale }: { status: string; locale: string }) {
   const labelMap = STATUS_LABELS[locale] ?? STATUS_LABELS.en;
   return (
     <span className={`inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full ${STATUS_COLORS[status] ?? "bg-gray-100 text-gray-600"}`}>
@@ -231,9 +454,9 @@ export default function AktivitelerimPage() {
   const searchParams = useSearchParams();
   const locale = useLocale();
   const safeLocale = resolveAppLocale(locale);
-  const uiLocale: "tr" | "en" | "ru" = safeLocale === "ru" ? "ru" : safeLocale === "tr" ? "tr" : "en";
+  const uiLocale = safeLocale;
   const dateLocale = getDateFnsLocale(locale);
-  const copy = PAGE_COPY[uiLocale];
+  const copy = PAGE_COPY[uiLocale as keyof typeof PAGE_COPY] ?? PAGE_COPY.en;
 
   const tabParam = ((searchParams?.get("tab") ?? "") as TabKey) || "matches";
   const [activeTab, setActiveTab] = useState<TabKey>(tabParam);
@@ -466,7 +689,7 @@ export default function AktivitelerimPage() {
                       <div className="flex flex-col items-end gap-1 shrink-0">
                         <StatusBadge status={m.status} locale={uiLocale} />
                         {needsAction && <span className="text-xs text-amber-600 dark:text-amber-400 font-semibold">{copy.approvalNeeded}</span>}
-                        {needsRating && <span className="text-xs text-amber-600 dark:text-amber-400 font-semibold">⭐ Puan ver</span>}
+                        {needsRating && <span className="text-xs text-amber-600 dark:text-amber-400 font-semibold">{copy.ratePartner}</span>}
                       </div>
                     </div>
                     {m._count.messages > 0 && (
@@ -707,7 +930,7 @@ function ChallengeCard({
   challenge: Challenge;
   direction: "received" | "sent";
   onAction: (id: string, action: "ACCEPTED" | "REJECTED") => void;
-  uiLocale: "tr" | "en" | "ru";
+  uiLocale: string;
   locale: string;
   dateLocale: ReturnType<typeof getDateFnsLocale>;
 }) {
@@ -715,11 +938,17 @@ function ChallengeCard({
   const other = direction === "received" ? challenge.challenger : challenge.target;
   const expiresAt = new Date(challenge.expiresAt);
   const isExpiringSoon = expiresAt.getTime() - Date.now() < 6 * 60 * 60 * 1000;
-  const text = uiLocale === "ru"
-    ? { rival: "Соперник", partner: "Партнер", expires: "до конца", accept: "Принять", reject: "Отклонить" }
-    : uiLocale === "tr"
-      ? { rival: "Rakip", partner: "Partner", expires: "sona eriyor", accept: "Kabul Et", reject: "Reddet" }
-      : { rival: "Rival", partner: "Partner", expires: "remaining", accept: "Accept", reject: "Reject" };
+  const CHALLENGE_TEXT: Record<string, { rival: string; partner: string; expires: string; accept: string; reject: string }> = {
+    tr: { rival: "Rakip", partner: "Partner", expires: "sona eriyor", accept: "Kabul Et", reject: "Reddet" },
+    en: { rival: "Rival", partner: "Partner", expires: "remaining", accept: "Accept", reject: "Reject" },
+    ru: { rival: "Соперник", partner: "Партнер", expires: "до конца", accept: "Принять", reject: "Отклонить" },
+    de: { rival: "Gegner", partner: "Partner", expires: "verbleibend", accept: "Annehmen", reject: "Ablehnen" },
+    fr: { rival: "Adversaire", partner: "Partenaire", expires: "restant", accept: "Accepter", reject: "Refuser" },
+    es: { rival: "Rival", partner: "Compañero", expires: "restante", accept: "Aceptar", reject: "Rechazar" },
+    ja: { rival: "ライバル", partner: "パートナー", expires: "残り", accept: "承認", reject: "却下" },
+    ko: { rival: "상대", partner: "파트너", expires: "남음", accept: "수락", reject: "거절" },
+  };
+  const text = CHALLENGE_TEXT[uiLocale] ?? CHALLENGE_TEXT.en;
 
   const handleAction = async (action: "ACCEPTED" | "REJECTED") => {
     setLoading(action);

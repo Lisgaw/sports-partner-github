@@ -3,11 +3,86 @@
 import { useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
-import { tr } from "date-fns/locale";
+import { useLocale } from "next-intl";
+import { getDateFnsLocale, resolveAppLocale } from "@/lib/localized-ui";
 import Button from "@/components/ui/Button";
 import ReactionButton from "@/components/social/ReactionButton";
 import LikesModal from "@/components/social/LikesModal";
 import CommentThread from "@/components/social/CommentThread";
+
+const POSTCARD_COPY = {
+  tr: {
+    confirmDelete: "Bu gönderiyi silmek istiyor musun?",
+    reportFailed: "Şikayet gönderilemedi",
+    deleteTooltip: "Sil",
+    reportTooltip: "Şikayet Et",
+    replyingTo: "kişisine yanıt veriliyor...",
+    cancelReply: "Vazgeç",
+    replyPlaceholder: "Yanıt yaz...",
+    commentPlaceholder: "Yorum yaz...",
+    send: "Gönder",
+    reportTitle: "🚩 Gönderiyi Şikayet Et",
+    reasonLabel: "Sebep",
+    spam: "📧 Spam",
+    harassment: "😡 Taciz / Zorbalık",
+    fakeProfile: "🎭 Sahte Profil",
+    inappropriate: "⚠️ Uygunsuz İçerik",
+    scam: "💸 Dolandırıcılık",
+    other: "🔖 Diğer",
+    descriptionLabel: "Açıklama (opsiyonel)",
+    descriptionPlaceholder: "Detaylı bilgi verebilirsiniz...",
+    cancel: "İptal",
+    submit: "Gönder",
+  },
+  en: {
+    confirmDelete: "Do you want to delete this post?",
+    reportFailed: "Failed to send report",
+    deleteTooltip: "Delete",
+    reportTooltip: "Report",
+    replyingTo: "replying to...",
+    cancelReply: "Cancel",
+    replyPlaceholder: "Write a reply...",
+    commentPlaceholder: "Write a comment...",
+    send: "Send",
+    reportTitle: "🚩 Report Post",
+    reasonLabel: "Reason",
+    spam: "📧 Spam",
+    harassment: "😡 Harassment / Bullying",
+    fakeProfile: "🎭 Fake Profile",
+    inappropriate: "⚠️ Inappropriate Content",
+    scam: "💸 Scam",
+    other: "🔖 Other",
+    descriptionLabel: "Description (optional)",
+    descriptionPlaceholder: "You can provide more details...",
+    cancel: "Cancel",
+    submit: "Send",
+  },
+  ru: {
+    confirmDelete: "Вы хотите удалить эту публикацию?",
+    reportFailed: "Не удалось отправить жалобу",
+    deleteTooltip: "Удалить",
+    reportTooltip: "Пожаловаться",
+    replyingTo: "ответ для...",
+    cancelReply: "Отмена",
+    replyPlaceholder: "Написать ответ...",
+    commentPlaceholder: "Написать комментарий...",
+    send: "Отправить",
+    reportTitle: "🚩 Пожаловаться на публикацию",
+    reasonLabel: "Причина",
+    spam: "📧 Спам",
+    harassment: "😡 Домогательство / Травля",
+    fakeProfile: "🎭 Фейковый профиль",
+    inappropriate: "⚠️ Неприемлемый контент",
+    scam: "💸 Мошенничество",
+    other: "🔖 Другое",
+    descriptionLabel: "Описание (необязательно)",
+    descriptionPlaceholder: "Можете указать подробности...",
+    cancel: "Отмена",
+    submit: "Отправить",
+  },
+} as const;
+
+type PostCardCopyKeys = keyof typeof POSTCARD_COPY;
 
 interface PostCardProps {
   post: any;
@@ -36,6 +111,11 @@ export default function PostCard({ post, sessionUserId, onLikeToggle, onDeletePo
   const [reportReason, setReportReason] = useState("SPAM");
   const [reportDesc, setReportDesc] = useState("");
   const [reportLoading, setReportLoading] = useState(false);
+
+  const locale = useLocale();
+  const safeLocale = resolveAppLocale(locale);
+  const copy = POSTCARD_COPY[safeLocale as PostCardCopyKeys] ?? POSTCARD_COPY.en;
+  const dateFnsLocale = getDateFnsLocale(locale);
 
   const handleReact = async (reaction: string) => {
     if (toggling) return;
@@ -188,7 +268,7 @@ export default function PostCard({ post, sessionUserId, onLikeToggle, onDeletePo
   };
 
   const handleDelete = async () => {
-    if (!confirm("Bu gönderiyi silmek istiyor musun?")) return;
+    if (!confirm(copy.confirmDelete)) return;
     setDeleting(true);
     try {
       const res = await fetch(`/api/posts/${post.id}`, { method: "DELETE" });
@@ -210,7 +290,7 @@ export default function PostCard({ post, sessionUserId, onLikeToggle, onDeletePo
         body: JSON.stringify({ reason: reportReason, description: reportDesc || undefined }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Şikayet gönderilemedi");
+      if (!res.ok) throw new Error(data.error || copy.reportFailed);
       setShowReportModal(false);
       setReportDesc("");
     } catch {
@@ -238,7 +318,7 @@ export default function PostCard({ post, sessionUserId, onLikeToggle, onDeletePo
             {post.user?.name}
           </Link>
           <Link href={`/posts/${post.id}`} className="text-xs text-gray-400 dark:text-gray-500 block hover:underline">
-            {format(new Date(post.createdAt), "d MMM yyyy, HH:mm", { locale: tr })}
+            {format(new Date(post.createdAt), "d MMM yyyy, HH:mm", { locale: dateFnsLocale })}
           </Link>
         </div>
         
@@ -249,7 +329,7 @@ export default function PostCard({ post, sessionUserId, onLikeToggle, onDeletePo
               onClick={handleDelete}
               disabled={deleting}
               className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-              title="Sil"
+              title={copy.deleteTooltip}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -263,7 +343,7 @@ export default function PostCard({ post, sessionUserId, onLikeToggle, onDeletePo
             <button
               onClick={() => setShowReportModal(true)}
               className="p-1.5 text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-colors"
-              title="Şikayet Et"
+              title={copy.reportTooltip}
             >
               🚩
             </button>
@@ -336,8 +416,8 @@ export default function PostCard({ post, sessionUserId, onLikeToggle, onDeletePo
           <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
             {replyingTo && (
               <div className="flex items-center justify-between px-2 py-1 mb-1 bg-gray-50 dark:bg-gray-700/30 rounded text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
-                <span><b>{replyingTo.name}</b> kişisine yanıt veriliyor...</span>
-                <button onClick={() => setReplyingTo(null)} className="hover:underline">Vazgeç</button>
+                <span><b>{replyingTo.name}</b> {copy.replyingTo}</span>
+                <button onClick={() => setReplyingTo(null)} className="hover:underline">{copy.cancelReply}</button>
               </div>
             )}
             <div className="flex gap-2">
@@ -346,7 +426,7 @@ export default function PostCard({ post, sessionUserId, onLikeToggle, onDeletePo
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleAddComment()}
-                placeholder={replyingTo ? "Yanıt yaz..." : "Yorum yaz..."}
+                placeholder={replyingTo ? copy.replyPlaceholder : copy.commentPlaceholder}
                 className="flex-1 text-sm px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-transparent text-gray-800 dark:text-gray-100 outline-none focus:ring-2 focus:ring-emerald-500"
               />
               <Button
@@ -355,7 +435,7 @@ export default function PostCard({ post, sessionUserId, onLikeToggle, onDeletePo
                 loading={addingComment}
                 disabled={!commentText.trim()}
               >
-                Gönder
+                {copy.send}
               </Button>
             </div>
           </div>
@@ -366,37 +446,37 @@ export default function PostCard({ post, sessionUserId, onLikeToggle, onDeletePo
       {showReportModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowReportModal(false)}>
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">🚩 Gönderiyi Şikayet Et</h2>
+            <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">{copy.reportTitle}</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sebep</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{copy.reasonLabel}</label>
                 <select
                   value={reportReason}
                   onChange={(e) => setReportReason(e.target.value)}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-orange-500 outline-none"
                 >
-                  <option value="SPAM">📧 Spam</option>
-                  <option value="HARASSMENT">😡 Taciz / Zorbalık</option>
-                  <option value="FAKE_PROFILE">🎭 Sahte Profil</option>
-                  <option value="INAPPROPRIATE_CONTENT">⚠️ Uygunsuz İçerik</option>
-                  <option value="SCAM">💸 Dolandırıcılık</option>
-                  <option value="OTHER">🔖 Diğer</option>
+                  <option value="SPAM">{copy.spam}</option>
+                  <option value="HARASSMENT">{copy.harassment}</option>
+                  <option value="FAKE_PROFILE">{copy.fakeProfile}</option>
+                  <option value="INAPPROPRIATE_CONTENT">{copy.inappropriate}</option>
+                  <option value="SCAM">{copy.scam}</option>
+                  <option value="OTHER">{copy.other}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Açıklama (opsiyonel)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{copy.descriptionLabel}</label>
                 <textarea
                   value={reportDesc}
                   onChange={(e) => setReportDesc(e.target.value)}
                   rows={3}
                   maxLength={500}
-                  placeholder="Detaylı bilgi verebilirsiniz..."
+                  placeholder={copy.descriptionPlaceholder}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 resize-none focus:ring-2 focus:ring-orange-500 outline-none"
                 />
               </div>
               <div className="flex gap-3 justify-end">
-                <Button variant="secondary" onClick={() => setShowReportModal(false)}>İptal</Button>
-                <Button onClick={handleReportUser} loading={reportLoading} className="bg-orange-600 hover:bg-orange-700 text-white">Gönder</Button>
+                <Button variant="secondary" onClick={() => setShowReportModal(false)}>{copy.cancel}</Button>
+                <Button onClick={handleReportUser} loading={reportLoading} className="bg-orange-600 hover:bg-orange-700 text-white">{copy.submit}</Button>
               </div>
             </div>
           </div>

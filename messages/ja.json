@@ -40,7 +40,11 @@
     "language": "言語",
     "lightMode": "ライト",
     "darkMode": "ダーク",
-    "lessons": "レッスン管理"
+    "lessons": "レッスン管理",
+    "toggleTheme": "テーマ切り替え",
+    "moreOptions": "その他",
+    "profileAlt": "プロフィール",
+    "bottomNav": "ボトムナビゲーション"
   },
   "common": {
     "loading": "読み込み中...",
@@ -542,6 +546,19 @@
     "typeTrainer": "トレーナー",
     "typeEquipment": "用品",
     "typePartner": "パートナー",
+    "pwMinLength": "8文字以上",
+    "pwUppercase": "大文字",
+    "pwLowercase": "小文字",
+    "pwDigit": "数字",
+    "pwSpecial": "特殊文字",
+    "pwRequirements": "パスワード要件: {errors}",
+    "moreTab": "··· 他",
+    "deleteListing": "🗑️ 削除",
+    "gridView": "グリッド表示",
+    "listView": "リスト表示",
+    "deleteListingTitle": "募集を削除",
+    "deleteListingDesc": "この募集を削除してもよろしいですか？この操作は元に戻せません。",
+    "deleteListingConfirm": "削除",
     "header": {
       "editProfile": "プロフィール編集",
       "followers": "フォロワー",

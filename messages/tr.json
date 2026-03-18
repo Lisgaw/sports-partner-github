@@ -40,7 +40,11 @@
     "language": "Dil",
     "lightMode": "Aydınlık",
     "darkMode": "Karanlık",
-    "lessons": "Ders Takibi"
+    "lessons": "Ders Takibi",
+    "toggleTheme": "Tema Değiştir",
+    "moreOptions": "Daha Fazla",
+    "profileAlt": "Profil",
+    "bottomNav": "Alt menü"
   },
   "common": {
     "loading": "Yükleniyor...",
@@ -542,6 +546,19 @@
     "typeTrainer": "Eğitmen",
     "typeEquipment": "Satılık",
     "typePartner": "Partner",
+    "pwMinLength": "en az 8 karakter",
+    "pwUppercase": "büyük harf",
+    "pwLowercase": "küçük harf",
+    "pwDigit": "rakam",
+    "pwSpecial": "özel karakter",
+    "pwRequirements": "Yeni şifre gereksinimleri: {errors}",
+    "moreTab": "··· Daha",
+    "deleteListing": "🗑️ Sil",
+    "gridView": "Grid Görünüm",
+    "listView": "Liste Görünüm",
+    "deleteListingTitle": "İlanı Sil",
+    "deleteListingDesc": "Bu ilanı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.",
+    "deleteListingConfirm": "İlanı Sil",
     "header": {
       "editProfile": "Profili Düzenle",
       "followers": "takipçi",

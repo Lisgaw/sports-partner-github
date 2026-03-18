@@ -40,7 +40,11 @@
     "language": "Idioma",
     "lightMode": "Claro",
     "darkMode": "Oscuro",
-    "lessons": "Mis lecciones"
+    "lessons": "Mis lecciones",
+    "toggleTheme": "Cambiar tema",
+    "moreOptions": "Más",
+    "profileAlt": "Perfil",
+    "bottomNav": "Navegación inferior"
   },
   "common": {
     "loading": "Cargando...",
@@ -542,6 +546,19 @@
     "typeTrainer": "Entrenador",
     "typeEquipment": "Equipo",
     "typePartner": "Companero",
+    "pwMinLength": "al menos 8 caracteres",
+    "pwUppercase": "letra mayúscula",
+    "pwLowercase": "letra minúscula",
+    "pwDigit": "dígito",
+    "pwSpecial": "carácter especial",
+    "pwRequirements": "Requisitos de contraseña: {errors}",
+    "moreTab": "··· Más",
+    "deleteListing": "🗑️ Eliminar",
+    "gridView": "Vista cuadrícula",
+    "listView": "Vista lista",
+    "deleteListingTitle": "Eliminar anuncio",
+    "deleteListingDesc": "¿Estás seguro de que quieres eliminar este anuncio? Esta acción no se puede deshacer.",
+    "deleteListingConfirm": "Eliminar",
     "header": {
       "editProfile": "Editar perfil",
       "followers": "seguidores",

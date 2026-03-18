@@ -40,7 +40,11 @@
     "language": "Langue",
     "lightMode": "Clair",
     "darkMode": "Sombre",
-    "lessons": "Mes cours"
+    "lessons": "Mes cours",
+    "toggleTheme": "Changer le thème",
+    "moreOptions": "Plus",
+    "profileAlt": "Profil",
+    "bottomNav": "Navigation inférieure"
   },
   "common": {
     "loading": "Chargement...",
@@ -542,6 +546,19 @@
     "typeTrainer": "Entraineur",
     "typeEquipment": "Equipement",
     "typePartner": "Partenaire",
+    "pwMinLength": "au moins 8 caractères",
+    "pwUppercase": "lettre majuscule",
+    "pwLowercase": "lettre minuscule",
+    "pwDigit": "chiffre",
+    "pwSpecial": "caractère spécial",
+    "pwRequirements": "Exigences du mot de passe : {errors}",
+    "moreTab": "··· Plus",
+    "deleteListing": "🗑️ Supprimer",
+    "gridView": "Vue grille",
+    "listView": "Vue liste",
+    "deleteListingTitle": "Supprimer l'annonce",
+    "deleteListingDesc": "Êtes-vous sûr de vouloir supprimer cette annonce ? Cette action est irréversible.",
+    "deleteListingConfirm": "Supprimer",
     "header": {
       "editProfile": "Modifier le profil",
       "followers": "abonnés",

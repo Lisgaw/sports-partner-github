@@ -40,7 +40,11 @@
     "language": "Language",
     "lightMode": "Light",
     "darkMode": "Dark",
-    "lessons": "My Lessons"
+    "lessons": "My Lessons",
+    "toggleTheme": "Toggle Theme",
+    "moreOptions": "More Options",
+    "profileAlt": "Profile",
+    "bottomNav": "Bottom Navigation"
   },
   "common": {
     "loading": "Loading...",
@@ -542,6 +546,19 @@
     "typeTrainer": "Trainer",
     "typeEquipment": "Equipment",
     "typePartner": "Partner",
+    "pwMinLength": "at least 8 characters",
+    "pwUppercase": "uppercase letter",
+    "pwLowercase": "lowercase letter",
+    "pwDigit": "digit",
+    "pwSpecial": "special character",
+    "pwRequirements": "New password requirements: {errors}",
+    "moreTab": "··· More",
+    "deleteListing": "🗑️ Delete",
+    "gridView": "Grid View",
+    "listView": "List View",
+    "deleteListingTitle": "Delete Listing",
+    "deleteListingDesc": "Are you sure you want to delete this listing? This action cannot be undone.",
+    "deleteListingConfirm": "Delete Listing",
     "header": {
       "editProfile": "Edit Profile",
       "followers": "followers",

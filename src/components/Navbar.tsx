@@ -247,7 +247,7 @@ export default function Navbar() {
                     <span className="inline-flex items-center gap-2 cursor-pointer p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition">
                       <Image
                         src={session.user?.image || "/icons/avatar.svg"}
-                        alt="Profil"
+                        alt={t("profileAlt")}
                         width={32}
                         height={32}
                         unoptimized
@@ -269,7 +269,7 @@ export default function Navbar() {
                     {t("signOut")}
                   </button>
                 </Dropdown>
-                <button onClick={toggleDarkMode} className="hidden md:inline-flex ml-1 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400" aria-label="Tema Değiştir">
+                <button onClick={toggleDarkMode} className="hidden md:inline-flex ml-1 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400" aria-label={t("toggleTheme")}>
                   {darkMode ? (
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
@@ -286,7 +286,7 @@ export default function Navbar() {
                   <button
                     onClick={() => setMoreOpen(v => !v)}
                     className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400"
-                    aria-label="Daha Fazla"
+                    aria-label={t("moreOptions")}
                   >
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                       <circle cx="5" cy="12" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="19" cy="12" r="1.5" />
@@ -305,7 +305,7 @@ export default function Navbar() {
                             <div className="flex items-center gap-3 min-w-0">
                               <Image
                                 src={session.user?.image || "/icons/avatar.svg"}
-                                alt="Profil"
+                                alt={t("profileAlt")}
                                 width={48}
                                 height={48}
                                 unoptimized
@@ -450,7 +450,7 @@ export default function Navbar() {
                 <div className="md:hidden">
                   <LanguageSwitcher />
                 </div>
-                <button onClick={toggleDarkMode} className="ml-1 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400" aria-label="Tema Değiştir">
+                <button onClick={toggleDarkMode} className="ml-1 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400" aria-label={t("toggleTheme")}>
                   {darkMode ? (
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />

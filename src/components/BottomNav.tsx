@@ -88,7 +88,7 @@ export default function BottomNav() {
 
   return (
     <nav
-      aria-label="Alt menü"
+      aria-label={t("bottomNav")}
       className="md:hidden fixed bottom-0 inset-x-0 z-[65]"
     >
       <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-gray-200/90 dark:border-gray-700/80 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">

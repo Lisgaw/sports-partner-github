@@ -40,7 +40,11 @@
     "language": "Sprache",
     "lightMode": "Hell",
     "darkMode": "Dunkel",
-    "lessons": "Meine Lektionen"
+    "lessons": "Meine Lektionen",
+    "toggleTheme": "Design wechseln",
+    "moreOptions": "Mehr",
+    "profileAlt": "Profil",
+    "bottomNav": "Untere Navigation"
   },
   "common": {
     "loading": "Wird geladen...",
@@ -542,6 +546,19 @@
     "typeTrainer": "Trainer",
     "typeEquipment": "Ausruestung",
     "typePartner": "Partner",
+    "pwMinLength": "mindestens 8 Zeichen",
+    "pwUppercase": "Großbuchstabe",
+    "pwLowercase": "Kleinbuchstabe",
+    "pwDigit": "Ziffer",
+    "pwSpecial": "Sonderzeichen",
+    "pwRequirements": "Passwortanforderungen: {errors}",
+    "moreTab": "··· Mehr",
+    "deleteListing": "🗑️ Löschen",
+    "gridView": "Rasteransicht",
+    "listView": "Listenansicht",
+    "deleteListingTitle": "Anzeige löschen",
+    "deleteListingDesc": "Sind Sie sicher, dass Sie diese Anzeige löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleteListingConfirm": "Löschen",
     "header": {
       "editProfile": "Profil bearbeiten",
       "followers": "Follower",

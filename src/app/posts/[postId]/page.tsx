@@ -5,14 +5,94 @@ import { useParams, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { format } from "date-fns";
-import { tr } from "date-fns/locale";
+import { useLocale } from "next-intl";
+import { getDateFnsLocale, resolveAppLocale } from "@/lib/localized-ui";
 import toast from "@/lib/toast";
+
+const POSTDETAIL_COPY = {
+  tr: {
+    postNotFound: "Gönderi bulunamadı",
+    commentsFailed: "Yorumlar yüklenemedi",
+    actionFailed: "İşlem yapılamadı",
+    loading: "Yükleniyor...",
+    notFoundOrNoAccess: "Gönderi bulunamadı veya erişim izniniz yok.",
+    postDetail: "Gönderi Detayı",
+    comments: "Yorumlar",
+    noComments: "Henüz yorum yapılmamış. İlk yorumu sen yap!",
+    replyingTo: "kişisine yanıt veriliyor...",
+    cancelReply: "Vazgeç",
+    replyPlaceholder: "Yanıt yaz...",
+    commentPlaceholder: "Düşüncelerini paylaş...",
+    send: "Gönder",
+    deletedUser: "Silinmiş Kullanıcı",
+    save: "Kaydet",
+    cancel: "İptal",
+    reply: "Yanıtla",
+    edit: "Düzenle",
+    delete: "Sil",
+    confirmDelete: "Bu yorumu silmek istiyor musun?",
+    user: "Kullanıcı",
+  },
+  en: {
+    postNotFound: "Post not found",
+    commentsFailed: "Failed to load comments",
+    actionFailed: "Action failed",
+    loading: "Loading...",
+    notFoundOrNoAccess: "Post not found or you don't have access.",
+    postDetail: "Post Detail",
+    comments: "Comments",
+    noComments: "No comments yet. Be the first to comment!",
+    replyingTo: "replying to...",
+    cancelReply: "Cancel",
+    replyPlaceholder: "Write a reply...",
+    commentPlaceholder: "Share your thoughts...",
+    send: "Send",
+    deletedUser: "Deleted User",
+    save: "Save",
+    cancel: "Cancel",
+    reply: "Reply",
+    edit: "Edit",
+    delete: "Delete",
+    confirmDelete: "Do you want to delete this comment?",
+    user: "User",
+  },
+  ru: {
+    postNotFound: "Публикация не найдена",
+    commentsFailed: "Не удалось загрузить комментарии",
+    actionFailed: "Действие не выполнено",
+    loading: "Загрузка...",
+    notFoundOrNoAccess: "Публикация не найдена или нет доступа.",
+    postDetail: "Детали публикации",
+    comments: "Комментарии",
+    noComments: "Комментариев пока нет. Будьте первым!",
+    replyingTo: "ответ для...",
+    cancelReply: "Отмена",
+    replyPlaceholder: "Написать ответ...",
+    commentPlaceholder: "Поделитесь мыслями...",
+    send: "Отправить",
+    deletedUser: "Удалённый пользователь",
+    save: "Сохранить",
+    cancel: "Отмена",
+    reply: "Ответить",
+    edit: "Изменить",
+    delete: "Удалить",
+    confirmDelete: "Вы хотите удалить этот комментарий?",
+    user: "Пользователь",
+  },
+} as const;
+
+type PostDetailCopyKeys = keyof typeof POSTDETAIL_COPY;
 
 export default function PostDetailPage() {
   const { postId } = useParams();
   const searchParams = useSearchParams();
   const targetCommentId = searchParams.get("commentId");
   const { data: session } = useSession();
+
+  const locale = useLocale();
+  const safeLocale = resolveAppLocale(locale);
+  const copy = POSTDETAIL_COPY[safeLocale as PostDetailCopyKeys] ?? POSTDETAIL_COPY.en;
+  const dateFnsLocale = getDateFnsLocale(locale);
 
   const [post, setPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -26,7 +106,7 @@ export default function PostDetailPage() {
     try {
       const res = await fetch(`/api/posts/${postId}`);
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Gönderi bulunamadı");
+      if (!res.ok) throw new Error(json.error || copy.postNotFound);
       setPost(json.post);
     } catch (err: any) {
       toast.error(err.message);
@@ -41,7 +121,7 @@ export default function PostDetailPage() {
       const json = await res.json();
       setComments(json.comments || []);
     } catch {
-      toast.error("Yorumlar yüklenemedi");
+      toast.error(copy.commentsFailed);
     } finally {
       setCommentsLoading(false);
     }
@@ -78,7 +158,7 @@ export default function PostDetailPage() {
         _count: { ...prev._count, likes: json.likeCount }
       }));
     } catch {
-      toast.error("İşlem yapılamadı");
+      toast.error(copy.actionFailed);
     }
   };
 
@@ -166,8 +246,8 @@ export default function PostDetailPage() {
     }
   };
 
-  if (loading) return <div className="p-8 text-center animate-pulse">Yükleniyor...</div>;
-  if (!post) return <div className="p-8 text-center text-gray-400">Gönderi bulunamadı veya erişim izniniz yok.</div>;
+  if (loading) return <div className="p-8 text-center animate-pulse">{copy.loading}</div>;
+  if (!post) return <div className="p-8 text-center text-gray-400">{copy.notFoundOrNoAccess}</div>;
 
   return (
     <div className="max-w-2xl mx-auto p-4 pb-32">
@@ -175,7 +255,7 @@ export default function PostDetailPage() {
         <Link href="/sosyal" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition">
           <span className="text-xl">←</span>
         </Link>
-        <h1 className="font-bold text-lg">Gönderi Detayı</h1>
+        <h1 className="font-bold text-lg">{copy.postDetail}</h1>
       </header>
 
       <article className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mb-8">
@@ -187,7 +267,7 @@ export default function PostDetailPage() {
           </Link>
           <div>
             <Link href={`/profil/${post.user.id}`} className="font-bold text-sm hover:text-emerald-500 transition">{post.user.name}</Link>
-            <p className="text-xs text-gray-400">{format(new Date(post.createdAt), "d MMMM yyyy, HH:mm", { locale: tr })}</p>
+            <p className="text-xs text-gray-400">{format(new Date(post.createdAt), "d MMMM yyyy, HH:mm", { locale: dateFnsLocale })}</p>
           </div>
         </div>
 
@@ -212,14 +292,14 @@ export default function PostDetailPage() {
       </article>
 
       <section className="space-y-6">
-        <h3 className="font-bold text-sm text-gray-500 uppercase tracking-wider mb-4 px-1">Yorumlar</h3>
+        <h3 className="font-bold text-sm text-gray-500 uppercase tracking-wider mb-4 px-1">{copy.comments}</h3>
         {commentsLoading ? (
           <div className="animate-pulse space-y-4">
             {[1, 2, 3].map(i => <div key={i} className="h-16 bg-gray-100 dark:bg-gray-800 rounded-2xl" />)}
           </div>
         ) : comments.length === 0 ? (
           <div className="text-center py-12 bg-gray-50 dark:bg-gray-800/20 rounded-3xl border-2 border-dashed border-gray-100 dark:border-gray-700">
-             <p className="text-gray-400 text-sm">Henüz yorum yapılmamış. İlk yorumu sen yap!</p>
+             <p className="text-gray-400 text-sm">{copy.noComments}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -237,6 +317,8 @@ export default function PostDetailPage() {
                     onEdit={handleCommentEdit}
                     currentUserId={session?.user?.id}
                     postOwnerId={post?.userId ?? post?.user?.id}
+                    copy={copy}
+                    dateFnsLocale={dateFnsLocale}
                 />
             ))}
           </div>
@@ -247,9 +329,9 @@ export default function PostDetailPage() {
         {replyingTo && (
             <div className="bg-emerald-50 dark:bg-emerald-900/30 px-4 py-2 rounded-t-xl mb-1 flex justify-between items-center animate-in slide-in-from-bottom-2">
                 <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">
-                    <b>{replyingTo.name}</b> kişisine yanıt veriliyor...
+                    <b>{replyingTo.name}</b> {copy.replyingTo}
                 </p>
-                <button onClick={() => setReplyingTo(null)} className="text-emerald-700 dark:text-emerald-300 text-xs hover:underline">Vazgeç</button>
+                <button onClick={() => setReplyingTo(null)} className="text-emerald-700 dark:text-emerald-300 text-xs hover:underline">{copy.cancelReply}</button>
             </div>
         )}
         <div className="flex gap-3 items-center">
@@ -258,7 +340,7 @@ export default function PostDetailPage() {
               value={commentText}
               onChange={e => setCommentText(e.target.value)}
               onKeyDown={e => e.key === "Enter" && !e.shiftKey && handleComment()}
-              placeholder={replyingTo ? "Yanıt yaz..." : "Düşüncelerini paylaş..."}
+              placeholder={replyingTo ? copy.replyPlaceholder : copy.commentPlaceholder}
               className="flex-1 bg-gray-100 dark:bg-gray-800 border-none rounded-2xl px-5 py-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
             />
             <button 
@@ -266,7 +348,7 @@ export default function PostDetailPage() {
               disabled={submitting || !commentText.trim()}
               className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl px-6 py-3 text-sm font-bold disabled:opacity-50 transition-all transform active:scale-95 shrink-0"
             >
-              {submitting ? "..." : "Gönder"}
+              {submitting ? "..." : copy.send}
             </button>
         </div>
       </div>
@@ -274,9 +356,10 @@ export default function PostDetailPage() {
   );
 }
 
-function CommentItem({ comment, onReply, onLike, onDelete, onEdit, currentUserId, postOwnerId }: { comment: any, onReply: (p: any) => void, onLike: (id: string) => void, onDelete?: (id: string) => void, onEdit?: (id: string, content: string) => void, currentUserId?: string, postOwnerId?: string }) {
+function CommentItem({ comment, onReply, onLike, onDelete, onEdit, currentUserId, postOwnerId, copy, dateFnsLocale }: { comment: any, onReply: (p: any) => void, onLike: (id: string) => void, onDelete?: (id: string) => void, onEdit?: (id: string, content: string) => void, currentUserId?: string, postOwnerId?: string, copy: (typeof POSTDETAIL_COPY)[keyof typeof POSTDETAIL_COPY], dateFnsLocale: import("date-fns").Locale }) {
     const [editing, setEditing] = useState(false);
     const [editContent, setEditContent] = useState(comment.content);
+    const [menuOpen, setMenuOpen] = useState(false);
     const isMyComment = currentUserId === comment.user?.id;
     const isPostOwner = currentUserId === postOwnerId;
     const canDelete = (isMyComment || isPostOwner) && onDelete;
@@ -293,7 +376,7 @@ function CommentItem({ comment, onReply, onLike, onDelete, onEdit, currentUserId
                 <div className="flex-1 min-w-0">
                     <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-2xl rounded-tl-none shadow-sm relative">
                         <div className="flex justify-between items-start mb-1">
-                            <Link href={`/profil/${comment.user?.id ?? ""}`} className="text-xs font-bold text-gray-800 dark:text-gray-100 hover:text-emerald-500 transition">{comment.user?.name ?? "Silinmiş Kullanıcı"}</Link>
+                            <Link href={`/profil/${comment.user?.id ?? ""}`} className="text-xs font-bold text-gray-800 dark:text-gray-100 hover:text-emerald-500 transition">{comment.user?.name ?? copy.deletedUser}</Link>
                             <button 
                                 onClick={() => onLike(comment.id)}
                                 className={`text-xs flex items-center gap-1 transition ${comment.likedByMe ? "text-rose-500" : "text-gray-400 hover:text-rose-400"}`}
@@ -311,8 +394,8 @@ function CommentItem({ comment, onReply, onLike, onDelete, onEdit, currentUserId
                                     className="w-full text-sm px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 outline-none focus:ring-1 focus:ring-emerald-500 resize-none"
                                 />
                                 <div className="flex gap-2">
-                                    <button onClick={() => { const t = editContent.trim(); if (t && t !== comment.content) onEdit?.(comment.id, t); setEditing(false); }} className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 transition">Kaydet</button>
-                                    <button onClick={() => { setEditing(false); setEditContent(comment.content); }} className="text-[11px] font-bold text-gray-400 hover:text-gray-600 transition">İptal</button>
+                                    <button onClick={() => { const t = editContent.trim(); if (t && t !== comment.content) onEdit?.(comment.id, t); setEditing(false); }} className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 transition">{copy.save}</button>
+                                    <button onClick={() => { setEditing(false); setEditContent(comment.content); }} className="text-[11px] font-bold text-gray-400 hover:text-gray-600 transition">{copy.cancel}</button>
                                 </div>
                             </div>
                         ) : (
@@ -320,18 +403,40 @@ function CommentItem({ comment, onReply, onLike, onDelete, onEdit, currentUserId
                         )}
                     </div>
                     <div className="flex items-center gap-4 mt-2 ml-1">
-                        <p className="text-[10px] text-gray-400 font-medium">{format(new Date(comment.createdAt), "d MMM, HH:mm", { locale: tr })}</p>
+                        <p className="text-[10px] text-gray-400 font-medium">{format(new Date(comment.createdAt), "d MMM, HH:mm", { locale: dateFnsLocale })}</p>
                         <button 
-                            onClick={() => onReply({ id: comment.id, name: comment.user?.name ?? "Kullanıcı" })}
+                            onClick={() => onReply({ id: comment.id, name: comment.user?.name ?? copy.user })}
                             className="text-[11px] font-bold text-gray-500 hover:text-emerald-600 uppercase tracking-tighter"
                         >
-                            Yanıtla
+                            {copy.reply}
                         </button>
-                        {canEdit && !editing && (
-                            <button onClick={() => setEditing(true)} className="text-[11px] font-bold text-gray-400 hover:text-blue-500 transition">Düzenle</button>
-                        )}
-                        {canDelete && (
-                            <button onClick={() => { if (confirm("Bu yorumu silmek istiyor musun?")) onDelete?.(comment.id); }} className="text-[11px] font-bold text-gray-400 hover:text-red-500 transition">Sil</button>
+                        {(canEdit || canDelete) && !editing && (
+                            <div className="relative">
+                                <button onClick={() => setMenuOpen(v => !v)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition p-0.5 rounded">
+                                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <circle cx="10" cy="4" r="1.5" />
+                                        <circle cx="10" cy="10" r="1.5" />
+                                        <circle cx="10" cy="16" r="1.5" />
+                                    </svg>
+                                </button>
+                                {menuOpen && (
+                                    <>
+                                        <div className="fixed inset-0 z-[80]" onClick={() => setMenuOpen(false)} />
+                                        <div className="absolute left-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-[81] overflow-hidden min-w-[120px]">
+                                            {canEdit && (
+                                                <button onClick={() => { setEditing(true); setMenuOpen(false); }} className="w-full text-left flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                                    ✏️ {copy.edit}
+                                                </button>
+                                            )}
+                                            {canDelete && (
+                                                <button onClick={() => { setMenuOpen(false); if (confirm(copy.confirmDelete)) onDelete?.(comment.id); }} className="w-full text-left flex items-center gap-2 px-3 py-2 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
+                                                    🗑️ {copy.delete}
+                                                </button>
+                                            )}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         )}
                     </div>
 
@@ -339,7 +444,7 @@ function CommentItem({ comment, onReply, onLike, onDelete, onEdit, currentUserId
                     {comment.replies?.length > 0 && (
                         <div className="mt-4 space-y-4 pl-4 border-l-2 border-gray-100 dark:border-gray-800">
                             {comment.replies.map((reply: any) => (
-                                <CommentItem key={reply.id} comment={reply} onReply={onReply} onLike={onLike} onDelete={onDelete} onEdit={onEdit} currentUserId={currentUserId} postOwnerId={postOwnerId} />
+                                <CommentItem key={reply.id} comment={reply} onReply={onReply} onLike={onLike} onDelete={onDelete} onEdit={onEdit} currentUserId={currentUserId} postOwnerId={postOwnerId} copy={copy} dateFnsLocale={dateFnsLocale} />
                             ))}
                         </div>
                     )}

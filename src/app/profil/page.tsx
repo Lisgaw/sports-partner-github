@@ -8,6 +8,8 @@ import { tr, enUS, de, es, fr, ja, ko, ru } from "date-fns/locale";
 import type { Locale } from "date-fns";
 import toast from "@/lib/toast";
 import { useTranslations, useLocale } from "next-intl";
+import { localizeSportFromDbName } from "@/lib/sport-catalog";
+import type { AppLocale } from "@/lib/i18n-locales";
 
 const DATE_FNS_LOCALES: Record<string, Locale> = { tr, en: enUS, de, es, fr, ja, ko, ru };
 import { useProfile } from "@/hooks/useProfile";
@@ -45,7 +47,7 @@ function getMissingProfileFields(user: any, t: (k: string) => string) {
 export default function ProfilePage() {
   const { data, loading, error, status, session, refresh, setData } = useProfile();
   const t = useTranslations("profile");
-  const locale = useLocale();
+  const locale = useLocale() as AppLocale;
   const dateFnsLocale = DATE_FNS_LOCALES[locale] ?? enUS;
   const { locations } = useLocations();
   const { sports } = useSports();
@@ -243,14 +245,14 @@ export default function ProfilePage() {
         return;
       }
       const pwErrors = [
-        editForm.newPassword.length < 8 && "en az 8 karakter",
-        !/[A-Z]/.test(editForm.newPassword) && "büyük harf",
-        !/[a-z]/.test(editForm.newPassword) && "küçük harf",
-        !/[0-9]/.test(editForm.newPassword) && "rakam",
-        !/[^A-Za-z0-9]/.test(editForm.newPassword) && "özel karakter",
+        editForm.newPassword.length < 8 && t("pwMinLength"),
+        !/[A-Z]/.test(editForm.newPassword) && t("pwUppercase"),
+        !/[a-z]/.test(editForm.newPassword) && t("pwLowercase"),
+        !/[0-9]/.test(editForm.newPassword) && t("pwDigit"),
+        !/[^A-Za-z0-9]/.test(editForm.newPassword) && t("pwSpecial"),
       ].filter(Boolean);
       if (pwErrors.length > 0) {
-        toast.error(`Yeni şifre gereksinimleri: ${pwErrors.join(", ")}`);
+        toast.error(t("pwRequirements", { errors: pwErrors.join(", ") }));
         return;
       }
     }
@@ -514,7 +516,7 @@ export default function ProfilePage() {
                     : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 }`}
               >
-                ··· Daha
+                {t("moreTab")}
               </button>
               {moreMenuOpen && (
                 <>
@@ -562,7 +564,7 @@ export default function ProfilePage() {
                       href={`/ilan/${listing.id}`}
                       className="text-lg font-semibold text-gray-800 dark:text-gray-100 hover:text-emerald-600 dark:hover:text-emerald-400 transition"
                     >
-                      {listing.sport?.icon} {listing.sport?.name}
+                      {listing.sport?.icon} {localizeSportFromDbName(listing.sport?.name ?? "", locale)}
                     </Link>
                     <div className="flex gap-2 mt-1">
                       <Badge variant={listing.type === "RIVAL" ? "orange" : listing.type === "TRAINER" ? "blue" : listing.type === "EQUIPMENT" ? "purple" : "emerald"}>
@@ -578,7 +580,7 @@ export default function ProfilePage() {
                   </div>
                   {listing.status === "OPEN" && (
                     <Button variant="danger" size="sm" onClick={() => setDeleteModal(listing.id)}>
-                      🗑️ Sil
+                      {t("deleteListing")}
                     </Button>
                   )}
                 </div>
@@ -647,7 +649,7 @@ export default function ProfilePage() {
                 <div className="flex items-start justify-between">
                   <Link href={`/ilan/${resp.listingId}`} className="hover:text-emerald-600 dark:hover:text-emerald-400 transition">
                     <span className="font-semibold text-gray-800 dark:text-gray-100">
-                      {resp.listing?.sport?.icon} {resp.listing?.sport?.name}
+                      {resp.listing?.sport?.icon} {localizeSportFromDbName(resp.listing?.sport?.name ?? "", locale)}
                     </span>
                     <span className="text-sm text-gray-400 ml-2">
                       (<Link href={`/profil/${resp.listing?.user.id}`} className="hover:underline">{resp.listing?.user?.name}</Link>)
@@ -689,7 +691,7 @@ export default function ProfilePage() {
                         href={`/ilan/${match.listingId}`}
                         className="font-semibold text-gray-800 dark:text-gray-100 hover:text-emerald-600 dark:hover:text-emerald-400 transition"
                       >
-                        {match.listing?.sport?.icon} {match.listing?.sport?.name}
+                        {match.listing?.sport?.icon} {localizeSportFromDbName(match.listing?.sport?.name ?? "", locale)}
                       </Link>
                       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                         {t("partner")} <Link href={`/profil/${partner?.id}`} className="font-semibold hover:text-emerald-600 transition">{partner?.name}</Link>
@@ -786,7 +788,7 @@ export default function ProfilePage() {
                       <div key={match.id} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
                         <div>
                           <Link href={`/ilan/${match.listingId}`} className="font-semibold text-gray-800 dark:text-gray-100 hover:text-emerald-600 transition">
-                            {match.listing?.sport?.icon} {match.listing?.sport?.name}
+                            {match.listing?.sport?.icon} {localizeSportFromDbName(match.listing?.sport?.name ?? "", locale)}
                           </Link>
                           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
                             👤 <Link href={`/profil/${partner?.id}`} className="hover:text-emerald-600 transition">{partner?.name}</Link>
@@ -838,7 +840,7 @@ export default function ProfilePage() {
                   <div className="flex items-start justify-between">
                     <div>
                       <Link href={`/ilan/${listing.id}`} className="font-semibold text-gray-800 dark:text-gray-100 hover:text-emerald-600 transition">
-                        🔁 {listing.sport?.icon} {listing.sport?.name}
+                        🔁 {listing.sport?.icon} {localizeSportFromDbName(listing.sport?.name ?? "", locale)}
                       </Link>
                       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                         📍 {listing.district?.city?.name ?? ""}
@@ -908,9 +910,9 @@ export default function ProfilePage() {
                         )}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                        {c.sport?.icon} {c.sport?.name}
+                        {c.sport?.icon} {localizeSportFromDbName(c.sport?.name ?? "", locale)}
                         {c.district ? ` · ${c.district.city?.name}, ${c.district.name}` : ""}
-                        {c.proposedDateTime ? ` · ${new Date(c.proposedDateTime).toLocaleDateString("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}` : ""}
+                        {c.proposedDateTime ? ` · ${new Date(c.proposedDateTime).toLocaleDateString(locale, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}` : ""}
                       </p>
                       {c.message && <p className="text-xs text-gray-400 mt-1 italic">&quot;{c.message}&quot;</p>}
                     </div>
@@ -950,7 +952,7 @@ export default function ProfilePage() {
             <div className="flex justify-end gap-1 -mt-2">
               <button
                 onClick={() => setPostsView("grid")}
-                title="Grid Görünüm"
+                title={t("gridView")}
                 className={`p-2 rounded-lg text-lg leading-none transition ${
                   postsView === "grid"
                     ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
@@ -959,7 +961,7 @@ export default function ProfilePage() {
               >⊞</button>
               <button
                 onClick={() => setPostsView("list")}
-                title="Liste Görünüm"
+                title={t("listView")}
                 className={`p-2 rounded-lg text-lg leading-none transition ${
                   postsView === "list"
                     ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
@@ -1029,9 +1031,9 @@ export default function ProfilePage() {
         open={!!deleteModal}
         onClose={() => setDeleteModal(null)}
         onConfirm={handleDeleteListing}
-        title="İlanı Sil"
-        description="Bu ilanı silmek istediğinize emin misiniz? Bu işlem geri alınamaz."
-        confirmText="İlanı Sil"
+        title={t("deleteListingTitle")}
+        description={t("deleteListingDesc")}
+        confirmText={t("deleteListingConfirm")}
         variant="danger"
         loading={deleting}
       />

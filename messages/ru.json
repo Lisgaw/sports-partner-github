@@ -40,7 +40,11 @@
     "language": "Язык",
     "lightMode": "Светлый",
     "darkMode": "Тёмный",
-    "lessons": "Мои занятия"
+    "lessons": "Мои занятия",
+    "toggleTheme": "Сменить тему",
+    "moreOptions": "Ещё",
+    "profileAlt": "Профиль",
+    "bottomNav": "Нижняя навигация"
   },
   "common": {
     "loading": "Загрузка...",
@@ -542,6 +546,19 @@
     "typeTrainer": "Тренер",
     "typeEquipment": "Снаряжение",
     "typePartner": "Партнёр",
+    "pwMinLength": "минимум 8 символов",
+    "pwUppercase": "заглавная буква",
+    "pwLowercase": "строчная буква",
+    "pwDigit": "цифра",
+    "pwSpecial": "специальный символ",
+    "pwRequirements": "Требования к паролю: {errors}",
+    "moreTab": "··· Ещё",
+    "deleteListing": "🗑️ Удалить",
+    "gridView": "Сетка",
+    "listView": "Список",
+    "deleteListingTitle": "Удалить объявление",
+    "deleteListingDesc": "Вы уверены, что хотите удалить это объявление? Это действие необратимо.",
+    "deleteListingConfirm": "Удалить",
     "header": {
       "editProfile": "Редактировать профиль",
       "followers": "подписчики",

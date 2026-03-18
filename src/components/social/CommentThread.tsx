@@ -40,6 +40,7 @@ export default function CommentThread({
   const [showReplies, setShowReplies] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
+  const [menuOpen, setMenuOpen] = useState(false);
   const locale = useLocale();
   const safeLocale = resolveAppLocale(locale);
   const copy = COMMENT_COPY[safeLocale as CopyKeys] ?? COMMENT_COPY.en;
@@ -126,21 +127,42 @@ export default function CommentThread({
                 {copy.reply}
               </button>
             )}
-            {canEdit && !editing && (
-              <button
-                onClick={() => setEditing(true)}
-                className="text-[11px] font-bold text-gray-400 dark:text-gray-500 hover:text-blue-500 transition"
-              >
-                {copy.edit}
-              </button>
-            )}
-            {canDelete && (
-              <button
-                onClick={handleDelete}
-                className="text-[11px] font-bold text-gray-400 dark:text-gray-500 hover:text-red-500 transition"
-              >
-                {copy.delete}
-              </button>
+            {(canEdit || canDelete) && !editing && (
+              <div className="relative">
+                <button
+                  onClick={() => setMenuOpen(v => !v)}
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition p-0.5 rounded"
+                >
+                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                    <circle cx="10" cy="4" r="1.5" />
+                    <circle cx="10" cy="10" r="1.5" />
+                    <circle cx="10" cy="16" r="1.5" />
+                  </svg>
+                </button>
+                {menuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-[80]" onClick={() => setMenuOpen(false)} />
+                    <div className="absolute left-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-[81] overflow-hidden min-w-[120px]">
+                      {canEdit && (
+                        <button
+                          onClick={() => { setEditing(true); setMenuOpen(false); }}
+                          className="w-full text-left flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                        >
+                          ✏️ {copy.edit}
+                        </button>
+                      )}
+                      {canDelete && (
+                        <button
+                          onClick={() => { setMenuOpen(false); handleDelete(); }}
+                          className="w-full text-left flex items-center gap-2 px-3 py-2 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                        >
+                          🗑️ {copy.delete}
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
             )}
           </div>
 
