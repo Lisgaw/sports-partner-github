@@ -1,6 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/api-utils";
+import {
+  estimateBotCoordinates,
+  buildBotAvatarUrl,
+  generateBotBio,
+  generateListingDesc,
+  generateResponseMsg,
+  generateShadowMatchText,
+  mapCountryCodeToLocale,
+} from "@/lib/bot-automation";
 
 async function requireAdmin(userId: string | null) {
   if (!userId) return false;
@@ -71,6 +80,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Spor bulunamadı" }, { status: 404 });
   }
 
+  const locale = mapCountryCodeToLocale(country.code);
+
   const names = LOCALIZED_NAMES[country.code] ?? DEFAULT_NAMES;
   let maleIdx = 0;
   let femaleIdx = 0;
@@ -91,6 +102,8 @@ export async function POST(req: Request) {
       data: {
         name: maleName,
         email: `bot_${Date.now()}_m_${city.id.slice(0, 6)}@sporpartner.internal`,
+        avatarUrl: buildBotAvatarUrl({ gender: "MALE", seed: `${maleName}-${city.id}-${sport.name}` }),
+        bio: generateBotBio({ locale, sportName: sport.name, cityName: city.name }),
         gender: "MALE",
         birthDate: new Date(1990 + (maleIdx % 15), maleIdx % 12, 1),
         cityId: city.id,
@@ -108,6 +121,8 @@ export async function POST(req: Request) {
       data: {
         name: femaleName,
         email: `bot_${Date.now()}_f_${city.id.slice(0, 6)}@sporpartner.internal`,
+        avatarUrl: buildBotAvatarUrl({ gender: "FEMALE", seed: `${femaleName}-${city.id}-${sport.name}` }),
+        bio: generateBotBio({ locale, sportName: sport.name, cityName: city.name }),
         gender: "FEMALE",
         birthDate: new Date(1992 + (femaleIdx % 13), femaleIdx % 12, 15),
         cityId: city.id,
@@ -155,13 +170,21 @@ async function executeTasks(taskIds: string[]) {
       include: {
         listingBot: { include: { sports: true, city: { include: { country: true } } } },
         responderBot: true,
-        city: true,
+        city: { include: { country: { select: { code: true } } } },
+        country: { select: { code: true } },
         sport: true,
       },
     });
     if (!task) continue;
 
     try {
+      const locale = mapCountryCodeToLocale(task.city?.country?.code ?? task.country?.code ?? null);
+      const coordinateSeed = task.cityId ?? task.listingBot.cityId ?? task.id;
+      const botCoordinates = estimateBotCoordinates({
+        citySeed: coordinateSeed,
+        countryCode: task.city?.country?.code ?? task.country?.code,
+      });
+
       // 1. İlan oluştur
       const sportId = task.sportId ?? task.listingBot.sports[0]?.id;
       if (!sportId) throw new Error("Bot'un sporu yok");
@@ -171,10 +194,17 @@ async function executeTasks(taskIds: string[]) {
           userId: task.listingBotId,
           sportId,
           cityId: task.cityId ?? task.listingBot.cityId,
+          latitude: botCoordinates.latitude,
+          longitude: botCoordinates.longitude,
           type: "RIVAL",
           level: (task.listingBot.userLevel as "BEGINNER" | "INTERMEDIATE" | "ADVANCED") ?? "BEGINNER",
           status: "OPEN",
-          description: generateListingDesc(task.listingBot.name ?? "Sporcu", task.sport?.name ?? "spor"),
+          description: generateListingDesc({
+            name: task.listingBot.name ?? "Athlete",
+            sport: task.sport?.name ?? "sport",
+            locale,
+            city: task.city?.name ?? undefined,
+          }),
           dateTime: task.listingDateTime ?? getFutureDate(1),
           maxParticipants: 2,
         },
@@ -193,7 +223,7 @@ async function executeTasks(taskIds: string[]) {
         data: {
           listingId: listing.id,
           userId: task.responderBotId,
-          message: generateResponseMsg(task.responderBot.name ?? "Sporcu"),
+          message: generateResponseMsg(task.responderBot.name ?? "Athlete", locale),
         },
       });
 
@@ -225,6 +255,32 @@ async function executeTasks(taskIds: string[]) {
           executedAt: new Date(),
         },
       });
+
+      const shadowContent = generateShadowMatchText({
+        locale,
+        listingBotName: task.listingBot.name ?? "Bot",
+        responderBotName: task.responderBot.name ?? "Bot",
+        sportName: task.sport?.name ?? "sport",
+        cityName: task.city?.name ?? undefined,
+      });
+
+      const existingShadowPost = await prisma.post.findFirst({
+        where: {
+          userId: task.listingBotId,
+          content: shadowContent,
+          createdAt: { gte: new Date(Date.now() - 1000 * 60 * 60 * 3) },
+        },
+        select: { id: true },
+      });
+
+      if (!existingShadowPost) {
+        await prisma.post.create({
+          data: {
+            userId: task.listingBotId,
+            content: shadowContent,
+          },
+        });
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       await prisma.botTask.update({
@@ -233,26 +289,6 @@ async function executeTasks(taskIds: string[]) {
       });
     }
   }
-}
-
-function generateListingDesc(name: string, sport: string): string {
-  const templates = [
-    `${sport} oynamak istiyorum, birlikte oynayacak biri arıyorum.`,
-    `${sport} partneri arıyorum. Deneyimli olmak zorunda değil.`,
-    `Hafta sonu ${sport} maçı için takım arkadaşı aranıyor.`,
-    `${name} olarak ${sport} için eşleşme arıyorum.`,
-  ];
-  return templates[Math.floor(Math.random() * templates.length)];
-}
-
-function generateResponseMsg(name: string): string {
-  const templates = [
-    "Merhaba! İlgimi çekti, katılmak istiyorum.",
-    "Selam, benimle oynamak ister misin?",
-    "Müsaitim, buluşalım!",
-    `${name} olarak başvuruyorum, uygun görürsen harika olur.`,
-  ];
-  return templates[Math.floor(Math.random() * templates.length)];
 }
 
 function getFutureDate(daysAhead: number): Date {

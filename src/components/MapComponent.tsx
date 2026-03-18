@@ -27,6 +27,7 @@ interface MapListing {
   sport: { name: string; icon: string } | null;
   user: { id: string; name: string | null; avatarUrl: string | null };
   district: { name: string; city: { name: string } } | null;
+  city: { name: string; country: { name: string } | null } | null;
 }
 
 interface MapComponentProps {
@@ -80,6 +81,23 @@ function createColoredIcon(type: string) {
 
 export default function MapComponent({ listings, center = [39.9, 32.8], zoom = 6 }: MapComponentProps) {
   const locale = useLocale();
+
+  const buildLocationText = (listing: MapListing) => {
+    if (listing.district) {
+      return `${listing.district.city.name}, ${listing.district.name}`;
+    }
+
+    if (listing.city?.country?.name) {
+      return `${listing.city.country.name}, ${listing.city.name}`;
+    }
+
+    if (listing.city?.name) {
+      return listing.city.name;
+    }
+
+    return "";
+  };
+
   useEffect(() => {
     fixLeafletIcons();
   }, []);
@@ -115,9 +133,9 @@ export default function MapComponent({ listings, center = [39.9, 32.8], zoom = 6
                   {localizeListingType(listing.type, locale) ?? TYPE_LABELS[listing.type] ?? listing.type}
                 </span>
               </div>
-              {listing.district && (
+              {buildLocationText(listing) && (
                 <div className="text-xs text-gray-400 mb-2">
-                  📍 {listing.district.name}, {listing.district.city.name}
+                  📍 {buildLocationText(listing)}
                 </div>
               )}
               <div className="flex items-center gap-2 mb-2">

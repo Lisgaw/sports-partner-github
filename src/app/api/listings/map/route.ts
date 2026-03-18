@@ -39,6 +39,12 @@ export async function GET() {
             city: { select: { name: true } },
           },
         },
+        city: {
+          select: {
+            name: true,
+            country: { select: { name: true } },
+          },
+        },
       },
       take: 500,
       orderBy: { createdAt: "desc" },

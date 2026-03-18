@@ -315,6 +315,12 @@ export default function ListingCard({ listing }: ListingCardProps) {
 
   const localizedSportName = localizeSportName(listing.sport.name, locale);
 
+  const locationLabel = listing.district
+    ? `${listing.district.city?.country?.name ? `${listing.district.city.country.name}, ` : ""}${listing.district.city?.name ?? listing.city?.name ?? ""}, ${listing.district.name}`
+    : listing.city?.country?.name
+    ? `${listing.city.country.name}, ${listing.city.name}`
+    : listing.city?.name ?? "";
+
   const t = useTranslations("listings");
 
   const dateStr = format(new Date(listing.dateTime), "d MMM yyyy, HH:mm", {
@@ -447,11 +453,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
       <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
         <div className="flex items-center gap-1">
           <span role="img" aria-label="konum">📍</span>
-          <span>
-            {listing.district
-              ? `${listing.district.city?.name ?? listing.city?.name ?? ""}, ${listing.district.name}`
-              : listing.city?.name ?? ""}
-          </span>
+          <span>{locationLabel}</span>
         </div>
         {listing.venue && (
           <div className="flex items-center gap-1">

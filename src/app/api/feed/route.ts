@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
       OR: [
         ...(followingIds.length > 0 ? [{ userId: { in: followingIds } }] : []),
         ...(sportIds.length > 0 ? [{ sportId: { in: sportIds } }] : []),
-        ...(me.cityId ? [{ district: { city: { id: me.cityId } } }] : []),
+        ...(me.cityId ? [{ district: { city: { id: me.cityId } } }, { cityId: me.cityId }] : []),
       ],
     };
 
@@ -66,6 +66,14 @@ export async function GET(req: NextRequest) {
             select: {
               name: true,
               city: { select: { name: true, country: { select: { name: true } } } },
+            },
+          },
+          city: {
+            select: {
+              id: true,
+              name: true,
+              countryId: true,
+              country: { select: { id: true, name: true, code: true } },
             },
           },
           venue: { select: { name: true } },

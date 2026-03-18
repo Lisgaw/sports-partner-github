@@ -29,6 +29,7 @@ interface MapListing {
   sport: { name: string; icon: string } | null;
   user: { id: string; name: string | null; avatarUrl: string | null };
   district: { name: string; city: { name: string } } | null;
+  city: { name: string; country: { name: string } | null } | null;
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -196,6 +197,16 @@ export default function HaritaPage() {
     activeAll: "All",
   };
 
+  const buildLocationText = (listing: MapListing) => {
+    if (listing.district) {
+      return `${listing.district.city.name}, ${listing.district.name}`;
+    }
+    if (listing.city?.country?.name) {
+      return `${listing.city.country.name}, ${listing.city.name}`;
+    }
+    return listing.city?.name ?? "";
+  };
+
   const getDistanceMeters = useCallback((from: [number, number], to: [number, number]) => {
     const toRadians = (value: number) => (value * Math.PI) / 180;
     const earthRadius = 6371000;
@@ -333,8 +344,8 @@ export default function HaritaPage() {
                       {text.approxDistance} {formatDistance(listing.distanceMeters)}
                     </span>
                   </div>
-                  {listing.district && (
-                    <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">📍 {listing.district.name}, {listing.district.city.name}</p>
+                  {buildLocationText(listing) && (
+                    <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">📍 {buildLocationText(listing)}</p>
                   )}
                   <p className="mt-2 line-clamp-2 text-xs text-gray-600 dark:text-gray-300">
                     {listing.description || `${localizeSportName(listing.sport?.name ?? "", locale)} ${text.openListing}`}

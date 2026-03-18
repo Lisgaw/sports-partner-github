@@ -8,6 +8,7 @@ interface Bot {
   name: string;
   email: string;
   avatarUrl: string | null;
+  bio: string | null;
   gender: string;
   birthDate: string | null;
   botPersona: string | null;
@@ -79,6 +80,19 @@ export default function BotPanel({
   const [seedSportId, setSeedSportId] = useState("");
   const [seedDateTime, setSeedDateTime] = useState("");
   const [seeding, setSeeding] = useState(false);
+  const [editingBot, setEditingBot] = useState<Bot | null>(null);
+  const [editCountryId, setEditCountryId] = useState("");
+  const [editForm, setEditForm] = useState({
+    name: "",
+    gender: "MALE",
+    birthYear: 1995,
+    cityId: "",
+    avatarUrl: "",
+    bio: "",
+    botPersona: "",
+    sportIds: [] as string[],
+    regenerateProfile: false,
+  });
 
   useEffect(() => {
     fetch("/api/locations").then(r => r.json()).then(j => { if (j.success) setCountries(j.data); });
@@ -87,6 +101,7 @@ export default function BotPanel({
 
   const botCities = countries.find(c => c.id === botCountryId)?.cities ?? [];
   const taskCities = countries.find(c => c.id === taskForm.countryId)?.cities ?? [];
+  const editCities = countries.find(c => c.id === editCountryId)?.cities ?? [];
 
   const fetchBots = useCallback(async () => {
     setBotsLoading(true);
@@ -162,6 +177,56 @@ export default function BotPanel({
       if (json.success) { toast.success(json.message); fetchTasks(); }
       else toast.error(json.error ?? "Gorev hatasi");
     } finally { setTaskRunning(false); }
+  }
+
+  function openEditBot(bot: Bot) {
+    setEditingBot(bot);
+    setEditCountryId(bot.city?.country.id ?? "");
+    setEditForm({
+      name: bot.name,
+      gender: bot.gender,
+      birthYear: bot.birthDate ? new Date(bot.birthDate).getFullYear() : 1995,
+      cityId: bot.city?.id ?? "",
+      avatarUrl: bot.avatarUrl ?? "",
+      bio: bot.bio ?? "",
+      botPersona: bot.botPersona ?? "",
+      sportIds: bot.sports.map((s) => s.id),
+      regenerateProfile: false,
+    });
+  }
+
+  function toggleEditSport(sportId: string) {
+    const ids = editForm.sportIds.includes(sportId)
+      ? editForm.sportIds.filter((id) => id !== sportId)
+      : [...editForm.sportIds, sportId];
+    setEditForm({ ...editForm, sportIds: ids });
+  }
+
+  async function saveBotEdit() {
+    if (!editingBot) return;
+    if (!editForm.name.trim()) {
+      toast.error("Bot adi zorunlu");
+      return;
+    }
+    if (!editForm.cityId) {
+      toast.error("Sehir secimi zorunlu");
+      return;
+    }
+
+    const res = await fetch(`/api/admin/bots?id=${editingBot.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(editForm),
+    });
+    const json = await res.json();
+    if (!json.success) {
+      toast.error(json.error ?? "Bot guncellenemedi");
+      return;
+    }
+
+    toast.success("Bot guncellendi");
+    setEditingBot(null);
+    fetchBots();
   }
 
   function toggleSport(sportId: string) {
@@ -355,20 +420,37 @@ export default function BotPanel({
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-xs text-gray-500 border-b dark:border-gray-700">
-                  <th className="pb-2 pr-4">Ad</th><th className="pb-2 pr-4">Cinsiyet</th><th className="pb-2 pr-4">Sehir</th><th className="pb-2 pr-4">Sporlar</th><th className="pb-2 pr-4">Kisilik</th><th className="pb-2 pr-4">Ilanlar</th><th className="pb-2 pr-4">Maclar</th><th className="pb-2"></th>
+                  <th className="pb-2 pr-4">Ad</th><th className="pb-2 pr-4">Cinsiyet</th><th className="pb-2 pr-4">Sehir</th><th className="pb-2 pr-4">Sporlar</th><th className="pb-2 pr-4">Kisilik</th><th className="pb-2 pr-4">Bio</th><th className="pb-2 pr-4">Ilanlar</th><th className="pb-2 pr-4">Maclar</th><th className="pb-2"></th>
                 </tr>
               </thead>
               <tbody>
                 {bots.map(b => (
                   <tr key={b.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                    <td className="py-2 pr-4 font-medium">{b.name}</td>
+                    <td className="py-2 pr-4 font-medium">
+                      <div className="flex items-center gap-2 min-w-[170px]">
+                        {b.avatarUrl ? (
+                          <img src={b.avatarUrl} alt={b.name} className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-600" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-semibold">
+                            {b.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <span className="truncate">{b.name}</span>
+                      </div>
+                    </td>
                     <td className="py-2 pr-4 text-gray-500">{b.gender === "MALE" ? "Erkek" : "Kadin"}</td>
-                    <td className="py-2 pr-4 text-gray-500">{b.city?.name ?? "-"}</td>
+                    <td className="py-2 pr-4 text-gray-500">{b.city?.country.name ? `${b.city.country.name}, ${b.city.name}` : b.city?.name ?? "-"}</td>
                     <td className="py-2 pr-4 text-gray-500 text-xs">{b.sports.length > 0 ? b.sports.map(s => s.icon ?? s.name).join(" ") : "-"}</td>
                     <td className="py-2 pr-4 text-gray-500 text-xs">{b.botPersona ?? "-"}</td>
+                    <td className="py-2 pr-4 text-gray-500 text-xs max-w-[260px] truncate">{b.bio ?? "-"}</td>
                     <td className="py-2 pr-4">{b._count.listings}</td>
                     <td className="py-2 pr-4">{b._count.matches1 + b._count.matches2}</td>
-                    <td className="py-2"><button onClick={() => deleteBot(b.id)} className="text-red-500 hover:text-red-700 text-xs font-semibold">Sil</button></td>
+                    <td className="py-2">
+                      <div className="flex items-center gap-3 justify-end">
+                        <button onClick={() => openEditBot(b)} className="text-blue-600 hover:text-blue-700 text-xs font-semibold">Duzenle</button>
+                        <button onClick={() => deleteBot(b.id)} className="text-red-500 hover:text-red-700 text-xs font-semibold">Sil</button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -418,6 +500,98 @@ export default function BotPanel({
           </div>
         )}
       </div>
+
+      {editingBot && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setEditingBot(null)}>
+          <div className="w-full max-w-2xl rounded-xl bg-white dark:bg-gray-800 shadow-xl p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold">Bot Duzenle</h3>
+              <button onClick={() => setEditingBot(null)} className="text-sm text-gray-500 hover:text-gray-700">Kapat</button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Bot Adi</label>
+                <input className="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Cinsiyet</label>
+                <select className="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600" value={editForm.gender} onChange={(e) => setEditForm({ ...editForm, gender: e.target.value })}>
+                  <option value="MALE">Erkek</option>
+                  <option value="FEMALE">Kadin</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Dogum Yili</label>
+                <input type="number" min={1960} max={2008} className="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600" value={editForm.birthYear} onChange={(e) => setEditForm({ ...editForm, birthYear: parseInt(e.target.value) || 1995 })} />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Ulke</label>
+                <select className="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600" value={editCountryId} onChange={(e) => { setEditCountryId(e.target.value); setEditForm({ ...editForm, cityId: "" }); }}>
+                  <option value="">Ulke sec...</option>
+                  {countries.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Sehir</label>
+                <select className="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600" value={editForm.cityId} onChange={(e) => setEditForm({ ...editForm, cityId: e.target.value })} disabled={!editCountryId}>
+                  <option value="">{editCountryId ? "Sehir sec..." : "Once ulke sec"}</option>
+                  {editCities.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Kisilik</label>
+                <input className="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600" value={editForm.botPersona} onChange={(e) => setEditForm({ ...editForm, botPersona: e.target.value })} />
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <label className="text-xs text-gray-500 mb-1 block">Avatar URL</label>
+              <input className="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600" value={editForm.avatarUrl} onChange={(e) => setEditForm({ ...editForm, avatarUrl: e.target.value })} />
+              {editForm.avatarUrl && (
+                <div className="mt-2">
+                  <img src={editForm.avatarUrl} alt="Avatar preview" className="w-14 h-14 rounded-full object-cover border border-gray-200 dark:border-gray-600" />
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4">
+              <label className="text-xs text-gray-500 mb-1 block">Bio</label>
+              <textarea rows={3} className="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600" value={editForm.bio} onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })} />
+            </div>
+
+            <div className="mt-4">
+              <label className="text-xs text-gray-500 mb-2 block">Sporlar</label>
+              <div className="flex flex-wrap gap-2">
+                {sports.map((s) => {
+                  const selected = editForm.sportIds.includes(s.id);
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => toggleEditSport(s.id)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition ${selected ? "bg-emerald-500 text-white border-emerald-500" : "bg-white text-gray-700 border-gray-300 hover:border-emerald-400 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600"}`}
+                    >
+                      {s.icon && <span className="mr-1">{s.icon}</span>}
+                      {s.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mt-4 flex items-center gap-2">
+              <input id="regenProfile" type="checkbox" checked={editForm.regenerateProfile} onChange={(e) => setEditForm({ ...editForm, regenerateProfile: e.target.checked })} />
+              <label htmlFor="regenProfile" className="text-sm text-gray-600 dark:text-gray-300">Avatar ve bio otomatik yeniden uret</label>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button onClick={() => setEditingBot(null)} className="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600">Iptal</button>
+              <button onClick={saveBotEdit} className="px-4 py-2 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">Kaydet</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

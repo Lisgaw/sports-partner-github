@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/api-utils";
-import { type AppLocale, localizeSportName } from "@/lib/localized-ui";
+import {
+  estimateBotCoordinates,
+  generateListingDesc,
+  generateResponseMsg,
+  generateShadowMatchText,
+  mapCountryCodeToLocale,
+} from "@/lib/bot-automation";
 
 async function requireAdmin(userId: string | null) {
   if (!userId) return false;
@@ -139,6 +145,13 @@ async function executeTasks(taskIds: string[]) {
     if (!task) continue;
 
     try {
+      const locale = mapCountryCodeToLocale(task.city?.country?.code ?? task.listingBot.city?.country?.code ?? null);
+      const coordinateSeed = task.cityId ?? task.listingBot.cityId ?? task.id;
+      const botCoordinates = estimateBotCoordinates({
+        citySeed: coordinateSeed,
+        countryCode: task.city?.country?.code ?? task.listingBot.city?.country?.code,
+      });
+
       // 1. İlan oluştur
       const sportId = task.sportId ?? task.listingBot.sports[0]?.id;
       if (!sportId) throw new Error("Bot'un sporu yok");
@@ -148,13 +161,15 @@ async function executeTasks(taskIds: string[]) {
           userId: task.listingBotId,
           sportId,
           cityId: task.cityId ?? task.listingBot.cityId,
+          latitude: botCoordinates.latitude,
+          longitude: botCoordinates.longitude,
           type: "RIVAL",
           level: (task.listingBot.userLevel as "BEGINNER" | "INTERMEDIATE" | "ADVANCED") ?? "BEGINNER",
           status: "OPEN",
           description: generateListingDesc({
             name: task.listingBot.name ?? "Athlete",
             sport: task.sport?.name ?? "sport",
-            locale: inferBotLocale(task),
+            locale,
             city: task.city?.name ?? undefined,
           }),
           // Admin'in belirlediği tarih/saat; yoksa 1 gün sonraya otomatik
@@ -176,7 +191,7 @@ async function executeTasks(taskIds: string[]) {
         data: {
           listingId: listing.id,
           userId: task.responderBotId,
-          message: generateResponseMsg(task.responderBot.name ?? "Athlete", inferBotLocale(task)),
+          message: generateResponseMsg(task.responderBot.name ?? "Athlete", locale),
         },
       });
 
@@ -209,6 +224,32 @@ async function executeTasks(taskIds: string[]) {
           executedAt: new Date(),
         },
       });
+
+      const shadowContent = generateShadowMatchText({
+        locale,
+        listingBotName: task.listingBot.name ?? "Bot",
+        responderBotName: task.responderBot.name ?? "Bot",
+        sportName: task.sport?.name ?? "sport",
+        cityName: task.city?.name ?? undefined,
+      });
+
+      const existingShadowPost = await prisma.post.findFirst({
+        where: {
+          userId: task.listingBotId,
+          content: shadowContent,
+          createdAt: { gte: new Date(Date.now() - 1000 * 60 * 60 * 3) },
+        },
+        select: { id: true },
+      });
+
+      if (!existingShadowPost) {
+        await prisma.post.create({
+          data: {
+            userId: task.listingBotId,
+            content: shadowContent,
+          },
+        });
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       await prisma.botTask.update({
@@ -217,153 +258,6 @@ async function executeTasks(taskIds: string[]) {
       });
     }
   }
-}
-
-function inferBotLocale(task: {
-  countryId: string | null;
-  city: { country?: { code: string } | null } | null;
-  listingBot: { city?: { country?: { code: string } | null } | null };
-}): AppLocale {
-  const countryCode = task.city?.country?.code ?? task.listingBot.city?.country?.code ?? null;
-  return mapCountryCodeToLocale(countryCode);
-}
-
-function mapCountryCodeToLocale(countryCode: string | null): AppLocale {
-  const code = (countryCode ?? "TR").toUpperCase();
-
-  if (["TR"].includes(code)) return "tr";
-  if (["RU", "BY", "KZ", "KG"].includes(code)) return "ru";
-  if (["DE", "AT", "CH"].includes(code)) return "de";
-  if (["FR", "BE", "LU"].includes(code)) return "fr";
-  if (["ES", "MX", "AR", "CO", "CL", "PE"].includes(code)) return "es";
-  if (["JP"].includes(code)) return "ja";
-  if (["KR"].includes(code)) return "ko";
-
-  return "en";
-}
-
-function generateListingDesc({
-  name,
-  sport,
-  locale,
-  city,
-}: {
-  name: string;
-  sport: string;
-  locale: AppLocale;
-  city?: string;
-}): string {
-  const localizedSport = localizeSportName(sport, locale);
-
-  const templates: Record<AppLocale, string[]> = {
-    tr: [
-      `Bu hafta ${localizedSport} için partner arıyorum.`,
-      `${city ? `${city} tarafında ` : ""}${localizedSport} için eşleşmek isteyen yazabilir.`,
-      `${localizedSport} için seviyeden bağımsız bir eşleşme arıyorum.`,
-      `${name} olarak ${localizedSport} için yeni bir eşleşme açtım.`,
-    ],
-    en: [
-      `Looking for a partner for ${localizedSport} this week.`,
-      `${city ? `Around ${city}, ` : ""}I am open to a ${localizedSport} match.`,
-      `All levels are welcome for this ${localizedSport} session.`,
-      `${name} is looking for a ${localizedSport} match.`,
-    ],
-    ru: [
-      `Ищу партнера по ${localizedSport} на этой неделе.`,
-      `${city ? `В районе ${city} ` : ""}открыт к матчу по ${localizedSport}.`,
-      `Для ${localizedSport} подойдёт любой уровень.`,
-      `${name} ищет соперника по ${localizedSport}.`,
-    ],
-    de: [
-      `Ich suche diese Woche einen Partner fuer ${localizedSport}.`,
-      `${city ? `Im Raum ${city} ` : ""}suche ich ein Match fuer ${localizedSport}.`,
-      `Bei ${localizedSport} sind alle Levels willkommen.`,
-      `${name} sucht ein Match fuer ${localizedSport}.`,
-    ],
-    fr: [
-      `Je cherche un partenaire pour ${localizedSport} cette semaine.`,
-      `${city ? `Autour de ${city}, ` : ""}je suis disponible pour ${localizedSport}.`,
-      `Tous les niveaux sont bienvenus pour ${localizedSport}.`,
-      `${name} cherche un match de ${localizedSport}.`,
-    ],
-    es: [
-      `Busco companero para ${localizedSport} esta semana.`,
-      `${city ? `Por la zona de ${city}, ` : ""}estoy disponible para ${localizedSport}.`,
-      `Todos los niveles son bienvenidos para ${localizedSport}.`,
-      `${name} busca un partido de ${localizedSport}.`,
-    ],
-    ja: [
-      `今週${localizedSport}のパートナーを募集しています。`,
-      `${city ? `${city}周辺で` : ""}${localizedSport}の相手を探しています。`,
-      `${localizedSport}はレベル不問で参加歓迎です。`,
-      `${name}が${localizedSport}のマッチ相手を探しています。`,
-    ],
-    ko: [
-      `이번 주 ${localizedSport} 파트너를 찾고 있어요.`,
-      `${city ? `${city} 근처에서 ` : ""}${localizedSport} 매치를 원해요.`,
-      `${localizedSport}는 실력과 상관없이 환영합니다.`,
-      `${name} 님이 ${localizedSport} 매치 상대를 찾고 있어요.`,
-    ],
-  };
-
-  const pool = templates[locale] ?? templates.en;
-  return pool[Math.floor(Math.random() * pool.length)];
-}
-
-function generateResponseMsg(name: string, locale: AppLocale): string {
-  const templates: Record<AppLocale, string[]> = {
-    tr: [
-      "Merhaba, ilanın ilgimi çekti. Katılmak isterim.",
-      "Müsaitim, istersen detayları konuşalım.",
-      "Bu eşleşme bana uygun görünüyor.",
-      `${name} olarak başvuruyorum, uygun olursa sevinirim.`,
-    ],
-    en: [
-      "Hi, this listing looks great. I would like to join.",
-      "I am available. We can discuss the details.",
-      "This match looks like a good fit for me.",
-      `${name} here, I would be happy to join if it works for you.`,
-    ],
-    ru: [
-      "Привет, объявление заинтересовало. Хочу присоединиться.",
-      "Я свободен, можем обсудить детали.",
-      "Этот матч мне подходит.",
-      `${name} на связи, буду рад присоединиться.`,
-    ],
-    de: [
-      "Hallo, die Anzeige passt gut fuer mich. Ich moechte mitmachen.",
-      "Ich bin verfuegbar, lass uns die Details besprechen.",
-      "Das Match passt gut zu mir.",
-      `${name} hier, ich waere gern dabei.`,
-    ],
-    fr: [
-      "Bonjour, cette annonce m'interesse. Je veux participer.",
-      "Je suis disponible, on peut voir les details.",
-      "Ce match me convient bien.",
-      `${name} ici, je serais ravi de participer.`,
-    ],
-    es: [
-      "Hola, este anuncio me interesa. Me gustaria participar.",
-      "Estoy disponible, podemos hablar de los detalles.",
-      "Este partido me viene bien.",
-      `${name} por aqui, encantado de unirme.`,
-    ],
-    ja: [
-      "こんにちは、この募集に参加したいです。",
-      "参加可能です。詳細を相談しましょう。",
-      "このマッチは自分に合っています。",
-      `${name}です。参加できると嬉しいです。`,
-    ],
-    ko: [
-      "안녕하세요, 이 모집에 참여하고 싶어요.",
-      "가능한 시간 맞춰서 자세히 이야기해요.",
-      "이 매치는 저에게 잘 맞습니다.",
-      `${name}입니다. 참여할 수 있으면 좋겠어요.`,
-    ],
-  };
-
-  const pool = templates[locale] ?? templates.en;
-  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 function getFutureDate(daysAhead: number): Date {
