@@ -24,7 +24,6 @@ interface HomeClientProps {
   initialRecommendations: ListingSummary[];
   initialLocations: Country[];
   initialSports: Sport[];
-  turkeyId: string | null;
 }
 
 export default function HomeClient({
@@ -34,7 +33,6 @@ export default function HomeClient({
   initialRecommendations,
   initialLocations,
   initialSports,
-  turkeyId,
 }: HomeClientProps) {
   const { data: session } = useSession();
   const t = useTranslations("home");
@@ -43,9 +41,7 @@ export default function HomeClient({
   const [listings, setListings] = useState<ListingSummary[]>(initialListings);
   const [loading, setLoading] = useState(false); // SSR'dan veri geldi, loading false
   const [error, setError] = useState<string | null>(null);
-  const [currentFilters, setCurrentFilters] = useState<Record<string, string>>(
-    turkeyId ? { countryId: turkeyId } : {}
-  );
+  const [currentFilters, setCurrentFilters] = useState<Record<string, string>>({});
   const [pagination, setPagination] = useState({
     total: initialTotal,
     page: 1,

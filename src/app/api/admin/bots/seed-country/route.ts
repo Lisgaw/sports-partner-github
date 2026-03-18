@@ -63,8 +63,8 @@ export async function POST(req: Request) {
   const body = await req.json();
   const { countryId, sportId, listingDateTime } = body;
 
-  if (!countryId || !sportId) {
-    return NextResponse.json({ error: "countryId ve sportId zorunlu" }, { status: 400 });
+  if (!countryId) {
+    return NextResponse.json({ error: "countryId zorunlu" }, { status: 400 });
   }
 
   const country = await prisma.country.findUnique({
@@ -75,9 +75,20 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Ülke bulunamadı" }, { status: 404 });
   }
 
-  const sport = await prisma.sport.findUnique({ where: { id: sportId } });
-  if (!sport) {
-    return NextResponse.json({ error: "Spor bulunamadı" }, { status: 404 });
+  const allSports = await prisma.sport.findMany({
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
+  if (allSports.length === 0) {
+    return NextResponse.json({ error: "Spor bulunamadi" }, { status: 404 });
+  }
+
+  const selectedSport = sportId
+    ? allSports.find((s) => s.id === sportId)
+    : null;
+
+  if (sportId && !selectedSport) {
+    return NextResponse.json({ error: "Secilen spor bulunamadi" }, { status: 404 });
   }
 
   const locale = mapCountryCodeToLocale(country.code);
@@ -91,7 +102,16 @@ export async function POST(req: Request) {
   const dateTime = listingDateTime ? new Date(listingDateTime) : new Date(Date.now() + 24 * 60 * 60 * 1000);
   const taskIds: string[] = [];
 
-  for (const city of country.cities) {
+  const randomSports = allSports
+    .filter((s) => s.id !== selectedSport?.id)
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 5);
+  const sportPool = selectedSport
+    ? [selectedSport, ...randomSports]
+    : allSports.sort(() => Math.random() - 0.5).slice(0, Math.min(6, allSports.length));
+
+  for (const [cityIndex, city] of country.cities.entries()) {
+    const citySport = sportPool[cityIndex % sportPool.length];
     // Check if bots already exist for this city and sport to avoid duplicates if preferred, 
     // but here we create new ones as per "seed" logic.
     
@@ -101,15 +121,15 @@ export async function POST(req: Request) {
     const maleBot = await prisma.user.create({
       data: {
         name: maleName,
-        email: `bot_${Date.now()}_m_${city.id.slice(0, 6)}@sporpartner.internal`,
-        avatarUrl: buildBotAvatarUrl({ gender: "MALE", seed: `${maleName}-${city.id}-${sport.name}` }),
-        bio: generateBotBio({ locale, sportName: sport.name, cityName: city.name }),
+        email: `bot_${Date.now()}_m_${city.id.slice(0, 6)}_${citySport.id.slice(0, 4)}@sporpartner.internal`,
+        avatarUrl: buildBotAvatarUrl({ gender: "MALE", seed: `${maleName}-${city.id}-${citySport.name}` }),
+        bio: generateBotBio({ locale, sportName: citySport.name, cityName: city.name }),
         gender: "MALE",
         birthDate: new Date(1990 + (maleIdx % 15), maleIdx % 12, 1),
         cityId: city.id,
         isBot: true,
         onboardingDone: true,
-        sports: { connect: [{ id: sportId }] },
+        sports: { connect: [{ id: citySport.id }] },
       },
     });
     botsCreated++;
@@ -120,15 +140,15 @@ export async function POST(req: Request) {
     const femaleBot = await prisma.user.create({
       data: {
         name: femaleName,
-        email: `bot_${Date.now()}_f_${city.id.slice(0, 6)}@sporpartner.internal`,
-        avatarUrl: buildBotAvatarUrl({ gender: "FEMALE", seed: `${femaleName}-${city.id}-${sport.name}` }),
-        bio: generateBotBio({ locale, sportName: sport.name, cityName: city.name }),
+        email: `bot_${Date.now()}_f_${city.id.slice(0, 6)}_${citySport.id.slice(0, 4)}@sporpartner.internal`,
+        avatarUrl: buildBotAvatarUrl({ gender: "FEMALE", seed: `${femaleName}-${city.id}-${citySport.name}` }),
+        bio: generateBotBio({ locale, sportName: citySport.name, cityName: city.name }),
         gender: "FEMALE",
         birthDate: new Date(1992 + (femaleIdx % 13), femaleIdx % 12, 15),
         cityId: city.id,
         isBot: true,
         onboardingDone: true,
-        sports: { connect: [{ id: sportId }] },
+        sports: { connect: [{ id: citySport.id }] },
       },
     });
     botsCreated++;
@@ -140,7 +160,7 @@ export async function POST(req: Request) {
         responderBotId: femaleBot.id,
         cityId: city.id,
         countryId: country.id,
-        sportId,
+        sportId: citySport.id,
         status: "PENDING",
         listingDateTime: dateTime,
       },
@@ -154,8 +174,8 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     success: true,
-    message: `${country.name}: ${botsCreated} bot + ${tasksCreated} görev oluşturuldu ve işlemler başlatıldı (${country.cities.length} şehir)`,
-    data: { botsCreated, tasksCreated, cities: country.cities.length },
+    message: `${country.name}: ${botsCreated} bot + ${tasksCreated} görev oluşturuldu ve işlemler başlatıldı (${country.cities.length} şehir, ${sportPool.length} spor dalı)`,
+    data: { botsCreated, tasksCreated, cities: country.cities.length, sportsUsed: sportPool.map((s) => s.name) },
   });
 }
 

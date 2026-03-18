@@ -4,21 +4,19 @@ import {
   getInitialLocations,
   getInitialSports,
   getPopularListings,
-  getTurkeyId,
 } from "@/lib/server-data";
 
 // v1.1.2 - Force deployment trigger
 export default async function HomePage() {
-  // Batch 1: 4 bağımsız sorgu paralel çalışır (hiçbiri diğerini beklemez)
-  const [turkeyId, locations, sports, recommendations] = await Promise.all([
-    getTurkeyId(),
+  // Batch 1: bağımsız sorgular paralel çalışır (hiçbiri diğerini beklemez)
+  const [locations, sports, recommendations] = await Promise.all([
     getInitialLocations(),
     getInitialSports(),
     getPopularListings(6),
   ]);
 
-  // Batch 2: Sadece getInitialListings turkeyId'ye bağımlı, ayrı çekilir
-  const listingsData = await getInitialListings(turkeyId ?? undefined);
+  // Varsayılan açılış: dünya genelindeki ilanlar
+  const listingsData = await getInitialListings();
 
   return (
     <HomeClient
@@ -28,7 +26,6 @@ export default async function HomePage() {
       initialRecommendations={recommendations}
       initialLocations={locations}
       initialSports={sports}
-      turkeyId={turkeyId}
     />
   );
 }

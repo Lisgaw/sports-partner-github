@@ -30,13 +30,11 @@ export function buildBotAvatarUrl({
   gender?: string | null;
   seed: string;
 }): string {
-  // pravatar has 1..70 images; split ranges by gender for a more consistent profile style.
+  // randomuser portraits have explicit men/women categories, which avoids gender-photo mismatches.
   const isFemale = (gender ?? "").toUpperCase() === "FEMALE";
-  const min = isFemale ? 36 : 1;
-  const max = isFemale ? 70 : 35;
-  const span = max - min + 1;
-  const avatarIndex = min + (hashSeed(seed) % span);
-  return `https://i.pravatar.cc/300?img=${avatarIndex}`;
+  const group = isFemale ? "women" : "men";
+  const avatarIndex = hashSeed(seed) % 100;
+  return `https://randomuser.me/api/portraits/${group}/${avatarIndex}.jpg`;
 }
 
 export function generateBotBio({
