@@ -102,6 +102,40 @@ export default function PostDetailPage() {
      } catch { /* ignore */ }
   };
 
+  const handleCommentDelete = async (commentId: string) => {
+    try {
+      const res = await fetch(`/api/posts/${postId}/comments?commentId=${commentId}`, { method: "DELETE" });
+      if (res.ok) {
+        const removeFromList = (list: any[]): any[] =>
+          list.filter(c => c.id !== commentId).map(c =>
+            c.replies?.length ? { ...c, replies: removeFromList(c.replies) } : c
+          );
+        setComments(prev => removeFromList(prev));
+        setPost((prev: any) => ({ ...prev, _count: { ...prev._count, comments: Math.max(0, (prev._count.comments || 1) - 1) } }));
+      }
+    } catch { /* ignore */ }
+  };
+
+  const handleCommentEdit = async (commentId: string, newContent: string) => {
+    try {
+      const res = await fetch(`/api/posts/${postId}/comments`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ commentId, content: newContent }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        const updateContent = (list: any[]): any[] =>
+          list.map(c => {
+            if (c.id === commentId) return { ...c, content: newContent };
+            if (c.replies?.length) return { ...c, replies: updateContent(c.replies) };
+            return c;
+          });
+        setComments(prev => updateContent(prev));
+      }
+    } catch { /* ignore */ }
+  };
+
   const handleComment = async () => {
     if (!commentText.trim()) return;
     setSubmitting(true);
@@ -199,6 +233,10 @@ export default function PostDetailPage() {
                         input?.focus();
                     }}
                     onLike={handleCommentLike}
+                    onDelete={handleCommentDelete}
+                    onEdit={handleCommentEdit}
+                    currentUserId={session?.user?.id}
+                    postOwnerId={post?.userId ?? post?.user?.id}
                 />
             ))}
           </div>
@@ -236,7 +274,14 @@ export default function PostDetailPage() {
   );
 }
 
-function CommentItem({ comment, onReply, onLike }: { comment: any, onReply: (p: any) => void, onLike: (id: string) => void }) {
+function CommentItem({ comment, onReply, onLike, onDelete, onEdit, currentUserId, postOwnerId }: { comment: any, onReply: (p: any) => void, onLike: (id: string) => void, onDelete?: (id: string) => void, onEdit?: (id: string, content: string) => void, currentUserId?: string, postOwnerId?: string }) {
+    const [editing, setEditing] = useState(false);
+    const [editContent, setEditContent] = useState(comment.content);
+    const isMyComment = currentUserId === comment.user?.id;
+    const isPostOwner = currentUserId === postOwnerId;
+    const canDelete = (isMyComment || isPostOwner) && onDelete;
+    const canEdit = isMyComment && onEdit;
+
     return (
         <div id={`comment-${comment.id}`} className="group transition-all duration-300 p-1 rounded-2xl">
             <div className="flex gap-3">
@@ -256,7 +301,23 @@ function CommentItem({ comment, onReply, onLike }: { comment: any, onReply: (p: 
                                 {comment.likedByMe ? "❤️" : "🤍"} <span className="font-medium">{comment._count?.likes || 0}</span>
                             </button>
                         </div>
-                        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{comment.content}</p>
+                        {editing ? (
+                            <div className="space-y-1.5">
+                                <textarea
+                                    value={editContent}
+                                    onChange={(e) => setEditContent(e.target.value)}
+                                    rows={2}
+                                    maxLength={500}
+                                    className="w-full text-sm px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 outline-none focus:ring-1 focus:ring-emerald-500 resize-none"
+                                />
+                                <div className="flex gap-2">
+                                    <button onClick={() => { const t = editContent.trim(); if (t && t !== comment.content) onEdit?.(comment.id, t); setEditing(false); }} className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 transition">Kaydet</button>
+                                    <button onClick={() => { setEditing(false); setEditContent(comment.content); }} className="text-[11px] font-bold text-gray-400 hover:text-gray-600 transition">İptal</button>
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{comment.content}</p>
+                        )}
                     </div>
                     <div className="flex items-center gap-4 mt-2 ml-1">
                         <p className="text-[10px] text-gray-400 font-medium">{format(new Date(comment.createdAt), "d MMM, HH:mm", { locale: tr })}</p>
@@ -266,13 +327,19 @@ function CommentItem({ comment, onReply, onLike }: { comment: any, onReply: (p: 
                         >
                             Yanıtla
                         </button>
+                        {canEdit && !editing && (
+                            <button onClick={() => setEditing(true)} className="text-[11px] font-bold text-gray-400 hover:text-blue-500 transition">Düzenle</button>
+                        )}
+                        {canDelete && (
+                            <button onClick={() => { if (confirm("Bu yorumu silmek istiyor musun?")) onDelete?.(comment.id); }} className="text-[11px] font-bold text-gray-400 hover:text-red-500 transition">Sil</button>
+                        )}
                     </div>
 
                     {/* Replies (Nested) */}
                     {comment.replies?.length > 0 && (
                         <div className="mt-4 space-y-4 pl-4 border-l-2 border-gray-100 dark:border-gray-800">
                             {comment.replies.map((reply: any) => (
-                                <CommentItem key={reply.id} comment={reply} onReply={onReply} onLike={onLike} />
+                                <CommentItem key={reply.id} comment={reply} onReply={onReply} onLike={onLike} onDelete={onDelete} onEdit={onEdit} currentUserId={currentUserId} postOwnerId={postOwnerId} />
                             ))}
                         </div>
                     )}

@@ -11,6 +11,23 @@ export async function GET(
 ) {
   try {
     const { id: userId } = await params;
+    const currentUserId = await getCurrentUserId();
+
+    // Private profile check: only the owner or accepted followers can see the list
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { isPrivateProfile: true },
+    });
+    if (user?.isPrivateProfile && currentUserId !== userId) {
+      const isFollowing = currentUserId
+        ? await prisma.follow.findFirst({
+            where: { followerId: currentUserId, followingId: userId, status: "ACCEPTED" },
+          })
+        : null;
+      if (!isFollowing) {
+        return NextResponse.json({ success: true, data: [] });
+      }
+    }
     
     const followers = await prisma.follow.findMany({
       where: { 

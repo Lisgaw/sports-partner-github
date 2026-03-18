@@ -3,11 +3,99 @@
 import { use, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useLocale } from "next-intl";
 import toast from "@/lib/toast";
 import { getListingDetail, updateListing } from "@/services/api";
 import { useLocations, useSports } from "@/hooks/useLocations";
 import type { ListingDetail } from "@/types";
 import Button from "@/components/ui/Button";
+import { resolveAppLocale } from "@/lib/localized-ui";
+
+const EDIT_COPY = {
+  tr: {
+    back: "← Geri", title: "✏️ İlanı Düzenle",
+    listingType: "İlan Tipi *", rivalType: "🥊 Rakip Arıyorum", partnerType: "🤝 Partner Arıyorum",
+    trainerType: "🎓 Eğitmen İlanı", equipmentType: "🛒 Spor Malzemesi",
+    sport: "Spor Dalı *", sportPlaceholder: "Spor seçin",
+    country: "Ülke *", countryPlaceholder: "Ülke",
+    city: "Şehir *", cityPlaceholder: "Şehir",
+    district: "İlçe *", districtPlaceholder: "İlçe",
+    dateTime: "Tarih & Saat *", level: "Seviye *", levelPlaceholder: "Seviye seçin",
+    beginner: "🌱 Başlangıç", intermediate: "🔥 Orta", advanced: "⚡ İleri",
+    gender: "Cinsiyet Kısıtı", genderAny: "Farketmez", genderMale: "Sadece Erkek", genderFemale: "Sadece Kadın",
+    description: "Açıklama (opsiyonel)", descPlaceholder: "Kendinden ve aradığın kişiden bahset...",
+    cancel: "Vazgeç", submit: "💾 Güncelle",
+    notFound: "İlan bulunamadı", loadFailed: "İlan yüklenemedi",
+    noPermission: "Bu ilanı düzenleme yetkiniz yok",
+    updated: "İlan güncellendi!", updateFailed: "Güncelleme başarısız",
+    membershipDetails: "💳 Üyelik Detayları", membershipType: "Üyelik türü",
+    pricePh: "Fiyat", quotaPh: "Kontenjan", trialPricePh: "Deneme fiyatı",
+    includesPh: "Dahil hizmetler, virgülle ayır", trialAvailable: "Deneme paketi var",
+    classDetails: "📚 Ders / Kurs Detayları", classNamePh: "Ders adı",
+    instructorPh: "Eğitmen", schedulePh: "Program", difficultyPh: "Zorluk",
+    sessionPricePh: "Seans fiyatı", monthlyPricePh: "Aylık fiyat", maxPartPh: "Kontenjan",
+    productDetails: "🛍️ Ürün Detayları", productNamePh: "Ürün adı",
+    brandPh: "Marka", categoryPh: "Kategori", unitPh: "Birim", inStockLabel: "Stokta mevcut",
+    serviceDetails: "🔧 Hizmet Detayları", serviceTypePh: "Hizmet türü",
+    durationPh: "Süre", qualificationsPh: "Uzmanlık / nitelikler",
+  },
+  en: {
+    back: "← Back", title: "✏️ Edit Listing",
+    listingType: "Listing Type *", rivalType: "🥊 Looking for Rival", partnerType: "🤝 Looking for Partner",
+    trainerType: "🎓 Trainer Listing", equipmentType: "🛒 Sports Equipment",
+    sport: "Sport *", sportPlaceholder: "Select sport",
+    country: "Country *", countryPlaceholder: "Country",
+    city: "City *", cityPlaceholder: "City",
+    district: "District *", districtPlaceholder: "District",
+    dateTime: "Date & Time *", level: "Level *", levelPlaceholder: "Select level",
+    beginner: "🌱 Beginner", intermediate: "🔥 Intermediate", advanced: "⚡ Advanced",
+    gender: "Gender Restriction", genderAny: "Any", genderMale: "Male Only", genderFemale: "Female Only",
+    description: "Description (optional)", descPlaceholder: "Tell about yourself and who you're looking for...",
+    cancel: "Cancel", submit: "💾 Update",
+    notFound: "Listing not found", loadFailed: "Could not load listing",
+    noPermission: "You don't have permission to edit this listing",
+    updated: "Listing updated!", updateFailed: "Update failed",
+    membershipDetails: "💳 Membership Details", membershipType: "Membership type",
+    pricePh: "Price", quotaPh: "Capacity", trialPricePh: "Trial price",
+    includesPh: "Included services, comma separated", trialAvailable: "Trial available",
+    classDetails: "📚 Class / Course Details", classNamePh: "Class name",
+    instructorPh: "Instructor", schedulePh: "Schedule", difficultyPh: "Difficulty",
+    sessionPricePh: "Per session", monthlyPricePh: "Monthly price", maxPartPh: "Capacity",
+    productDetails: "🛍️ Product Details", productNamePh: "Product name",
+    brandPh: "Brand", categoryPh: "Category", unitPh: "Unit", inStockLabel: "In stock",
+    serviceDetails: "🔧 Service Details", serviceTypePh: "Service type",
+    durationPh: "Duration", qualificationsPh: "Qualifications / expertise",
+  },
+  ru: {
+    back: "← Назад", title: "✏️ Редактировать",
+    listingType: "Тип объявления *", rivalType: "🥊 Ищу соперника", partnerType: "🤝 Ищу партнёра",
+    trainerType: "🎓 Тренер", equipmentType: "🛒 Спортинвентарь",
+    sport: "Вид спорта *", sportPlaceholder: "Выберите",
+    country: "Страна *", countryPlaceholder: "Страна",
+    city: "Город *", cityPlaceholder: "Город",
+    district: "Район *", districtPlaceholder: "Район",
+    dateTime: "Дата и время *", level: "Уровень *", levelPlaceholder: "Выберите",
+    beginner: "🌱 Начинающий", intermediate: "🔥 Средний", advanced: "⚡ Продвинутый",
+    gender: "Пол", genderAny: "Любой", genderMale: "Только мужчины", genderFemale: "Только женщины",
+    description: "Описание (необязательно)", descPlaceholder: "Расскажите о себе и кого ищете...",
+    cancel: "Отмена", submit: "💾 Обновить",
+    notFound: "Объявление не найдено", loadFailed: "Ошибка загрузки",
+    noPermission: "У вас нет прав на редактирование",
+    updated: "Объявление обновлено!", updateFailed: "Ошибка обновления",
+    membershipDetails: "💳 Детали абонемента", membershipType: "Тип абонемента",
+    pricePh: "Цена", quotaPh: "Лимит", trialPricePh: "Пробная цена",
+    includesPh: "Включённые услуги, через запятую", trialAvailable: "Пробный период",
+    classDetails: "📚 Детали занятий", classNamePh: "Название",
+    instructorPh: "Инструктор", schedulePh: "Расписание", difficultyPh: "Сложность",
+    sessionPricePh: "За занятие", monthlyPricePh: "В месяц", maxPartPh: "Лимит",
+    productDetails: "🛍️ Детали товара", productNamePh: "Название",
+    brandPh: "Бренд", categoryPh: "Категория", unitPh: "Единица", inStockLabel: "В наличии",
+    serviceDetails: "🔧 Детали услуги", serviceTypePh: "Тип услуги",
+    durationPh: "Длительность", qualificationsPh: "Квалификация / навыки",
+  },
+} as const;
+
+type EditCopyKeys = keyof typeof EDIT_COPY;
 
 export default function EditListingPage({
   params,
@@ -17,6 +105,9 @@ export default function EditListingPage({
   const { id } = use(params);
   const router = useRouter();
   const { data: session, status } = useSession();
+  const locale = useLocale();
+  const safeLocale = resolveAppLocale(locale);
+  const copy = EDIT_COPY[safeLocale as EditCopyKeys] ?? EDIT_COPY.en;
   const [listing, setListing] = useState<ListingDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -105,11 +196,11 @@ export default function EditListingPage({
           });
         }
       } else {
-        toast.error("İlan bulunamadı");
+        toast.error(copy.notFound);
         router.push("/profil");
       }
     } catch {
-      toast.error("İlan yüklenemedi");
+      toast.error(copy.loadFailed);
       router.push("/profil");
     } finally {
       setLoading(false);
@@ -183,10 +274,10 @@ export default function EditListingPage({
       }
 
       await updateListing(id, payload);
-      toast.success("İlan güncellendi!");
+      toast.success(copy.updated);
       router.push(`/ilan/${id}`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Güncelleme başarısız");
+      toast.error(err instanceof Error ? err.message : copy.updateFailed);
     } finally {
       setSaving(false);
     }
@@ -204,7 +295,7 @@ export default function EditListingPage({
 
   // Sadece ilan sahibi düzenleyebilir
   if (listing.userId !== session.user?.id) {
-    toast.error("Bu ilanı düzenleme yetkiniz yok");
+    toast.error(copy.noPermission);
     router.push(`/ilan/${id}`);
     return null;
   }
@@ -218,9 +309,9 @@ export default function EditListingPage({
     <div className="max-w-2xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-          ← Geri
+          {copy.back}
         </button>
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">✏️ İlanı Düzenle</h1>
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">{copy.title}</h1>
       </div>
 
       <form
@@ -229,7 +320,7 @@ export default function EditListingPage({
       >
         {/* İlan Tipi */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">İlan Tipi *</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{copy.listingType}</label>
           <div className="grid grid-cols-2 gap-3">
             {(["RIVAL", "PARTNER", "TRAINER", "EQUIPMENT"] as const).map((t) => (
               <button
@@ -249,7 +340,7 @@ export default function EditListingPage({
                 }`}
                 aria-pressed={form.type === t}
               >
-                {t === "RIVAL" ? "🥊 Rakip Arıyorum" : t === "TRAINER" ? "🎓 Eğitmen İlanı" : t === "EQUIPMENT" ? "🛒 Spor Malzemesi" : "🤝 Partner Arıyorum"}
+                {t === "RIVAL" ? copy.rivalType : t === "TRAINER" ? copy.trainerType : t === "EQUIPMENT" ? copy.equipmentType : copy.partnerType}
               </button>
             ))}
           </div>
@@ -276,9 +367,9 @@ export default function EditListingPage({
 
         {/* Spor */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Spor Dalı *</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{copy.sport}</label>
           <select value={form.sportId} onChange={(e) => setForm({ ...form, sportId: e.target.value })} className={selectClass} required>
-            <option value="">Spor seçin</option>
+            <option value="">{copy.sportPlaceholder}</option>
             {sports.map((s) => <option key={s.id} value={s.id}>{s.icon} {s.name}</option>)}
           </select>
         </div>
@@ -286,23 +377,23 @@ export default function EditListingPage({
         {/* Konum */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ülke *</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{copy.country}</label>
             <select value={form.countryId} onChange={(e) => setForm({ ...form, countryId: e.target.value, cityId: "", districtId: "" })} className={selectClass} required>
-              <option value="">Ülke</option>
+              <option value="">{copy.countryPlaceholder}</option>
               {locations.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Şehir *</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{copy.city}</label>
             <select value={form.cityId} onChange={(e) => setForm({ ...form, cityId: e.target.value, districtId: "" })} className={selectClass} required disabled={!form.countryId}>
-              <option value="">Şehir</option>
+              <option value="">{copy.cityPlaceholder}</option>
               {cities.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">İlçe *</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{copy.district}</label>
             <select value={form.districtId} onChange={(e) => setForm({ ...form, districtId: e.target.value })} className={selectClass} required disabled={!form.cityId}>
-              <option value="">İlçe</option>
+              <option value="">{copy.districtPlaceholder}</option>
               {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
             </select>
           </div>
@@ -310,7 +401,7 @@ export default function EditListingPage({
 
         {form.type !== "EQUIPMENT" && !isVenueListingType && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tarih & Saat *</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{copy.dateTime}</label>
             <input
               type="datetime-local"
               value={form.dateTime}
@@ -324,96 +415,96 @@ export default function EditListingPage({
 
         {form.type !== "EQUIPMENT" && !isVenueListingType && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Seviye *</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{copy.level}</label>
             <select value={form.level} onChange={(e) => setForm({ ...form, level: e.target.value })} className={selectClass} required>
-              <option value="">Seviye seçin</option>
-              <option value="BEGINNER">🌱 Başlangıç</option>
-              <option value="INTERMEDIATE">🔥 Orta</option>
-              <option value="ADVANCED">⚡ İleri</option>
+              <option value="">{copy.levelPlaceholder}</option>
+              <option value="BEGINNER">{copy.beginner}</option>
+              <option value="INTERMEDIATE">{copy.intermediate}</option>
+              <option value="ADVANCED">{copy.advanced}</option>
             </select>
           </div>
         )}
 
         {form.type === "VENUE_MEMBERSHIP" && (
           <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 space-y-3 dark:border-indigo-800 dark:bg-indigo-900/20">
-            <p className="font-medium text-indigo-800 dark:text-indigo-200">💳 Üyelik Detayları</p>
+            <p className="font-medium text-indigo-800 dark:text-indigo-200">{copy.membershipDetails}</p>
             <div className="grid grid-cols-2 gap-3">
-              <input value={venueMembershipForm.membershipType} onChange={(e) => setVenueMembershipForm({ ...venueMembershipForm, membershipType: e.target.value })} className={selectClass} placeholder="Üyelik türü" />
-              <input value={venueMembershipForm.price} onChange={(e) => setVenueMembershipForm({ ...venueMembershipForm, price: e.target.value })} className={selectClass} placeholder="Fiyat" type="number" min="0" />
-              <input value={venueMembershipForm.maxMembers} onChange={(e) => setVenueMembershipForm({ ...venueMembershipForm, maxMembers: e.target.value })} className={selectClass} placeholder="Kontenjan" type="number" min="0" />
-              <input value={venueMembershipForm.trialPrice} onChange={(e) => setVenueMembershipForm({ ...venueMembershipForm, trialPrice: e.target.value })} className={selectClass} placeholder="Deneme fiyatı" type="number" min="0" />
+              <input value={venueMembershipForm.membershipType} onChange={(e) => setVenueMembershipForm({ ...venueMembershipForm, membershipType: e.target.value })} className={selectClass} placeholder={copy.membershipType} />
+              <input value={venueMembershipForm.price} onChange={(e) => setVenueMembershipForm({ ...venueMembershipForm, price: e.target.value })} className={selectClass} placeholder={copy.pricePh} type="number" min="0" />
+              <input value={venueMembershipForm.maxMembers} onChange={(e) => setVenueMembershipForm({ ...venueMembershipForm, maxMembers: e.target.value })} className={selectClass} placeholder={copy.quotaPh} type="number" min="0" />
+              <input value={venueMembershipForm.trialPrice} onChange={(e) => setVenueMembershipForm({ ...venueMembershipForm, trialPrice: e.target.value })} className={selectClass} placeholder={copy.trialPricePh} type="number" min="0" />
             </div>
-            <textarea value={venueMembershipForm.includes} onChange={(e) => setVenueMembershipForm({ ...venueMembershipForm, includes: e.target.value })} rows={2} className={`${selectClass} resize-none`} placeholder="Dahil hizmetler, virgülle ayır" />
+            <textarea value={venueMembershipForm.includes} onChange={(e) => setVenueMembershipForm({ ...venueMembershipForm, includes: e.target.value })} rows={2} className={`${selectClass} resize-none`} placeholder={copy.includesPh} />
             <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
               <input type="checkbox" checked={venueMembershipForm.trialAvailable} onChange={(e) => setVenueMembershipForm({ ...venueMembershipForm, trialAvailable: e.target.checked })} className="accent-indigo-500" />
-              Deneme paketi var
+              {copy.trialAvailable}
             </label>
           </div>
         )}
 
         {form.type === "VENUE_CLASS" && (
           <div className="rounded-xl border border-pink-200 bg-pink-50 p-4 space-y-3 dark:border-pink-800 dark:bg-pink-900/20">
-            <p className="font-medium text-pink-800 dark:text-pink-200">📚 Ders / Kurs Detayları</p>
+            <p className="font-medium text-pink-800 dark:text-pink-200">{copy.classDetails}</p>
             <div className="grid grid-cols-2 gap-3">
-              <input value={venueClassForm.className} onChange={(e) => setVenueClassForm({ ...venueClassForm, className: e.target.value })} className={selectClass} placeholder="Ders adı" />
-              <input value={venueClassForm.instructorName} onChange={(e) => setVenueClassForm({ ...venueClassForm, instructorName: e.target.value })} className={selectClass} placeholder="Eğitmen" />
-              <input value={venueClassForm.schedule} onChange={(e) => setVenueClassForm({ ...venueClassForm, schedule: e.target.value })} className={selectClass} placeholder="Program" />
-              <input value={venueClassForm.difficulty} onChange={(e) => setVenueClassForm({ ...venueClassForm, difficulty: e.target.value })} className={selectClass} placeholder="Zorluk" />
-              <input value={venueClassForm.pricePerSession} onChange={(e) => setVenueClassForm({ ...venueClassForm, pricePerSession: e.target.value })} className={selectClass} placeholder="Seans fiyatı" type="number" min="0" />
-              <input value={venueClassForm.priceMonthly} onChange={(e) => setVenueClassForm({ ...venueClassForm, priceMonthly: e.target.value })} className={selectClass} placeholder="Aylık fiyat" type="number" min="0" />
-              <input value={venueClassForm.maxParticipants} onChange={(e) => setVenueClassForm({ ...venueClassForm, maxParticipants: e.target.value })} className={selectClass} placeholder="Kontenjan" type="number" min="1" />
+              <input value={venueClassForm.className} onChange={(e) => setVenueClassForm({ ...venueClassForm, className: e.target.value })} className={selectClass} placeholder={copy.classNamePh} />
+              <input value={venueClassForm.instructorName} onChange={(e) => setVenueClassForm({ ...venueClassForm, instructorName: e.target.value })} className={selectClass} placeholder={copy.instructorPh} />
+              <input value={venueClassForm.schedule} onChange={(e) => setVenueClassForm({ ...venueClassForm, schedule: e.target.value })} className={selectClass} placeholder={copy.schedulePh} />
+              <input value={venueClassForm.difficulty} onChange={(e) => setVenueClassForm({ ...venueClassForm, difficulty: e.target.value })} className={selectClass} placeholder={copy.difficultyPh} />
+              <input value={venueClassForm.pricePerSession} onChange={(e) => setVenueClassForm({ ...venueClassForm, pricePerSession: e.target.value })} className={selectClass} placeholder={copy.sessionPricePh} type="number" min="0" />
+              <input value={venueClassForm.priceMonthly} onChange={(e) => setVenueClassForm({ ...venueClassForm, priceMonthly: e.target.value })} className={selectClass} placeholder={copy.monthlyPricePh} type="number" min="0" />
+              <input value={venueClassForm.maxParticipants} onChange={(e) => setVenueClassForm({ ...venueClassForm, maxParticipants: e.target.value })} className={selectClass} placeholder={copy.maxPartPh} type="number" min="1" />
             </div>
           </div>
         )}
 
         {form.type === "VENUE_PRODUCT" && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-3 dark:border-amber-800 dark:bg-amber-900/20">
-            <p className="font-medium text-amber-800 dark:text-amber-200">🛍️ Ürün Detayları</p>
+            <p className="font-medium text-amber-800 dark:text-amber-200">{copy.productDetails}</p>
             <div className="grid grid-cols-2 gap-3">
-              <input value={venueProductForm.productName} onChange={(e) => setVenueProductForm({ ...venueProductForm, productName: e.target.value })} className={selectClass} placeholder="Ürün adı" />
-              <input value={venueProductForm.brand} onChange={(e) => setVenueProductForm({ ...venueProductForm, brand: e.target.value })} className={selectClass} placeholder="Marka" />
-              <input value={venueProductForm.price} onChange={(e) => setVenueProductForm({ ...venueProductForm, price: e.target.value })} className={selectClass} placeholder="Fiyat" type="number" min="0" />
-              <input value={venueProductForm.productCategory} onChange={(e) => setVenueProductForm({ ...venueProductForm, productCategory: e.target.value })} className={selectClass} placeholder="Kategori" />
-              <input value={venueProductForm.unit} onChange={(e) => setVenueProductForm({ ...venueProductForm, unit: e.target.value })} className={selectClass} placeholder="Birim" />
+              <input value={venueProductForm.productName} onChange={(e) => setVenueProductForm({ ...venueProductForm, productName: e.target.value })} className={selectClass} placeholder={copy.productNamePh} />
+              <input value={venueProductForm.brand} onChange={(e) => setVenueProductForm({ ...venueProductForm, brand: e.target.value })} className={selectClass} placeholder={copy.brandPh} />
+              <input value={venueProductForm.price} onChange={(e) => setVenueProductForm({ ...venueProductForm, price: e.target.value })} className={selectClass} placeholder={copy.pricePh} type="number" min="0" />
+              <input value={venueProductForm.productCategory} onChange={(e) => setVenueProductForm({ ...venueProductForm, productCategory: e.target.value })} className={selectClass} placeholder={copy.categoryPh} />
+              <input value={venueProductForm.unit} onChange={(e) => setVenueProductForm({ ...venueProductForm, unit: e.target.value })} className={selectClass} placeholder={copy.unitPh} />
             </div>
             <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
               <input type="checkbox" checked={venueProductForm.inStock} onChange={(e) => setVenueProductForm({ ...venueProductForm, inStock: e.target.checked })} className="accent-amber-500" />
-              Stokta mevcut
+              {copy.inStockLabel}
             </label>
           </div>
         )}
 
         {form.type === "VENUE_SERVICE" && (
           <div className="rounded-xl border border-cyan-200 bg-cyan-50 p-4 space-y-3 dark:border-cyan-800 dark:bg-cyan-900/20">
-            <p className="font-medium text-cyan-800 dark:text-cyan-200">🔧 Hizmet Detayları</p>
+            <p className="font-medium text-cyan-800 dark:text-cyan-200">{copy.serviceDetails}</p>
             <div className="grid grid-cols-2 gap-3">
-              <input value={venueServiceForm.serviceType} onChange={(e) => setVenueServiceForm({ ...venueServiceForm, serviceType: e.target.value })} className={selectClass} placeholder="Hizmet türü" />
-              <input value={venueServiceForm.pricePerSession} onChange={(e) => setVenueServiceForm({ ...venueServiceForm, pricePerSession: e.target.value })} className={selectClass} placeholder="Fiyat" type="number" min="0" />
-              <input value={venueServiceForm.sessionDuration} onChange={(e) => setVenueServiceForm({ ...venueServiceForm, sessionDuration: e.target.value })} className={selectClass} placeholder="Süre" type="number" min="1" />
+              <input value={venueServiceForm.serviceType} onChange={(e) => setVenueServiceForm({ ...venueServiceForm, serviceType: e.target.value })} className={selectClass} placeholder={copy.serviceTypePh} />
+              <input value={venueServiceForm.pricePerSession} onChange={(e) => setVenueServiceForm({ ...venueServiceForm, pricePerSession: e.target.value })} className={selectClass} placeholder={copy.pricePh} type="number" min="0" />
+              <input value={venueServiceForm.sessionDuration} onChange={(e) => setVenueServiceForm({ ...venueServiceForm, sessionDuration: e.target.value })} className={selectClass} placeholder={copy.durationPh} type="number" min="1" />
             </div>
-            <textarea value={venueServiceForm.qualifications} onChange={(e) => setVenueServiceForm({ ...venueServiceForm, qualifications: e.target.value })} rows={2} className={`${selectClass} resize-none`} placeholder="Uzmanlık / nitelikler" />
+            <textarea value={venueServiceForm.qualifications} onChange={(e) => setVenueServiceForm({ ...venueServiceForm, qualifications: e.target.value })} rows={2} className={`${selectClass} resize-none`} placeholder={copy.qualificationsPh} />
           </div>
         )}
 
         {/* Cinsiyet Kısıtı */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cinsiyet Kısıtı</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{copy.gender}</label>
           <select value={form.allowedGender} onChange={(e) => setForm({ ...form, allowedGender: e.target.value })} className={selectClass}>
-            <option value="ANY">Farketmez</option>
-            <option value="MALE_ONLY">Sadece Erkek</option>
-            <option value="FEMALE_ONLY">Sadece Kadın</option>
+            <option value="ANY">{copy.genderAny}</option>
+            <option value="MALE_ONLY">{copy.genderMale}</option>
+            <option value="FEMALE_ONLY">{copy.genderFemale}</option>
           </select>
         </div>
 
         {/* Açıklama */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Açıklama (opsiyonel)</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{copy.description}</label>
           <textarea
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
             rows={3}
             maxLength={1000}
-            placeholder="Kendinden ve aradığın kişiden bahset..."
+            placeholder={copy.descPlaceholder}
             className={`${selectClass} resize-none`}
           />
           <p className="text-xs text-gray-400 mt-1">{form.description.length}/1000</p>
@@ -421,10 +512,10 @@ export default function EditListingPage({
 
         <div className="flex gap-3 pt-2">
           <Button type="button" variant="secondary" className="flex-1" onClick={() => router.back()}>
-            Vazgeç
+            {copy.cancel}
           </Button>
           <Button type="submit" loading={saving} className="flex-1">
-            💾 Güncelle
+            {copy.submit}
           </Button>
         </div>
       </form>

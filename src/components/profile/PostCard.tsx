@@ -111,6 +111,40 @@ export default function PostCard({ post, sessionUserId, onLikeToggle, onDeletePo
     } catch { /* ignore */ }
   };
 
+  const handleCommentDelete = async (commentId: string) => {
+    try {
+      const res = await fetch(`/api/posts/${post.id}/comments?commentId=${commentId}`, { method: "DELETE" });
+      if (res.ok) {
+        const removeFromList = (list: any[]): any[] =>
+          list.filter(c => c.id !== commentId).map(c =>
+            c.replies?.length ? { ...c, replies: removeFromList(c.replies) } : c
+          );
+        setComments(prev => removeFromList(prev));
+        setCommentCount((n: number) => Math.max(0, n - 1));
+      }
+    } catch { /* ignore */ }
+  };
+
+  const handleCommentEdit = async (commentId: string, newContent: string) => {
+    try {
+      const res = await fetch(`/api/posts/${post.id}/comments`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ commentId, content: newContent }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        const updateContent = (list: any[]): any[] =>
+          list.map(c => {
+            if (c.id === commentId) return { ...c, content: newContent };
+            if (c.replies?.length) return { ...c, replies: updateContent(c.replies) };
+            return c;
+          });
+        setComments(prev => updateContent(prev));
+      }
+    } catch { /* ignore */ }
+  };
+
   const loadComments = async () => {
     const res = await fetch(`/api/posts/${post.id}/comments`);
     const json = await res.json();
@@ -290,7 +324,11 @@ export default function PostCard({ post, sessionUserId, onLikeToggle, onDeletePo
                   setReplyingTo(p);
                   const el = document.getElementById(`reply-input-${post.id}`);
                   el?.focus();
-                }} 
+                }}
+                onDelete={handleCommentDelete}
+                onEdit={handleCommentEdit}
+                currentUserId={sessionUserId ?? undefined}
+                postOwnerId={post.userId ?? post.user?.id}
               />
             ))}
           </div>

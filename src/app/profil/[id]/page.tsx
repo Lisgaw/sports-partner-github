@@ -449,8 +449,10 @@ export default function PublicProfilePage({
       }
     } catch (err) {
       // Hata durumunda optimistic update'i geri al
-      setIsFollowing(!next);
-      setFollowerCount((prev) => next ? prev - 1 : prev + 1);
+      if (!profile?.isPrivateProfile) {
+        setIsFollowing(!next);
+        setFollowerCount((prev) => next ? prev - 1 : prev + 1);
+      }
       toast.error(err instanceof Error ? err.message : copy.genericError);
     } finally {
       setFollowLoading(false);

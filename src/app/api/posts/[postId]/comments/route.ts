@@ -173,16 +173,69 @@ export async function DELETE(
   }
 
   try {
+    // Allow comment author OR post owner to delete
     const comment = await prisma.postComment.findFirst({
-      where: { id: commentId, postId, userId },
+      where: { id: commentId, postId },
+      include: { post: { select: { userId: true } } },
     });
-    if (!comment) {
+    if (!comment || (comment.userId !== userId && comment.post.userId !== userId)) {
       return NextResponse.json({ error: "Yorum bulunamadı veya yetki yok" }, { status: 404 });
     }
     await prisma.postComment.delete({ where: { id: commentId } });
     return NextResponse.json({ success: true });
   } catch (err) {
     log.error("Yorum silme hatası", err);
+    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
+  }
+}
+
+const editSchema = z.object({
+  commentId: z.string().min(1),
+  content: z.string().min(1).max(500),
+});
+
+// PATCH /api/posts/[postId]/comments — edit own comment
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ postId: string }> }
+) {
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { postId } = await params;
+
+  try {
+    const body = await req.json();
+    const parsed = editSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    }
+
+    if (containsProfanity(parsed.data.content)) {
+      return NextResponse.json({ error: "Yorumunuz uygunsuz ifadeler içeriyor." }, { status: 400 });
+    }
+
+    const comment = await prisma.postComment.findFirst({
+      where: { id: parsed.data.commentId, postId, userId },
+    });
+    if (!comment) {
+      return NextResponse.json({ error: "Yorum bulunamadı veya yetki yok" }, { status: 404 });
+    }
+
+    const updated = await prisma.postComment.update({
+      where: { id: parsed.data.commentId },
+      data: { content: parsed.data.content },
+      include: {
+        user: { select: { id: true, name: true, avatarUrl: true } },
+        _count: { select: { likes: true, replies: true } },
+      },
+    });
+
+    return NextResponse.json({ success: true, comment: updated });
+  } catch (err) {
+    log.error("Yorum düzenleme hatası", err);
     return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
   }
 }

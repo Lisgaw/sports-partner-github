@@ -5,8 +5,9 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
-import { tr } from "date-fns/locale";
+import { useLocale } from "next-intl";
 import toast from "@/lib/toast";
+import { getDateFnsLocale, resolveAppLocale } from "@/lib/localized-ui";
 
 type MatchDetail = {
   id: string;
@@ -48,17 +49,98 @@ function StarRating({ value, onChange }: { value: number; onChange?: (v: number)
   );
 }
 
-const STATUS_LABELS: Record<string, { label: string; color: string; icon: string }> = {
-  SCHEDULED: { label: "Planlandı", color: "text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-300", icon: "📅" },
-  ONGOING:   { label: "Devam Ediyor", color: "text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-300", icon: "⏳" },
-  COMPLETED: { label: "Tamamlandı", color: "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-300", icon: "✅" },
-  CANCELLED: { label: "İptal Edildi", color: "text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-300", icon: "❌" },
-};
+const MATCH_COPY = {
+  tr: {
+    scheduled: "Planlandı", ongoing: "Devam Ediyor", completed: "Tamamlandı", cancelled: "İptal Edildi",
+    loadFailed: "Maç yüklenemedi", serverError: "Sunucu hatası", genericError: "Bir hata oluştu",
+    noShowConfirm: "Bu kişi etkinliğe gelmedi mi? Bu bildirim geri alınamaz.",
+    noShowSent: "Gelmedi bildirimi gönderildi", noShowFailed: "Bildirim gönderilemedi",
+    confirmPending: "Onayınız alındı. Rakibinizin onayı bekleniyor.",
+    matchCompleted: "🎉 Maç tamamlandı! Puan verebilirsiniz.",
+    actionFailed: "İşlem başarısız", ratingSaved: "⭐ Puanınız kaydedildi!",
+    ratingFailed: "Puanlama başarısız",
+    backToActivities: "← Aktivitelerime Dön", matchTitle: "Maçı",
+    players: "Oyuncular", you: "Sen",
+    matchConfirmation: "Maç Onayı", bothConfirmed: "Her iki taraf maçı onayladı. Tamamlandı!",
+    yourConfirmPending: "Onayınız alındı. Rakibinizin onayı bekleniyor.",
+    opponentConfirmHint: "Rakibiniz onayladığında maç tamamlanacak ve puan verebileceksiniz.",
+    datePassed: "Maç Tarihi Geçti",
+    datePassedDesc: "Etkinlik zamanı geçti. Maçı oynadıysanız lütfen onaylayın, oynamadıysanız bildirin.",
+    processing: "İşleniyor...", confirmBtn: "Maçı Oynadık",
+    noShowBtn: "Gelmedi (Bildir)",
+    dateNotYet: "Maç tarihi henüz gelmedi. Maçtan sonra buradan onaylayabilirsiniz.",
+    rateFor: "için Puan Ver", ratingDone: "Puanınız verildi. Teşekkürler!",
+    commentPlaceholder: "Yorum (isteğe bağlı)", submitRating: "Puanı Gönder",
+    submitting: "Gönderiliyor...", yourRating: "Verdiğiniz Puan",
+    goToMessages: "Mesajlaşmaya Git",
+  },
+  en: {
+    scheduled: "Scheduled", ongoing: "In Progress", completed: "Completed", cancelled: "Cancelled",
+    loadFailed: "Could not load match", serverError: "Server error", genericError: "Something went wrong",
+    noShowConfirm: "Did this person not show up? This report cannot be undone.",
+    noShowSent: "No-show report sent", noShowFailed: "Could not send report",
+    confirmPending: "Your confirmation received. Waiting for opponent.",
+    matchCompleted: "🎉 Match completed! You can now rate.",
+    actionFailed: "Action failed", ratingSaved: "⭐ Your rating has been saved!",
+    ratingFailed: "Rating failed",
+    backToActivities: "← Back to Activities", matchTitle: "Match",
+    players: "Players", you: "You",
+    matchConfirmation: "Match Confirmation", bothConfirmed: "Both sides confirmed. Match completed!",
+    yourConfirmPending: "Your confirmation received. Waiting for opponent.",
+    opponentConfirmHint: "Once your opponent confirms, the match will be completed and you can rate.",
+    datePassed: "Match Date Passed",
+    datePassedDesc: "The event time has passed. Please confirm if you played, or report if the opponent didn't show up.",
+    processing: "Processing...", confirmBtn: "We Played",
+    noShowBtn: "No-show (Report)",
+    dateNotYet: "The match date hasn't arrived yet. You can confirm after the match.",
+    rateFor: "Rate", ratingDone: "Your rating has been submitted. Thank you!",
+    commentPlaceholder: "Comment (optional)", submitRating: "Submit Rating",
+    submitting: "Submitting...", yourRating: "Your Rating",
+    goToMessages: "Go to Messages",
+  },
+  ru: {
+    scheduled: "Запланирован", ongoing: "В процессе", completed: "Завершён", cancelled: "Отменён",
+    loadFailed: "Не удалось загрузить матч", serverError: "Ошибка сервера", genericError: "Произошла ошибка",
+    noShowConfirm: "Этот человек не пришёл? Это сообщение нельзя отменить.",
+    noShowSent: "Сообщение о неявке отправлено", noShowFailed: "Не удалось отправить",
+    confirmPending: "Ваше подтверждение получено. Ожидается подтверждение соперника.",
+    matchCompleted: "🎉 Матч завершён! Можно оценить.",
+    actionFailed: "Не удалось выполнить", ratingSaved: "⭐ Ваша оценка сохранена!",
+    ratingFailed: "Не удалось оценить",
+    backToActivities: "← К активностям", matchTitle: "Матч",
+    players: "Игроки", you: "Вы",
+    matchConfirmation: "Подтверждение матча", bothConfirmed: "Обе стороны подтвердили. Завершено!",
+    yourConfirmPending: "Ваше подтверждение получено. Ожидается соперник.",
+    opponentConfirmHint: "Когда соперник подтвердит, матч будет завершён и вы сможете оценить.",
+    datePassed: "Дата матча прошла",
+    datePassedDesc: "Время события прошло. Подтвердите, если играли, или сообщите о неявке.",
+    processing: "Обработка...", confirmBtn: "Мы играли",
+    noShowBtn: "Не пришёл (Сообщить)",
+    dateNotYet: "Дата матча ещё не наступила. Вы сможете подтвердить после матча.",
+    rateFor: "Оценить", ratingDone: "Ваша оценка отправлена. Спасибо!",
+    commentPlaceholder: "Комментарий (необязательно)", submitRating: "Отправить оценку",
+    submitting: "Отправка...", yourRating: "Ваша оценка",
+    goToMessages: "Перейти к сообщениям",
+  },
+} as const;
+
+type MatchCopyKeys = keyof typeof MATCH_COPY;
 
 export default function EslesmelerDetailPage({ params }: { params: Promise<{ matchId: string }> }) {
   const { matchId } = use(params);
   const { data: session } = useSession();
   const router = useRouter();
+  const locale = useLocale();
+  const safeLocale = resolveAppLocale(locale);
+  const copy = MATCH_COPY[safeLocale as MatchCopyKeys] ?? MATCH_COPY.en;
+  const dateFnsLocale = getDateFnsLocale(safeLocale);
+
+  const STATUS_LABELS: Record<string, { label: string; color: string; icon: string }> = {
+    SCHEDULED: { label: copy.scheduled, color: "text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-300", icon: "📅" },
+    ONGOING:   { label: copy.ongoing, color: "text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-300", icon: "⏳" },
+    COMPLETED: { label: copy.completed, color: "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-300", icon: "✅" },
+    CANCELLED: { label: copy.cancelled, color: "text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-300", icon: "❌" },
+  };
 
   const [match, setMatch]         = useState<MatchDetail | null>(null);
   const [loading, setLoading]     = useState(true);
@@ -76,16 +158,16 @@ export default function EslesmelerDetailPage({ params }: { params: Promise<{ mat
           setMatch(json.data);
           if (json.data.myRating) setRatingDone(true);
         } else {
-          toast.error(json.error ?? "Maç yüklenemedi");
+          toast.error(json.error ?? copy.loadFailed);
           router.push("/");
         }
       })
-      .catch(() => { toast.error("Sunucu hatası"); router.push("/"); })
+      .catch(() => { toast.error(copy.serverError); router.push("/"); })
       .finally(() => setLoading(false));
   }, [matchId, router]);
 
   const handleNoShow = async () => {
-    if (!confirm("Bu kişi etkinliğe gelmedi mi? Bu bildirim geri alınamaz.")) return;
+    if (!confirm(copy.noShowConfirm)) return;
     try {
       const res = await fetch(`/api/matches/${matchId}`, {
         method: "PATCH",
@@ -94,13 +176,13 @@ export default function EslesmelerDetailPage({ params }: { params: Promise<{ mat
       });
       const json = await res.json();
       if (json.success) {
-        toast.success("Gelmedi bildirimi gönderildi");
+        toast.success(copy.noShowSent);
         router.push("/aktivitelerim");
       } else {
-        toast.error(json.error ?? "Bildirim gönderilemedi");
+        toast.error(json.error ?? copy.noShowFailed);
       }
     } catch {
-      toast.error("Bir hata oluştu");
+      toast.error(copy.genericError);
     }
   };
 
@@ -111,17 +193,17 @@ export default function EslesmelerDetailPage({ params }: { params: Promise<{ mat
       const json = await res.json();
       if (json.success) {
         if (json.pendingConfirmation) {
-          toast.success("Onayınız alındı. Rakibinizin onayı bekleniyor.");
+          toast.success(copy.confirmPending);
           setMatch((prev) => prev ? { ...prev, iHaveConfirmed: true } : prev);
         } else {
-          toast.success("🎉 Maç tamamlandı! Puan verebilirsiniz.");
+          toast.success(copy.matchCompleted);
           setMatch((prev) => prev ? { ...prev, status: "COMPLETED", iHaveConfirmed: true } : prev);
         }
       } else {
-        toast.error(json.error ?? "İşlem başarısız");
+        toast.error(json.error ?? copy.actionFailed);
       }
     } catch {
-      toast.error("Bir hata oluştu");
+      toast.error(copy.genericError);
     } finally {
       setConfirming(false);
     }
@@ -137,14 +219,14 @@ export default function EslesmelerDetailPage({ params }: { params: Promise<{ mat
       });
       const json = await res.json();
       if (json.success) {
-        toast.success("⭐ Puanınız kaydedildi!");
+        toast.success(copy.ratingSaved);
         setRatingDone(true);
         setMatch((prev) => prev ? { ...prev, myRating: { score: ratingScore, comment: ratingComment || null } } : prev);
       } else {
-        toast.error(json.error ?? "Puanlama başarısız");
+        toast.error(json.error ?? copy.ratingFailed);
       }
     } catch {
-      toast.error("Bir hata oluştu");
+      toast.error(copy.genericError);
     } finally {
       setRatingLoading(false);
     }
@@ -172,7 +254,7 @@ export default function EslesmelerDetailPage({ params }: { params: Promise<{ mat
     <div className="max-w-xl mx-auto space-y-4 py-6 px-4">
       {/* Geri dön */}
       <Link href="/aktivitelerim" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition">
-        ← Aktivitelerime Dön
+        {copy.backToActivities}
       </Link>
 
       {/* Header */}
@@ -182,7 +264,7 @@ export default function EslesmelerDetailPage({ params }: { params: Promise<{ mat
             <span className="text-2xl">{match.listing?.sport?.icon ?? "⚽"}</span>
             <div>
               <h1 className="text-lg font-bold text-gray-900 dark:text-white">
-                {match.listing?.sport?.name ?? "Spor"} Maçı
+                {match.listing?.sport?.name ?? "Sport"} {copy.matchTitle}
               </h1>
               {match.listing?.district && (
                 <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -199,7 +281,7 @@ export default function EslesmelerDetailPage({ params }: { params: Promise<{ mat
         {matchDate && (
           <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 mb-3">
             <span>📅</span>
-            <span>{format(new Date(matchDate), "d MMMM yyyy, EEEE HH:mm", { locale: tr })}</span>
+            <span>{format(new Date(matchDate), "d MMMM yyyy, EEEE HH:mm", { locale: dateFnsLocale })}</span>
           </div>
         )}
 
@@ -212,7 +294,7 @@ export default function EslesmelerDetailPage({ params }: { params: Promise<{ mat
 
       {/* Oyuncular */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-5 shadow-sm">
-        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Oyuncular</h2>
+        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">{copy.players}</h2>
         <div className="flex items-center justify-between gap-4">
           {[match.user1, match.user2].map((user, i) => (
             <Link
@@ -229,7 +311,7 @@ export default function EslesmelerDetailPage({ params }: { params: Promise<{ mat
               <div className="text-center">
                 <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{user.name}</p>
                 {user.id === session?.user?.id && (
-                  <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Sen</span>
+                  <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">{copy.you}</span>
                 )}
               </div>
             </Link>
@@ -240,24 +322,24 @@ export default function EslesmelerDetailPage({ params }: { params: Promise<{ mat
       {/* Maç Onaylama */}
       {match.status !== "CANCELLED" && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-5 shadow-sm">
-          <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Maç Onayı</h2>
+          <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">{copy.matchConfirmation}</h2>
 
           {match.status === "COMPLETED" ? (
             <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-semibold">
-              <span>✅</span> Her iki taraf maçı onayladı. Tamamlandı!
+              <span>✅</span> {copy.bothConfirmed}
             </div>
           ) : match.iHaveConfirmed ? (
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-medium text-sm">
-                <span>⏳</span> Onayınız alındı. Rakibinizin onayı bekleniyor.
+                <span>⏳</span> {copy.yourConfirmPending}
               </div>
-              <p className="text-xs text-gray-400 dark:text-gray-500">Rakibiniz onayladığında maç tamamlanacak ve puan verebileceksiniz.</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500">{copy.opponentConfirmHint}</p>
             </div>
           ) : dateHasPassed ? (
             <div className="space-y-3">
               <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
-                <p className="text-sm text-amber-800 dark:text-amber-300 font-semibold mb-2">📅 Maç Tarihi Geçti</p>
-                <p className="text-xs text-amber-700 dark:text-amber-400 mb-4">Etkinlik zamanı geçti. Maçı oynadıysanız lütfen onaylayın, oynamadıysanız bildirin.</p>
+                <p className="text-sm text-amber-800 dark:text-amber-300 font-semibold mb-2">📅 {copy.datePassed}</p>
+                <p className="text-xs text-amber-700 dark:text-amber-400 mb-4">{copy.datePassedDesc}</p>
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={handleConfirm}
@@ -265,23 +347,23 @@ export default function EslesmelerDetailPage({ params }: { params: Promise<{ mat
                     className="flex-1 min-w-[140px] bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-2 text-sm"
                   >
                     {confirming ? (
-                      <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> İşleniyor...</>
+                      <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> {copy.processing}</>
                     ) : (
-                      <>✅ Maçı Oynadık</>
+                      <>✅ {copy.confirmBtn}</>
                     )}
                   </button>
                   <button
                     onClick={handleNoShow}
                     className="flex-1 min-w-[140px] bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-xl px-4 py-2.5 hover:bg-red-100 transition text-sm font-semibold"
                   >
-                    ⚠️ Gelmedi (Bildir)
+                    ⚠️ {copy.noShowBtn}
                   </button>
                 </div>
               </div>
             </div>
           ) : (
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Maç tarihi henüz gelmedi. Maçtan sonra buradan onaylayabilirsiniz.
+              {copy.dateNotYet}
             </p>
           )}
         </div>
@@ -291,12 +373,12 @@ export default function EslesmelerDetailPage({ params }: { params: Promise<{ mat
       {canRate && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-5 shadow-sm">
           <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
-            ⭐ {opponent.name} için Puan Ver
+            ⭐ {copy.rateFor} {opponent.name}
           </h2>
 
           {ratingDone ? (
             <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-medium">
-              <span>✅</span> Puanınız verildi. Teşekkürler!
+              <span>✅</span> {copy.ratingDone}
             </div>
           ) : (
             <div className="space-y-4">
@@ -305,7 +387,7 @@ export default function EslesmelerDetailPage({ params }: { params: Promise<{ mat
                 value={ratingComment}
                 onChange={(e) => setRatingComment(e.target.value)}
                 rows={3}
-                placeholder="Yorum (isteğe bağlı)"
+                placeholder={copy.commentPlaceholder}
                 className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
               />
               <button
@@ -313,7 +395,7 @@ export default function EslesmelerDetailPage({ params }: { params: Promise<{ mat
                 disabled={ratingLoading}
                 className="w-full bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-bold py-2.5 rounded-xl transition"
               >
-                {ratingLoading ? "Gönderiliyor..." : "Puanı Gönder"}
+                {ratingLoading ? copy.submitting : copy.submitRating}
               </button>
             </div>
           )}
@@ -322,7 +404,7 @@ export default function EslesmelerDetailPage({ params }: { params: Promise<{ mat
 
       {ratingDone && match.myRating && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-5 shadow-sm">
-          <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Verdiğiniz Puan</h2>
+          <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{copy.yourRating}</h2>
           <div className="flex items-center gap-2">
             <StarRating value={match.myRating.score} />
             <span className="text-lg font-bold text-gray-800 dark:text-gray-100">{match.myRating.score}/5</span>
@@ -338,7 +420,7 @@ export default function EslesmelerDetailPage({ params }: { params: Promise<{ mat
         href={`/mesajlar/${matchId}`}
         className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition text-gray-700 dark:text-gray-200 font-semibold text-sm"
       >
-        💬 Mesajlaşmaya Git
+        💬 {copy.goToMessages}
       </Link>
     </div>
   );

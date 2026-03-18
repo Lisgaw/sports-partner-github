@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 
 type PrivacyLevel = "EVERYONE" | "FOLLOWERS" | "NOBODY";
 
@@ -382,9 +383,9 @@ export default function GizlilikPage() {
               <p className="text-xs text-gray-400 mt-0.5">{t("followRequestsDesc")}</p>
             </div>
             {followRequests.length > 0 && (
-              <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-2.5 py-1 rounded-full font-semibold">
+              <Link href="/takip-istekleri" className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-2.5 py-1 rounded-full font-semibold hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition">
                 {t("requests", { count: followRequests.length })}
-              </span>
+              </Link>
             )}
           </div>
           {followRequests.length === 0 ? (

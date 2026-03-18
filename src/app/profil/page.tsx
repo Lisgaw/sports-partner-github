@@ -73,44 +73,6 @@ export default function ProfilePage() {
   const [postsView, setPostsView] = useState<"grid" | "list">("grid");
   const [challenges, setChallenges] = useState<any[]>([]);
   const [challengesLoading, setChallengesLoading] = useState(false);
-  const [otpFlow, setOtpFlow] = useState<Record<string, { step: "idle" | "requested" | "verifying"; code: string; generated?: string; loading: boolean }>>({});
-
-  const requestOtp = async (matchId: string) => {
-    setOtpFlow(p => ({ ...p, [matchId]: { step: "requested", code: "", loading: true } }));
-    try {
-      const res = await fetch(`/api/matches/${matchId}/otp`, { method: "POST" });
-      const json = await res.json();
-      if (json.code) {
-        setOtpFlow(p => ({ ...p, [matchId]: { step: "requested", code: "", generated: json.code, loading: false } }));
-      } else {
-        toast.error(json.error || "OTP oluşturulamadı");
-        setOtpFlow(p => ({ ...p, [matchId]: { step: "idle", code: "", loading: false } }));
-      }
-    } catch { setOtpFlow(p => ({ ...p, [matchId]: { step: "idle", code: "", loading: false } })); }
-  };
-
-  const verifyOtp = async (matchId: string) => {
-    const flow = otpFlow[matchId];
-    if (!flow) return;
-    setOtpFlow(p => ({ ...p, [matchId]: { ...flow, loading: true } }));
-    try {
-      const res = await fetch(`/api/matches/${matchId}/otp`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: flow.code }),
-      });
-      const json = await res.json();
-      if (json.success) {
-        toast.success("Maç doğrulandı! ✓");
-        setOtpFlow(p => ({ ...p, [matchId]: { step: "idle", code: "", loading: false } }));
-        refresh();
-      } else {
-        toast.error(json.error || t("invalidCode"));
-        setOtpFlow(p => ({ ...p, [matchId]: { ...flow, loading: false } }));
-      }
-    } catch { setOtpFlow(p => ({ ...p, [matchId]: { ...flow, loading: false } })); }
-  };
-
   // Profile edit states
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState<ProfileEditForm>({
@@ -739,7 +701,7 @@ export default function ProfilePage() {
                       🏟️ {match.listing.venue.name}
                     </p>
                   )}
-                  {/* Trust Score + OTP Doğrulama */}
+                  {/* Trust Score */}
                   <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 space-y-2">
                     {typeof (match as any).trustScore === "number" && (
                       <div className="flex items-center gap-2">
@@ -757,34 +719,6 @@ export default function ProfilePage() {
                         </span>
                       </div>
                     )}
-                    {((match as any).status === "SCHEDULED" || (match as any).status === "ONGOING") && (() => {
-                      const flow = otpFlow[match.id] || { step: "idle", code: "", loading: false };
-                      if (flow.step === "idle") return (
-                        <button onClick={() => requestOtp(match.id)} disabled={flow.loading}
-                          className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 transition flex items-center gap-1">
-                          {flow.loading ? "..." : t("otpStart")}
-                        </button>
-                      );
-                      return (
-                        <div className="space-y-1.5">
-                          {flow.generated && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              {t("otpYourCode")} <span className="font-mono font-bold text-indigo-700 dark:text-indigo-300">{flow.generated}</span> {t("otpShareHint")}
-                            </p>
-                          )}
-                          <div className="flex gap-2">
-                            <input type="text" maxLength={6} placeholder={t("otpInputPlaceholder")} value={flow.code}
-                              onChange={e => setOtpFlow(p => ({ ...p, [match.id]: { ...flow, code: e.target.value } }))}
-                              className="flex-1 text-xs px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 outline-none focus:ring-1 focus:ring-indigo-500 font-mono"
-                            />
-                            <button onClick={() => verifyOtp(match.id)} disabled={flow.loading || flow.code.length < 6}
-                              className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-700 disabled:opacity-50 transition">
-                              {flow.loading ? "..." : t("otpConfirm")}
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })()}
                     {!((data as any).ratedMatchIds ?? []).includes(match.id) && (
                       <button
                         onClick={() => {
