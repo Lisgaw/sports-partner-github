@@ -194,9 +194,28 @@ export async function GET(
         trainerProfile: isRestricted ? null : (user.trainerProfile ?? null),
         coverUrl: isRestricted ? null : (user.coverUrl ?? null),
         ...(() => {
+          const toRank = (visibility: string | null | undefined) => {
+            switch (visibility) {
+              case "NOBODY":
+                return 2;
+              case "FOLLOWERS":
+                return 1;
+              default:
+                return 0;
+            }
+          };
+
           const canSee = (fieldVisibility: string | null) => {
-            const v = fieldVisibility ?? "EVERYONE";
-            return isOwnProfile || (!isRestricted && (v === "EVERYONE" || (v === "FOLLOWERS" && isFollowing)));
+            const globalVisibility = user.socialLinksVisibility ?? "EVERYONE";
+            const specificVisibility = fieldVisibility ?? globalVisibility;
+            const effectiveVisibility = toRank(globalVisibility) >= toRank(specificVisibility)
+              ? globalVisibility
+              : specificVisibility;
+
+            if (isOwnProfile) return true;
+            if (isRestricted) return false;
+
+            return effectiveVisibility === "EVERYONE" || (effectiveVisibility === "FOLLOWERS" && isFollowing);
           };
           return {
             instagram: canSee(user.instagramVisibility) ? (user.instagram ?? null) : null,
@@ -206,6 +225,7 @@ export async function GET(
             vk: canSee(user.vkVisibility) ? (user.vk ?? null) : null,
             telegram: canSee(user.telegramVisibility) ? (user.telegram ?? null) : null,
             whatsapp: canSee(user.whatsappVisibility) ? (user.whatsapp ?? null) : null,
+            socialLinksVisibility: user.socialLinksVisibility ?? "EVERYONE",
           };
         })(),
         clubs: isRestricted ? [] : (user.clubMemberships ?? []).map((m: any) => ({ ...m.club, role: m.role })),

@@ -6,7 +6,8 @@ import { useProfile } from "@/hooks/useProfile";
 import { useSports } from "@/hooks/useLocations";
 import toast from "@/lib/toast";
 import Button from "@/components/ui/Button";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { localizeSportName } from "@/lib/localized-ui";
 
 const inputClass =
   "w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition";
@@ -196,6 +197,7 @@ function TrainerForm({
   labelClass: string;
   t: ReturnType<typeof useTranslations<"settings.professionalPage">>;
 }) {
+  const locale = useLocale();
   const LESSON_TYPES = [
     { id: "birebir", icon: "👤", label: t("lessonType_birebir"), desc: t("lessonType_birebir_desc") },
     { id: "grup", icon: "👥", label: t("lessonType_grup"), desc: t("lessonType_grup_desc") },
@@ -261,7 +263,7 @@ function TrainerForm({
                     : "border-gray-200 dark:border-gray-600 hover:border-emerald-300"
                 }`}
               >
-                {s.icon || "🏅"} {s.name}
+                {s.icon || "🏅"} {localizeSportName(s.name, locale)}
               </button>
             );
           })}

@@ -228,15 +228,16 @@ export default function ToplulukPage() {
           )}
         </div>
 
-        <div className="flex gap-1 mb-4 bg-gray-100 dark:bg-gray-900 p-1 rounded-xl w-fit overflow-x-auto">
-          {TYPES.map((typeItem) => (
+        <div className="mb-4 overflow-x-auto pb-1">
+          <div className="inline-flex min-w-max gap-1 bg-gray-100 dark:bg-gray-900 p-1 rounded-xl">
+            {TYPES.map((typeItem) => (
             <button
               key={typeItem.value}
               onClick={() => {
                 setTypeFilter(typeItem.value);
                 setPage(1);
               }}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+              className={`shrink-0 px-3 sm:px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                 typeFilter === typeItem.value
                   ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm"
                   : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
@@ -244,7 +245,8 @@ export default function ToplulukPage() {
             >
               {typeItem.label}
             </button>
-          ))}
+            ))}
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-2 mb-6">

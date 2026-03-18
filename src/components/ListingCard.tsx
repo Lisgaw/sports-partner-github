@@ -5,8 +5,179 @@ import { useRouter } from "next/navigation";
 import { format, formatDistanceToNow, differenceInYears } from "date-fns";
 import { tr, enUS, ru, de, fr, es, ja, ko } from "date-fns/locale";
 import { useLocale, useTranslations } from "next-intl";
-import { localizeSportName } from "@/lib/localized-ui";
+import { localizeSportName, resolveAppLocale } from "@/lib/localized-ui";
 import { ListingSummary } from "@/types";
+
+const CARD_TEXT = {
+  tr: {
+    expired: "Suresi doldu",
+    left: "kaldi",
+    urgent: "ACIL",
+    anonymous: "Anonim",
+    femaleOnly: "Yalnizca Kadinlar",
+    maleOnly: "Yalnizca Erkekler",
+    compatible: "uyumlu",
+    matched: "Eslesti",
+    matchedCompleted: "Eslesme Tamamlandi",
+    closed: "Kapandi",
+    expiredStatus: "Suresi Doldu",
+    unspecified: "Belirtilmemis",
+    male: "Erkek",
+    female: "Kadin",
+    responseTrainer: "basvuru",
+    responseDefault: "yanit",
+    group: "Grup",
+    perHour: "/sa",
+    detail: "Ilani Gor",
+  },
+  en: {
+    expired: "Expired",
+    left: "left",
+    urgent: "Urgent",
+    anonymous: "Anonymous",
+    femaleOnly: "Women only",
+    maleOnly: "Men only",
+    compatible: "match",
+    matched: "Matched",
+    matchedCompleted: "Match Completed",
+    closed: "Closed",
+    expiredStatus: "Expired",
+    unspecified: "Unspecified",
+    male: "Male",
+    female: "Female",
+    responseTrainer: "applications",
+    responseDefault: "responses",
+    group: "Group",
+    perHour: "/h",
+    detail: "View Listing",
+  },
+  ru: {
+    expired: "Истекло",
+    left: "осталось",
+    urgent: "СРОЧНО",
+    anonymous: "Анонимно",
+    femaleOnly: "Только для женщин",
+    maleOnly: "Только для мужчин",
+    compatible: "совпадение",
+    matched: "Совпало",
+    matchedCompleted: "Совпадение подтверждено",
+    closed: "Закрыто",
+    expiredStatus: "Истекло",
+    unspecified: "Не указано",
+    male: "Мужчина",
+    female: "Женщина",
+    responseTrainer: "заявок",
+    responseDefault: "откликов",
+    group: "Группа",
+    perHour: "/ч",
+    detail: "Открыть объявление",
+  },
+  de: {
+    expired: "Abgelaufen",
+    left: "ubrig",
+    urgent: "DRINGEND",
+    anonymous: "Anonym",
+    femaleOnly: "Nur fur Frauen",
+    maleOnly: "Nur fur Manner",
+    compatible: "Treffer",
+    matched: "Gematcht",
+    matchedCompleted: "Match abgeschlossen",
+    closed: "Geschlossen",
+    expiredStatus: "Abgelaufen",
+    unspecified: "Nicht angegeben",
+    male: "Mannlich",
+    female: "Weiblich",
+    responseTrainer: "Bewerbungen",
+    responseDefault: "Antworten",
+    group: "Gruppe",
+    perHour: "/Std",
+    detail: "Inserat anzeigen",
+  },
+  fr: {
+    expired: "Expire",
+    left: "restant",
+    urgent: "URGENT",
+    anonymous: "Anonyme",
+    femaleOnly: "Femmes uniquement",
+    maleOnly: "Hommes uniquement",
+    compatible: "compatibilite",
+    matched: "Associe",
+    matchedCompleted: "Mise en relation terminee",
+    closed: "Ferme",
+    expiredStatus: "Expire",
+    unspecified: "Non precise",
+    male: "Homme",
+    female: "Femme",
+    responseTrainer: "candidatures",
+    responseDefault: "reponses",
+    group: "Groupe",
+    perHour: "/h",
+    detail: "Voir l'annonce",
+  },
+  es: {
+    expired: "Caducado",
+    left: "restante",
+    urgent: "URGENTE",
+    anonymous: "Anonimo",
+    femaleOnly: "Solo mujeres",
+    maleOnly: "Solo hombres",
+    compatible: "compatibilidad",
+    matched: "Emparejado",
+    matchedCompleted: "Emparejamiento completado",
+    closed: "Cerrado",
+    expiredStatus: "Caducado",
+    unspecified: "Sin especificar",
+    male: "Hombre",
+    female: "Mujer",
+    responseTrainer: "solicitudes",
+    responseDefault: "respuestas",
+    group: "Grupo",
+    perHour: "/h",
+    detail: "Ver anuncio",
+  },
+  ja: {
+    expired: "期限切れ",
+    left: "残り",
+    urgent: "至急",
+    anonymous: "匿名",
+    femaleOnly: "女性のみ",
+    maleOnly: "男性のみ",
+    compatible: "一致",
+    matched: "マッチ済み",
+    matchedCompleted: "マッチ完了",
+    closed: "終了",
+    expiredStatus: "期限切れ",
+    unspecified: "未設定",
+    male: "男性",
+    female: "女性",
+    responseTrainer: "応募",
+    responseDefault: "返信",
+    group: "グループ",
+    perHour: "/時",
+    detail: "詳細を見る",
+  },
+  ko: {
+    expired: "만료됨",
+    left: "남음",
+    urgent: "긴급",
+    anonymous: "익명",
+    femaleOnly: "여성만",
+    maleOnly: "남성만",
+    compatible: "매치",
+    matched: "매칭됨",
+    matchedCompleted: "매칭 완료",
+    closed: "마감됨",
+    expiredStatus: "만료됨",
+    unspecified: "미설정",
+    male: "남성",
+    female: "여성",
+    responseTrainer: "신청",
+    responseDefault: "응답",
+    group: "그룹",
+    perHour: "/시간",
+    detail: "상세보기",
+  },
+} as const;
 
 // Acil ilan geri sayım
 function UrgentCountdown({
@@ -109,7 +280,7 @@ type ListingCardProps = {
 export default function ListingCard({ listing }: ListingCardProps) {
   const router = useRouter();
   const locale = useLocale();
-  const isTr = locale === "tr";
+  const safeLocale = resolveAppLocale(locale);
   const dateLocale =
     locale === "tr" ? tr :
     locale === "ru" ? ru :
@@ -119,26 +290,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
     locale === "ja" ? ja :
     locale === "ko" ? ko : enUS;
 
-  const text = {
-    expired: isTr ? "Süresi doldu" : "Expired",
-    left: isTr ? "kaldı" : "left",
-    urgent: isTr ? "ACİL" : "URGENT",
-    anonymous: isTr ? "Anonim" : "Anonymous",
-    femaleOnly: isTr ? "Yalnızca Kadınlar" : "Women only",
-    maleOnly: isTr ? "Yalnızca Erkekler" : "Men only",
-    compatible: isTr ? "uyumlu" : "match",
-    matched: isTr ? "Eşleşti" : "Matched",
-    closed: isTr ? "Kapandı" : "Closed",
-    expiredStatus: isTr ? "Süresi Doldu" : "Expired",
-    unspecified: isTr ? "Belirtilmemiş" : "Unspecified",
-    male: isTr ? "Erkek" : "Male",
-    female: isTr ? "Kadın" : "Female",
-    responseTrainer: isTr ? "başvuru" : "applications",
-    responseDefault: isTr ? "karşılık" : "responses",
-    group: isTr ? "Grup" : "Group",
-    perHour: isTr ? "/sa" : "/h",
-    detail: isTr ? "Detay" : "Details",
-  };
+  const text = CARD_TEXT[safeLocale];
 
   const statusLabels: Record<string, { label: string; className: string }> = {
     MATCHED: {
@@ -208,7 +360,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
       {listing.status === "MATCHED" && (
         <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[11px] font-bold px-3 py-1 flex items-center gap-1.5 z-10">
           <svg className="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-          Eşleşme Tamamlandı
+          {text.matchedCompleted}
         </div>
       )}
       <div className={`p-4 ${listing.status === "MATCHED" ? "pt-8" : ""}`}>
@@ -384,7 +536,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
             </span>
           )}
           <span className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg ${typeConfig.badgeCls} bg-gray-50 dark:bg-gray-700/60 group-hover:brightness-110 transition`}>
-            {text.detail} <span className="group-hover:translate-x-0.5 transition-transform inline-block">→</span>
+            {t("detail") || text.detail} <span className="group-hover:translate-x-0.5 transition-transform inline-block">→</span>
           </span>
         </div>
       </div>

@@ -336,6 +336,27 @@ export default function ProfilePage() {
       if ((editForm.socialLinksVisibility ?? "EVERYONE") !== (u.socialLinksVisibility ?? "EVERYONE")) {
         payload.socialLinksVisibility = editForm.socialLinksVisibility;
       }
+      if ((editForm.instagramVisibility ?? "EVERYONE") !== (u.instagramVisibility ?? "EVERYONE")) {
+        payload.instagramVisibility = editForm.instagramVisibility;
+      }
+      if ((editForm.tiktokVisibility ?? "EVERYONE") !== (u.tiktokVisibility ?? "EVERYONE")) {
+        payload.tiktokVisibility = editForm.tiktokVisibility;
+      }
+      if ((editForm.facebookVisibility ?? "EVERYONE") !== (u.facebookVisibility ?? "EVERYONE")) {
+        payload.facebookVisibility = editForm.facebookVisibility;
+      }
+      if ((editForm.twitterXVisibility ?? "EVERYONE") !== (u.twitterXVisibility ?? "EVERYONE")) {
+        payload.twitterXVisibility = editForm.twitterXVisibility;
+      }
+      if ((editForm.vkVisibility ?? "EVERYONE") !== (u.vkVisibility ?? "EVERYONE")) {
+        payload.vkVisibility = editForm.vkVisibility;
+      }
+      if ((editForm.telegramVisibility ?? "EVERYONE") !== (u.telegramVisibility ?? "EVERYONE")) {
+        payload.telegramVisibility = editForm.telegramVisibility;
+      }
+      if ((editForm.whatsappVisibility ?? "EVERYONE") !== (u.whatsappVisibility ?? "EVERYONE")) {
+        payload.whatsappVisibility = editForm.whatsappVisibility;
+      }
 
       const isTrainer = (u.userType === "TRAINER") || !!u.trainerProfile;
       if (isTrainer) {

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { format, formatDistanceToNow } from "date-fns";
 import { tr } from "date-fns/locale";
+import { useLocale } from "next-intl";
 import toast from "@/lib/toast";
 import Button from "@/components/ui/Button";
 import { LEVEL_LABELS } from "@/types";
@@ -67,7 +68,14 @@ function ChallengeCard({
       });
       const json = await res.json();
       if (json.success) {
-        toast.success(action === "ACCEPTED" ? "✅ Teklif kabul edildi!" : "Teklif reddedildi");
+        const locale = useLocale();
+        const msgs = {
+          tr: { accept: "✅ Teklif kabul edildi!", reject: "Teklif reddedildi" },
+          en: { accept: "✅ Challenge accepted!", reject: "Challenge rejected" },
+          ru: { accept: "✅ Вызов принят!", reject: "Вызов отклонен" },
+        } as const;
+        const m = msgs[locale as keyof typeof msgs] || msgs.en;
+        toast.success(action === "ACCEPTED" ? m.accept : m.reject);
         onAction(challenge.id, action);
       } else {
         toast.error(json.error ?? "İşlem başarısız");

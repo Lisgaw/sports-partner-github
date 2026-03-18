@@ -513,7 +513,7 @@ export default function Navbar() {
                               <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">{new Date(n.createdAt).toLocaleDateString("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
                               
                               {/* Follow Request Actions */}
-                              {n.type === "FOLLOW_REQUEST" && !actionedFollowIds.has(n.id) && !n.read && (
+                              {n.type === "FOLLOW_REQUEST" && !actionedFollowIds.has(n.id) && (
                                 <div className="flex gap-2 mt-2" onClick={(e) => e.stopPropagation()}>
                                   <button 
                                     onClick={async (e) => {
@@ -529,7 +529,7 @@ export default function Navbar() {
                                         if (res.ok) { 
                                           setActionedFollowIds((prev) => new Map(prev).set(n.id, "accepted"));
                                           // Bildirimi okundu olarak işaretle
-                                          fetch("/api/notifications", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: [n.id] }) }).catch(() => {});
+                                          fetch("/api/notifications", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: [n.id] }) }).catch(() => {});
                                           toast.success("✅ Takip isteği kabul edildi"); 
                                         }
                                       } catch {}
@@ -551,7 +551,7 @@ export default function Navbar() {
                                         });
                                         if (res.ok) { 
                                           setActionedFollowIds((prev) => new Map(prev).set(n.id, "rejected"));
-                                          fetch("/api/notifications", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: [n.id] }) }).catch(() => {});
+                                          fetch("/api/notifications", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: [n.id] }) }).catch(() => {});
                                           toast.success("İstek reddedildi"); 
                                         }
                                       } catch {}
@@ -562,7 +562,7 @@ export default function Navbar() {
                                   </button>
                                 </div>
                               )}
-                              {n.type === "FOLLOW_REQUEST" && (actionedFollowIds.has(n.id) || n.read) && (
+                              {n.type === "FOLLOW_REQUEST" && actionedFollowIds.has(n.id) && (
                                 <p className="text-[10px] font-semibold mt-1">
                                   {actionedFollowIds.get(n.id) === "rejected"
                                     ? <span className="text-gray-400">✘ İstek reddedildi</span>

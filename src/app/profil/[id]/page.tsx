@@ -76,6 +76,21 @@ const PUBLIC_PROFILE_COPY = {
     followRequestWithdrawn: "Takip isteği geri çekildi",
     followStarted: "✓ Takip edildi",
     followStopped: "Takipten çıkıldı",
+    cancel: "İptal",
+    send: "Gönder",
+    challengeModalTitle: "Maç / Partner Teklifi",
+    sportLabel: "Spor Dalı",
+    chooseSportLabel: "Spor Dalı Seçin",
+    challengeTypeLabel: "Teklif Türü",
+    challengeDateLabel: "Önerilen Tarih/Saat (opsiyonel)",
+    challengeMessageLabel: "Mesaj (opsiyonel)",
+    challengeMessagePlaceholder: "Kısa bir mesaj ekleyin...",
+    rivalLabel: "Rakip",
+    partnerLabel: "Partner",
+    rateModalTitle: "Kullanıcıyı Değerlendir",
+    ratingLabel: "Puan",
+    ratingCommentLabel: "Yorum (opsiyonel)",
+    ratingCommentPlaceholder: "Bu kullanıcı hakkında ne düşünüyorsunuz?",
   },
   en: {
     loadFailed: "Profile could not be loaded",
@@ -134,6 +149,21 @@ const PUBLIC_PROFILE_COPY = {
     followRequestWithdrawn: "Follow request withdrawn",
     followStarted: "✓ Followed",
     followStopped: "Unfollowed",
+    cancel: "Cancel",
+    send: "Send",
+    challengeModalTitle: "Match / Partner Challenge",
+    sportLabel: "Sport",
+    chooseSportLabel: "Choose a sport",
+    challengeTypeLabel: "Challenge Type",
+    challengeDateLabel: "Suggested Date/Time (optional)",
+    challengeMessageLabel: "Message (optional)",
+    challengeMessagePlaceholder: "Add a short message...",
+    rivalLabel: "Rival",
+    partnerLabel: "Partner",
+    rateModalTitle: "Rate This User",
+    ratingLabel: "Rating",
+    ratingCommentLabel: "Comment (optional)",
+    ratingCommentPlaceholder: "What do you think about this user?",
   },
   ru: {
     loadFailed: "Не удалось загрузить профиль",
@@ -192,6 +222,21 @@ const PUBLIC_PROFILE_COPY = {
     followRequestWithdrawn: "Запрос на подписку отменен",
     followStarted: "✓ Подписка оформлена",
     followStopped: "Подписка отменена",
+    cancel: "Отмена",
+    send: "Отправить",
+    challengeModalTitle: "Вызов / поиск партнера",
+    sportLabel: "Вид спорта",
+    chooseSportLabel: "Выберите вид спорта",
+    challengeTypeLabel: "Тип вызова",
+    challengeDateLabel: "Предлагаемые дата и время (необязательно)",
+    challengeMessageLabel: "Сообщение (необязательно)",
+    challengeMessagePlaceholder: "Добавьте короткое сообщение...",
+    rivalLabel: "Соперник",
+    partnerLabel: "Партнер",
+    rateModalTitle: "Оценить пользователя",
+    ratingLabel: "Оценка",
+    ratingCommentLabel: "Комментарий (необязательно)",
+    ratingCommentPlaceholder: "Что вы думаете об этом пользователе?",
   },
 } as const;
 function StarRating({ value, onChange }: { value: number; onChange?: (v: number) => void }) {
@@ -203,7 +248,7 @@ function StarRating({ value, onChange }: { value: number; onChange?: (v: number)
           type="button"
           onClick={() => onChange?.(s)}
           className={`text-2xl transition ${s <= value ? "text-yellow-400" : "text-gray-300 dark:text-gray-600"} ${onChange ? "hover:scale-110 cursor-pointer" : "cursor-default"}`}
-          aria-label={`${s} yıldız`}
+          aria-label={`${s} / 5`}
         >
           ★
         </button>
@@ -664,23 +709,23 @@ export default function PublicProfilePage({
                     }}
                     disabled={messagingLoading}
                     title={copy.message}
-                    className="w-9 h-9 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition text-sm"
-                  >💬</button>
+                    className="inline-flex items-center gap-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition text-sm px-3 h-9"
+                  ><span>💬</span><span>{copy.message}</span></button>
                 )}
                 {/* Teklif butonu: engellenmemiş VE gizlilik izni varsa göster */}
                 {session && blockStatus !== "BLOCK" && canChallenge && (
                   <button
                     onClick={() => setShowChallengeModal(true)}
                     title={copy.challenge}
-                    className="w-9 h-9 flex items-center justify-center rounded-lg bg-orange-50 dark:bg-orange-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/50 transition text-sm text-orange-600 dark:text-orange-400"
-                  >⚔️</button>
+                    className="inline-flex items-center gap-2 rounded-lg bg-orange-50 dark:bg-orange-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/50 transition text-sm text-orange-600 dark:text-orange-400 px-3 h-9"
+                  ><span>⚔️</span><span>{copy.challenge}</span></button>
                 )}
                 {session && !isRestricted && (
                   <button
                     onClick={() => setRatingModal(true)}
                     title={copy.rate}
-                    className="w-9 h-9 flex items-center justify-center rounded-lg bg-yellow-50 dark:bg-yellow-900/30 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 transition text-sm text-yellow-600 dark:text-yellow-400"
-                  >⭐</button>
+                    className="inline-flex items-center gap-2 rounded-lg bg-yellow-50 dark:bg-yellow-900/30 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 transition text-sm text-yellow-600 dark:text-yellow-400 px-3 h-9"
+                  ><span>⭐</span><span>{copy.rate}</span></button>
                 )}
                 <button
                   onClick={() => setDotMenuOpen(v => !v)}
@@ -1070,24 +1115,24 @@ export default function PublicProfilePage({
       {showChallengeModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowChallengeModal(false)}>
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">⚔️ Maç / Partner Teklifi</h2>
+            <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">⚔️ {copy.challengeModalTitle}</h2>
             <form onSubmit={handleChallenge} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Spor Dalı *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{copy.sportLabel} *</label>
                 <select
                   required
                   value={challengeForm.sportId}
                   onChange={(e) => setChallengeForm({ ...challengeForm, sportId: e.target.value })}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none"
                 >
-                  <option value="">Spor Dalı Seçin</option>
+                  <option value="">{copy.chooseSportLabel}</option>
                   {sports.map((s) => (
-                    <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
+                    <option key={s.id} value={s.id}>{s.icon} {localizeSportName(s.name, locale)}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Teklif Türü</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{copy.challengeTypeLabel}</label>
                 <div className="grid grid-cols-2 gap-2">
                   {(["RIVAL", "PARTNER"] as const).map((t) => (
                     <button
@@ -1096,13 +1141,13 @@ export default function PublicProfilePage({
                       onClick={() => setChallengeForm({ ...challengeForm, challengeType: t })}
                       className={`py-2 px-3 rounded-lg text-sm font-medium border transition ${challengeForm.challengeType === t ? "bg-emerald-600 text-white border-emerald-600" : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600"}`}
                     >
-                      {t === "RIVAL" ? "⚔️ Rakip" : "🤝 Partner"}
+                      {t === "RIVAL" ? `⚔️ ${copy.rivalLabel}` : `🤝 ${copy.partnerLabel}`}
                     </button>
                   ))}
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Önerilen Tarih/Saat (opsiyonel)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{copy.challengeDateLabel}</label>
                 <input
                   type="datetime-local"
                   value={challengeForm.proposedDateTime}
@@ -1111,19 +1156,19 @@ export default function PublicProfilePage({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mesaj (opsiyonel)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{copy.challengeMessageLabel}</label>
                 <textarea
                   value={challengeForm.message}
                   onChange={(e) => setChallengeForm({ ...challengeForm, message: e.target.value })}
                   rows={3}
                   maxLength={300}
-                  placeholder="Kısa bir mesaj ekleyin..."
+                  placeholder={copy.challengeMessagePlaceholder}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 resize-none focus:ring-2 focus:ring-emerald-500 outline-none"
                 />
               </div>
               <div className="flex gap-3 justify-end">
-                <Button variant="secondary" onClick={() => setShowChallengeModal(false)} type="button">İptal</Button>
-                <Button type="submit" loading={challengeLoading}>⚔️ Gönder</Button>
+                <Button variant="secondary" onClick={() => setShowChallengeModal(false)} type="button">{copy.cancel}</Button>
+                <Button type="submit" loading={challengeLoading}>⚔️ {copy.send}</Button>
               </div>
             </form>
           </div>
@@ -1133,26 +1178,26 @@ export default function PublicProfilePage({
       {/* Değerlendirme Modal */}
       {ratingModal && (        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setRatingModal(false)}>
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Kullanıcıyı Değerlendir</h2>
+            <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">{copy.rateModalTitle}</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Puan</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{copy.ratingLabel}</label>
                 <StarRating value={ratingScore} onChange={setRatingScore} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Yorum (opsiyonel)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{copy.ratingCommentLabel}</label>
                 <textarea
                   value={ratingComment}
                   onChange={(e) => setRatingComment(e.target.value)}
                   rows={3}
                   maxLength={500}
-                  placeholder="Bu kullanıcı hakkında ne düşünüyorsunuz?"
+                  placeholder={copy.ratingCommentPlaceholder}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 resize-none focus:ring-2 focus:ring-emerald-500 outline-none"
                 />
               </div>
               <div className="flex gap-3 justify-end">
-                <Button variant="secondary" onClick={() => setRatingModal(false)}>İptal</Button>
-                <Button onClick={handleRatingSubmit} loading={submittingRating}>Gönder</Button>
+                <Button variant="secondary" onClick={() => setRatingModal(false)}>{copy.cancel}</Button>
+                <Button onClick={handleRatingSubmit} loading={submittingRating}>{copy.send}</Button>
               </div>
             </div>
           </div>

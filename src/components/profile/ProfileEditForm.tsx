@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import toast from "@/lib/toast";
 import { useTranslations, useLocale } from "next-intl";
 import Button from "@/components/ui/Button";
@@ -54,8 +55,36 @@ export default function ProfileEditFormPanel({
   const t = useTranslations("profile.editForm");
   const tProf = useTranslations("settings.professionalPage");
   const locale = useLocale();
+  const socialUi = locale === "tr"
+    ? {
+        add: "Sosyal medya ekle",
+        remove: "Kaldir",
+        empty: "Henuz sosyal medya hesabi eklenmedi.",
+        pickerTitle: "Platform sec",
+        linkLabel: "Baglanti veya kullanici adi",
+        visibilityLabel: "Kimler gorebilir?",
+      }
+    : locale === "ru"
+    ? {
+        add: "Добавить соцсеть",
+        remove: "Удалить",
+        empty: "Соцсети еще не добавлены.",
+        pickerTitle: "Выберите платформу",
+        linkLabel: "Ссылка или имя пользователя",
+        visibilityLabel: "Кто может видеть?",
+      }
+    : {
+        add: "Add social account",
+        remove: "Remove",
+        empty: "No social accounts added yet.",
+        pickerTitle: "Choose a platform",
+        linkLabel: "Link or username",
+        visibilityLabel: "Who can see it?",
+      };
   const inputCls =
     "w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none";
+  const [visibleSocialPlatforms, setVisibleSocialPlatforms] = useState<string[]>([]);
+  const [showSocialPicker, setShowSocialPicker] = useState(false);
 
   const selectedCountry = locations.find((l) =>
     l.cities?.some((c) => c.id === editForm.cityId)
@@ -130,6 +159,17 @@ export default function ProfileEditFormPanel({
       iconClass: "bg-[#25D366] text-white",
     },
   ] as const;
+
+  useEffect(() => {
+    const filledPlatforms = socialPlatforms
+      .filter(({ key }) => Boolean((editForm as Record<string, unknown>)[key]))
+      .map(({ key }) => key);
+
+    setVisibleSocialPlatforms((prev) => Array.from(new Set([...prev, ...filledPlatforms])));
+  }, [editForm]);
+
+  const activeSocialPlatforms = socialPlatforms.filter(({ key }) => visibleSocialPlatforms.includes(key));
+  const availableSocialPlatforms = socialPlatforms.filter(({ key }) => !visibleSocialPlatforms.includes(key));
 
   return (
     <div className="space-y-4">
@@ -342,32 +382,103 @@ export default function ProfileEditFormPanel({
         <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
           {t("socialMedia")}
         </label>
-        <div className="grid grid-cols-1 gap-2">
-          {socialPlatforms.map(({ key, visibilityKey, placeholder, icon, iconClass }) => (
-            <div key={key} className="grid grid-cols-1 sm:grid-cols-[auto_1fr_auto] gap-2 items-center">
-              <span
-                className={`w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full ${iconClass}`}
-              >
-                {icon}
-              </span>
-              <input
-                type="text"
-                value={(editForm as any)[key] ?? ""}
-                onChange={(e) => setEditForm({ ...editForm, [key]: e.target.value })}
-                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
-                placeholder={placeholder}
-              />
-              <select
-                value={(editForm as any)[visibilityKey] ?? "EVERYONE"}
-                onChange={(e) => setEditForm({ ...editForm, [visibilityKey]: e.target.value as "EVERYONE" | "FOLLOWERS" | "NOBODY" })}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm"
-              >
-                {visibilityOptions.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-800/40 p-3 sm:p-4 space-y-3">
+          {activeSocialPlatforms.length === 0 && (
+            <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-600 px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400 bg-white/70 dark:bg-gray-900/30">
+              {socialUi.empty}
+            </div>
+          )}
+
+          {activeSocialPlatforms.map(({ key, visibilityKey, placeholder, icon, iconClass }) => (
+            <div key={key} className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 p-3 space-y-3 shadow-sm">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className={`w-10 h-10 flex items-center justify-center rounded-2xl ${iconClass}`}>
+                    {icon}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 capitalize">{key === "twitterX" ? "X" : key}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{socialUi.linkLabel}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setVisibleSocialPlatforms((prev) => prev.filter((item) => item !== key));
+                    setEditForm({
+                      ...editForm,
+                      [key]: "",
+                      [visibilityKey]: "EVERYONE",
+                    } as ProfileEditForm);
+                  }}
+                  className="text-xs font-semibold text-red-600 dark:text-red-400 hover:underline"
+                >
+                  {socialUi.remove}
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_220px] gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">{socialUi.linkLabel}</label>
+                  <input
+                    type="text"
+                    value={(editForm as Record<string, string | undefined>)[key] ?? ""}
+                    onChange={(e) => setEditForm({ ...editForm, [key]: e.target.value } as ProfileEditForm)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
+                    placeholder={placeholder}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">{socialUi.visibilityLabel}</label>
+                  <select
+                    value={(editForm as Record<string, string | undefined>)[visibilityKey] ?? "EVERYONE"}
+                    onChange={(e) => setEditForm({ ...editForm, [visibilityKey]: e.target.value as "EVERYONE" | "FOLLOWERS" | "NOBODY" } as ProfileEditForm)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-sm"
+                  >
+                    {visibilityOptions.map((o) => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
           ))}
+
+          {availableSocialPlatforms.length > 0 && (
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => setShowSocialPicker((prev) => !prev)}
+                className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2 text-sm font-semibold text-emerald-700 dark:text-emerald-300"
+              >
+                <span className="text-base">+</span>
+                {socialUi.add}
+              </button>
+
+              {showSocialPicker && (
+                <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/70 p-3">
+                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">{socialUi.pickerTitle}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {availableSocialPlatforms.map(({ key, icon, iconClass }) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => {
+                          setVisibleSocialPlatforms((prev) => [...prev, key]);
+                          setShowSocialPicker(false);
+                        }}
+                        className="inline-flex items-center gap-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200"
+                      >
+                        <span className={`w-7 h-7 flex items-center justify-center rounded-full ${iconClass}`}>{icon}</span>
+                        <span className="capitalize">{key === "twitterX" ? "X" : key}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

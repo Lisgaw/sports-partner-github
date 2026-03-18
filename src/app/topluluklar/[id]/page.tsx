@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { useLocale } from "next-intl";
 import toast from "@/lib/toast";
 
 
@@ -260,7 +261,14 @@ export default function CommunityDetailPage() {
           setMembers(prev => [...prev, { ...pending, status: "APPROVED" }]);
           if (community) setCommunity({ ...community, _count: { members: community._count.members + 1 } });
         }
-        toast.success(action === "approve" ? "Üye onaylandı" : "Talep reddedildi");
+        const locale = useLocale();
+        const msgs = {
+          tr: { approve: "Üye onaylandı", reject: "Talep reddedildi" },
+          en: { approve: "Member approved", reject: "Request rejected" },
+          ru: { approve: "Участник одобрен", reject: "Запрос отклонен" },
+        } as const;
+        const m = msgs[locale as keyof typeof msgs] || msgs.en;
+        toast.success(action === "approve" ? m.approve : m.reject);
       } else if (action === "makeAdmin" || action === "makeMemb") {
         const res = await fetch(`/api/communities/${id}/members/${membershipId}`, {
           method: "PATCH",

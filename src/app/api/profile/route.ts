@@ -135,8 +135,8 @@ export async function GET() {
       }),
       // Okunmamış bildirim sayısı
       prisma.notification.count({ where: { userId, read: false } }),
-      prisma.follow.count({ where: { followingId: userId } }),
-      prisma.follow.count({ where: { followerId: userId } }),
+      prisma.follow.count({ where: { followingId: userId, status: "ACCEPTED" } }),
+      prisma.follow.count({ where: { followerId: userId, status: "ACCEPTED" } }),
       // Kulüp üyelikleri
       prisma.userClubMembership.findMany({
         where: { userId },

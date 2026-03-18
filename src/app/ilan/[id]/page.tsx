@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
+import { useLocale } from "next-intl";
 import toast from "@/lib/toast";
 import type { ListingDetail, ListingResponse, ListingSummary } from "@/types";
 import ListingCard from "@/components/ListingCard";
@@ -134,11 +135,19 @@ export default function ListingDetailPage({
     }
   };
 
+  const locale = useLocale();
+  const responseMessages = {
+    tr: { accept: "Karşılık kabul edildi! 🎉", reject: "Karşılık reddedildi" },
+    en: { accept: "Response accepted! 🎉", reject: "Response rejected" },
+    ru: { accept: "Заявка принята! 🎉", reject: "Заявка отклонена" },
+  } as const;
+  const msg = responseMessages[locale as keyof typeof responseMessages] || responseMessages.en;
+
   const handleResponseAction = async (responseId: string, action: "accept" | "reject") => {
     setActionLoading(responseId);
     try {
       await handleResponseApi(responseId, action);
-      toast.success(action === "accept" ? "Karşılık kabul edildi! 🎉" : "Karşılık reddedildi");
+      toast.success(action === "accept" ? msg.accept : msg.reject);
       fetchListing();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Bir hata oluştu");

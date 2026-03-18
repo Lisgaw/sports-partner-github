@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
     if (type === "followers") {
       const rows = await prisma.follow.findMany({
-        where: { followingId: userId },
+        where: { followingId: userId, status: "ACCEPTED" },
         orderBy: { createdAt: "desc" },
         take: 100,
         include: {
@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
     } else {
       // following
       const rows = await prisma.follow.findMany({
-        where: { followerId: userId },
+        where: { followerId: userId, status: "ACCEPTED" },
         orderBy: { createdAt: "desc" },
         take: 100,
         include: {
