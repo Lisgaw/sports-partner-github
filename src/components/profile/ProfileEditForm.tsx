@@ -162,7 +162,7 @@ export default function ProfileEditFormPanel({
 
   useEffect(() => {
     const filledPlatforms = socialPlatforms
-      .filter(({ key }) => Boolean((editForm as Record<string, unknown>)[key]))
+      .filter(({ key }) => Boolean((editForm as unknown as Record<string, unknown>)[key]))
       .map(({ key }) => key);
 
     setVisibleSocialPlatforms((prev) => Array.from(new Set([...prev, ...filledPlatforms])));
@@ -422,7 +422,7 @@ export default function ProfileEditFormPanel({
                   <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">{socialUi.linkLabel}</label>
                   <input
                     type="text"
-                    value={(editForm as Record<string, string | undefined>)[key] ?? ""}
+                    value={(editForm as unknown as Record<string, string | undefined>)[key] ?? ""}
                     onChange={(e) => setEditForm({ ...editForm, [key]: e.target.value } as ProfileEditForm)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
                     placeholder={placeholder}
@@ -432,7 +432,7 @@ export default function ProfileEditFormPanel({
                 <div>
                   <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">{socialUi.visibilityLabel}</label>
                   <select
-                    value={(editForm as Record<string, string | undefined>)[visibilityKey] ?? "EVERYONE"}
+                    value={(editForm as unknown as Record<string, string | undefined>)[visibilityKey] ?? "EVERYONE"}
                     onChange={(e) => setEditForm({ ...editForm, [visibilityKey]: e.target.value as "EVERYONE" | "FOLLOWERS" | "NOBODY" } as ProfileEditForm)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-sm"
                   >
