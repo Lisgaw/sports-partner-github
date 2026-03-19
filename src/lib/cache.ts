@@ -1,5 +1,27 @@
 import { Redis } from "@upstash/redis";
 
+type MemoryCacheEntry = {
+  value: unknown;
+  expiresAt: number | null;
+};
+
+const memoryCache = new Map<string, MemoryCacheEntry>();
+
+function getMemoryEntry(key: string): MemoryCacheEntry | null {
+  const entry = memoryCache.get(key);
+  if (!entry) return null;
+  if (entry.expiresAt !== null && entry.expiresAt <= Date.now()) {
+    memoryCache.delete(key);
+    return null;
+  }
+  return entry;
+}
+
+function patternToRegExp(pattern: string): RegExp {
+  const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*");
+  return new RegExp(`^${escaped}$`);
+}
+
 // Redis bağlantısı - env yoksa veya placeholder ise null döner (graceful degradation)
 function getRedisClient(): Redis | null {
   const url = process.env.UPSTASH_REDIS_REST_URL;
@@ -24,6 +46,9 @@ export const CACHE_TTL = {
   SPORTS: 60 * 60,       // Spor listesi: 1 saat
   LEADERBOARD: 60 * 5,   // Liderlik tablosu: 5 dakika
   PROFILE: 60 * 5,       // Profil: 5 dakika
+  FEED_SNAPSHOT: 60,
+  FEED_SNAPSHOT_LATEST: 60 * 5,
+  FEED_VERSION: 60 * 60 * 24 * 30,
 } as const;
 
 // Cache key oluşturucu - tutarlı key formatı
@@ -44,7 +69,10 @@ export const cacheKey = {
 export async function cacheGet<T>(key: string): Promise<T | null> {
   try {
     const redis = getRedisClient();
-    if (!redis) return null;
+    if (!redis) {
+      const entry = getMemoryEntry(key);
+      return (entry?.value as T | undefined) ?? null;
+    }
     const data = await redis.get<T>(key);
     return data ?? null;
   } catch {
@@ -56,7 +84,13 @@ export async function cacheGet<T>(key: string): Promise<T | null> {
 export async function cacheSet(key: string, value: unknown, ttl: number): Promise<void> {
   try {
     const redis = getRedisClient();
-    if (!redis) return;
+    if (!redis) {
+      memoryCache.set(key, {
+        value,
+        expiresAt: ttl > 0 ? Date.now() + ttl * 1000 : null,
+      });
+      return;
+    }
     await redis.set(key, value, { ex: ttl });
   } catch {
     // Sessizce geç
@@ -67,7 +101,10 @@ export async function cacheSet(key: string, value: unknown, ttl: number): Promis
 export async function cacheDel(key: string): Promise<void> {
   try {
     const redis = getRedisClient();
-    if (!redis) return;
+    if (!redis) {
+      memoryCache.delete(key);
+      return;
+    }
     await redis.del(key);
   } catch {
     // Sessizce geç
@@ -78,13 +115,40 @@ export async function cacheDel(key: string): Promise<void> {
 export async function cacheDelPattern(pattern: string): Promise<void> {
   try {
     const redis = getRedisClient();
-    if (!redis) return;
+    if (!redis) {
+      const matcher = patternToRegExp(pattern);
+      for (const key of memoryCache.keys()) {
+        if (matcher.test(key)) {
+          memoryCache.delete(key);
+        }
+      }
+      return;
+    }
     const keys = await redis.keys(pattern);
     if (keys.length > 0) {
       await redis.del(...keys);
     }
   } catch {
     // Sessizce geç
+  }
+}
+
+export async function cacheIncr(key: string, amount = 1): Promise<number> {
+  try {
+    const redis = getRedisClient();
+    if (!redis) {
+      const current = getMemoryEntry(key);
+      const baseValue = typeof current?.value === "number" ? current.value : 0;
+      const nextValue = baseValue + amount;
+      memoryCache.set(key, {
+        value: nextValue,
+        expiresAt: Date.now() + CACHE_TTL.FEED_VERSION * 1000,
+      });
+      return nextValue;
+    }
+    return await redis.incrby(key, amount);
+  } catch {
+    return amount;
   }
 }
 

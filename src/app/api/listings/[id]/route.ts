@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUserId, isValidId, notFound } from "@/lib/api-utils";
 import { updateListingSchema } from "@/lib/validations";
 import { createLogger } from "@/lib/logger";
+import { bumpGlobalFeedVersion } from "@/lib/feed-snapshot";
 
 const log = createLogger("listings:detail");
 
@@ -299,6 +300,7 @@ export async function PUT(
     });
 
     log.info("İlan güncellendi", { listingId: id, userId });
+    await bumpGlobalFeedVersion();
     return NextResponse.json({ success: true, data: updated });
   } catch (error) {
     log.error("İlan güncellenirken hata", error);
@@ -371,6 +373,7 @@ export async function PATCH(
     });
 
     log.info("İlan kapatıldı", { listingId: id, userId });
+    await bumpGlobalFeedVersion();
     return NextResponse.json({ success: true, data: null });
   } catch (error) {
     log.error("İlan kapatılırken hata", error);
@@ -445,6 +448,7 @@ export async function DELETE(
     });
 
     log.info("İlan silindi/kapatıldı", { listingId: id, userId });
+    await bumpGlobalFeedVersion();
     return NextResponse.json({ success: true, data: null });
   } catch (error) {
     log.error("İlan silinirken hata", error);

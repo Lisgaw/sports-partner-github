@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUserId, isValidId, notFound, unauthorized } from "@/lib/api-utils";
 import { createLogger } from "@/lib/logger";
 import { createNotification, NOTIF } from "@/lib/notifications";
+import { bumpUserFeedVersion, warmFeedSnapshot } from "@/lib/feed-snapshot";
 
 const log = createLogger("follow-requests");
 
@@ -85,6 +86,8 @@ export async function POST(req: NextRequest) {
         where: { id: follow.id },
         data: { status: "ACCEPTED" },
       });
+      await bumpUserFeedVersion(follow.followerId);
+      void warmFeedSnapshot(follow.followerId);
       // Kabul bildirimini isteği gönderene at
       const acceptor = await prisma.user.findUnique({ where: { id: userId }, select: { name: true } });
       await createNotification(
@@ -95,6 +98,8 @@ export async function POST(req: NextRequest) {
     } else {
       // Reddet: kaydı sil
       await prisma.follow.delete({ where: { id: follow.id } });
+      await bumpUserFeedVersion(follow.followerId);
+      void warmFeedSnapshot(follow.followerId);
       log.info("Takip isteği reddedildi", { userId, followerId: follow.followerId });
       return NextResponse.json({ success: true, action: "REJECTED", message: "Takip isteği silindi" });
     }

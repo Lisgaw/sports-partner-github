@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUserId, isValidId, notFound } from "@/lib/api-utils";
 import { createLogger } from "@/lib/logger";
 import { createNotification, NOTIF } from "@/lib/notifications";
+import { bumpGlobalFeedVersion } from "@/lib/feed-snapshot";
 
 const log = createLogger("responses:action");
 
@@ -70,6 +71,7 @@ export async function PATCH(
         userId: response.userId,
         ...NOTIF.rejected(response.listingId),
       });
+      await bumpGlobalFeedVersion();
       log.info("Karşılık reddedildi", { responseId: id, userId });
       return NextResponse.json({ success: true, data: updated });
     }
@@ -218,6 +220,7 @@ export async function PATCH(
     }
 
     await Promise.all(notificationPromises);
+    await bumpGlobalFeedVersion();
 
     // Otomatik aktivite paylaşımı kaldırıldı — eşleşme duyurusu artık sosyal akışta gösterilmiyor
     // Kullanıcılar isterse eşleşmeyi kendileri paylaşabilir

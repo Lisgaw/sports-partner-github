@@ -9,6 +9,7 @@ import { withCache, cacheDel, cacheKey, CACHE_TTL, cacheDelPattern } from "@/lib
 import { sendPushToUser } from "@/lib/push";
 import { containsProfanity } from "@/lib/content-filter";
 import { EDGE_CACHE, withCacheHeaders } from "@/lib/http-cache";
+import { bumpGlobalFeedVersion } from "@/lib/feed-snapshot";
 
 const log = createLogger("listings");
 
@@ -560,7 +561,10 @@ export async function POST(request: Request) {
     log.info("İlan oluşturuldu", { listingId: listing.id, userId, isQuick: listing.isQuick, isUrgent: listing.isUrgent, isAnonymous: listing.isAnonymous });
 
     // İlan listesi cache'ini temizle - yeni ilan eklendi
-    await cacheDelPattern("listings:*");
+    await Promise.all([
+      cacheDelPattern("listings:*"),
+      bumpGlobalFeedVersion(),
+    ]);
 
     // --- ACİL EŞLEŞME: aynı semt + spor kullanıcılarına push yolla ---
     if (listing.isUrgent && listing.districtId) {

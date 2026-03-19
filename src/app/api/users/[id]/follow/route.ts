@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUserId, isValidId, notFound, unauthorized } from "@/lib/api-utils";
 import { createLogger } from "@/lib/logger";
 import { createNotification, NOTIF } from "@/lib/notifications";
+import { bumpUserFeedVersion, warmFeedSnapshot } from "@/lib/feed-snapshot";
 
 const log = createLogger("follow");
 
@@ -31,6 +32,8 @@ export async function POST(
       // Eğer PENDING ise isteği iptal et / geri çek, eğer ACCEPTED ise takibi bırak
       const wasPending = existing.status === "PENDING";
       await prisma.follow.delete({ where: { id: existing.id } });
+      await bumpUserFeedVersion(userId);
+      void warmFeedSnapshot(userId);
       log.info(wasPending ? "Takip isteği geri çekildi" : "Takip bırakıldı", { userId, targetId });
       return NextResponse.json({ success: true, following: false, pending: false, message: wasPending ? "İstek geri çekildi" : "Takipten çıkıldı" });
     } else {
@@ -43,6 +46,8 @@ export async function POST(
           status: isPrivate ? "PENDING" : "ACCEPTED",
         },
       });
+      await bumpUserFeedVersion(userId);
+      void warmFeedSnapshot(userId);
       const follower = await prisma.user.findUnique({ where: { id: userId }, select: { name: true } });
       if (isPrivate) {
         // Takip isteği bildirimi (FOLLOW_REQUEST)
@@ -77,6 +82,8 @@ export async function DELETE(
       where: { followerId, followingId: userId },
     });
 
+    await bumpUserFeedVersion(userId);
+    void warmFeedSnapshot(userId);
     log.info("Takipçi çıkarıldı", { userId, followerId });
     return NextResponse.json({ success: true });
   } catch (error) {

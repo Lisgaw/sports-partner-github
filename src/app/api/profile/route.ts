@@ -6,6 +6,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { createLogger } from "@/lib/logger";
 import bcrypt from "bcryptjs";
 import { cacheDel, cacheKey } from "@/lib/cache";
+import { bumpUserFeedVersion, warmFeedSnapshot } from "@/lib/feed-snapshot";
 
 const log = createLogger("profile");
 
@@ -447,6 +448,16 @@ export async function PUT(request: Request) {
 
     // Profil cache'ini temizle
     await cacheDel(cacheKey.profile(userId));
+
+    const feedSignalsChanged =
+      sportIds !== undefined ||
+      parsed.data.cityId !== undefined ||
+      parsed.data.districtId !== undefined;
+
+    if (feedSignalsChanged) {
+      await bumpUserFeedVersion(userId);
+      void warmFeedSnapshot(userId);
+    }
 
     log.info("Profil güncellendi", { userId });
 
