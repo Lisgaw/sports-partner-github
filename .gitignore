@@ -49,3 +49,8 @@ tests/e2e/.auth/
 /test-results/
 .vercel
 .env*.local
+
+# Load test result artifacts (JSON çıktılar commit'e dahil edilmez, sadece *.ts scriptler dahil edilir)
+perf/*.json
+perf/dist/
+perf/logs/
