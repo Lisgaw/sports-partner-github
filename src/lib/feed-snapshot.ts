@@ -9,6 +9,10 @@ const FEED_PAGE_SIZE = 12;
 const FEED_SNAPSHOT_MAX_ITEMS = 120;
 const FEED_GLOBAL_VERSION_KEY = "feed:snapshot:global-version";
 
+// Single-flight deduplicator: aynı anda aynı userId için paralel buildSnapshot çağrılarını
+// tek bir DB işlemine indirir (thundering herd önleme).
+const buildInFlight = new Map<string, Promise<FeedSnapshot | null>>();
+
 type FeedListingRow = {
   id: string;
   type: string;
@@ -191,23 +195,34 @@ function buildPayload(snapshot: FeedSnapshot, page: number): FeedPayload {
 }
 
 async function buildSnapshot(userId: string): Promise<FeedSnapshot | null> {
-  const context = await getFeedContext(userId);
-  if (!context) {
-    return null;
-  }
+  // Single-flight: bu userId için zaten bir build işlemi varsa onu bekle, yenisini başlatma.
+  const existing = buildInFlight.get(userId);
+  if (existing) return existing;
 
-  const [total, rows] = await Promise.all([
-    prisma.listing.count({ where: context.finalWhere }),
-    fetchFeedRows(context.finalWhere, 0, FEED_SNAPSHOT_MAX_ITEMS),
-  ]);
+  const promise = (async () => {
+    const context = await getFeedContext(userId);
+    if (!context) {
+      return null;
+    }
 
-  return {
-    userId,
-    pageSize: FEED_PAGE_SIZE,
-    total,
-    generatedAt: new Date().toISOString(),
-    items: enrichRows(rows, context.followingSet),
-  };
+    const [total, rows] = await Promise.all([
+      prisma.listing.count({ where: context.finalWhere }),
+      fetchFeedRows(context.finalWhere, 0, FEED_SNAPSHOT_MAX_ITEMS),
+    ]);
+
+    return {
+      userId,
+      pageSize: FEED_PAGE_SIZE,
+      total,
+      generatedAt: new Date().toISOString(),
+      items: enrichRows(rows, context.followingSet),
+    } satisfies FeedSnapshot;
+  })().finally(() => {
+    buildInFlight.delete(userId);
+  });
+
+  buildInFlight.set(userId, promise);
+  return promise;
 }
 
 async function cacheSnapshot(userId: string, snapshot: FeedSnapshot, globalVersion: number, userVersion: number) {

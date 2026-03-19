@@ -4,6 +4,7 @@ import { getCurrentUserId, sanitizeText } from "@/lib/api-utils";
 import { createLogger } from "@/lib/logger";
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { containsProfanity } from "@/lib/content-filter";
+import { withCache } from "@/lib/cache";
 import { z } from "zod";
 
 const log = createLogger("api:posts");
@@ -65,14 +66,17 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Her post için reaction dağılımını hesapla
+    // Her post için reaction dağılımını hesapla — 15s cache ile ekstra DB turu önlenir
     const postIds = posts.map((p: (typeof posts)[number]) => p.id);
+    const reactionCacheKey = `posts:reactions:${postIds.slice().sort().join(",")}`;
     const reactionCounts = postIds.length > 0
-      ? await prisma.postLike.groupBy({
-          by: ["postId", "reaction"],
-          where: { postId: { in: postIds } },
-          _count: { id: true },
-        })
+      ? await withCache(reactionCacheKey, 15, () =>
+          prisma.postLike.groupBy({
+            by: ["postId", "reaction"],
+            where: { postId: { in: postIds } },
+            _count: { id: true },
+          })
+        )
       : [];
 
     const reactionMap: Record<string, Record<string, number>> = {};

@@ -22,9 +22,9 @@ export async function GET() {
     }
 
     const [user, myListings, myResponses, myMatches, myFavorites, unreadNotifications, followersCount, followingCount, myClubs, myGroups] = await Promise.all([
-      prisma.user.update({
+      // findUnique kullan: GET handler'da yazma işlemi OLMAZ — lastSeenAt fire-and-forget ile güncellenir
+      prisma.user.findUnique({
         where: { id: userId },
-        data: { lastSeenAt: new Date() },
         select: {
           id: true, name: true, email: true, phone: true, createdAt: true,
           bio: true, avatarUrl: true, coverUrl: true,
@@ -84,7 +84,7 @@ export async function GET() {
           responses: {
             include: { user: { select: { id: true, name: true, avatarUrl: true } } },
             orderBy: { createdAt: "desc" },
-            take: 20,
+            take: 10,
           },
           match: {
             include: {
@@ -93,7 +93,7 @@ export async function GET() {
           },
         },
         orderBy: { createdAt: "desc" },
-        take: 50,
+        take: 20,
       }),
       prisma.response.findMany({
         where: { userId },
@@ -106,7 +106,7 @@ export async function GET() {
           },
         },
         orderBy: { createdAt: "desc" },
-        take: 50,
+        take: 20,
       }),
       prisma.match.findMany({
         where: { OR: [{ user1Id: userId }, { user2Id: userId }] },
@@ -116,7 +116,7 @@ export async function GET() {
           user2: { select: { id: true, name: true, avatarUrl: true } },
         },
         orderBy: { createdAt: "desc" },
-        take: 50,
+        take: 20,
       }),
       // Favoriler
       prisma.favorite.findMany({
@@ -132,7 +132,7 @@ export async function GET() {
           },
         },
         orderBy: { createdAt: "desc" },
-        take: 50,
+        take: 20,
       }),
       // Okunmamış bildirim sayısı
       prisma.notification.count({ where: { userId, read: false } }),
@@ -152,7 +152,7 @@ export async function GET() {
           },
         },
         orderBy: { joinedAt: "desc" },
-        take: 50,
+        take: 20,
       }),
       // Grup üyelikleri
       prisma.groupMembership.findMany({
@@ -168,7 +168,7 @@ export async function GET() {
           },
         },
         orderBy: { joinedAt: "desc" },
-        take: 50,
+        take: 20,
       }),
     ]);
 
@@ -178,6 +178,12 @@ export async function GET() {
         { status: 404 }
       );
     }
+
+    // lastSeenAt güncelleme: yanıt yolunu bloke etme — arka planda fire-and-forget
+    setImmediate(() => {
+      prisma.user.update({ where: { id: userId }, data: { lastSeenAt: new Date() } })
+        .catch(() => { /* sessizce görmezden gel */ });
+    });
 
     const avgRating = (user as any).ratingsReceived?.length > 0
       ? Math.round(((user as any).ratingsReceived.reduce((s: number, r: { score: number }) => s + r.score, 0) / (user as any).ratingsReceived.length) * 10) / 10

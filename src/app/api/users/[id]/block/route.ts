@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/api-utils";
+import { cacheDel, cacheKey } from "@/lib/cache";
 import { z } from "zod";
 
 const blockSchema = z.object({
@@ -57,6 +58,8 @@ export async function POST(
   }
 
   const label = type === "BLOCK" ? "Kullanıcı engellendi" : "Kullanıcı kısıtlandı";
+  // Her iki kullanıcının blocklist cache'ini invalidate et
+  await Promise.all([cacheDel(cacheKey.blocklist(userId)), cacheDel(cacheKey.blocklist(id))]);
   return NextResponse.json({ success: true, data: block, message: label });
 }
 
@@ -73,5 +76,7 @@ export async function DELETE(
     where: { blockerId: userId, blockedId: id },
   });
 
+  // Her iki kullanıcının blocklist cache'ini invalidate et
+  await Promise.all([cacheDel(cacheKey.blocklist(userId)), cacheDel(cacheKey.blocklist(id))]);
   return NextResponse.json({ success: true, message: "Engel kaldırıldı" });
 }

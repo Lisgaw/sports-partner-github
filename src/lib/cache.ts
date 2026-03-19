@@ -7,6 +7,10 @@ type MemoryCacheEntry = {
 
 const memoryCache = new Map<string, MemoryCacheEntry>();
 
+// Single-flight map: aynı cache key için paralel DB sorgularını tek sorguda birleştirir.
+// Thundering herd (aynı anda çok sayıda cache miss → DB'ye aynı sorgu) sorununu önler.
+const inFlightMap = new Map<string, Promise<unknown>>();
+
 function getMemoryEntry(key: string): MemoryCacheEntry | null {
   const entry = memoryCache.get(key);
   if (!entry) return null;
@@ -22,6 +26,8 @@ function patternToRegExp(pattern: string): RegExp {
   return new RegExp(`^${escaped}$`);
 }
 
+let _redisWarnDone = false;
+
 // Redis bağlantısı - env yoksa veya placeholder ise null döner (graceful degradation)
 function getRedisClient(): Redis | null {
   const url = process.env.UPSTASH_REDIS_REST_URL;
@@ -33,6 +39,10 @@ function getRedisClient(): Redis | null {
     token === "your-redis-token" ||
     url === "https://your-redis.upstash.io"
   ) {
+    if (process.env.NODE_ENV === "production" && !_redisWarnDone) {
+      console.warn("[cache] UPSTASH_REDIS_REST_URL/TOKEN not configured — falling back to in-process memory cache. This does NOT scale across multiple instances.");
+      _redisWarnDone = true;
+    }
     return null;
   }
   return new Redis({ url, token });
@@ -49,6 +59,7 @@ export const CACHE_TTL = {
   FEED_SNAPSHOT: 60,
   FEED_SNAPSHOT_LATEST: 60 * 5,
   FEED_VERSION: 60 * 60 * 24 * 30,
+  BLOCKLIST: 60,         // Engelleme listesi: 1 dakika (blok oluşturulunca invalidate edilecek)
 } as const;
 
 // Cache key oluşturucu - tutarlı key formatı
@@ -63,6 +74,7 @@ export const cacheKey = {
   leaderboard: (sportId?: string) => `leaderboard:${sportId ?? "all"}`,
   profile: (userId: string) => `profile:${userId}`,
   userListings: (userId: string) => `user-listings:${userId}`,
+  blocklist: (userId: string) => `blocklist:${userId}`,
 } as const;
 
 // Cache'den veri al
@@ -161,7 +173,20 @@ export async function withCache<T>(
   const cached = await cacheGet<T>(key);
   if (cached !== null) return cached;
 
-  const result = await fn();
-  await cacheSet(key, result, ttl);
-  return result;
+  // Single-flight: aynı key için zaten uçuşta bir Promise varsa yenisini başlatma,
+  // varolan Promise'i bekle. Bu thundering herd sorununu önler.
+  const existing = inFlightMap.get(key);
+  if (existing) return existing as Promise<T>;
+
+  const promise = fn().then(async (result) => {
+    await cacheSet(key, result, ttl);
+    inFlightMap.delete(key);
+    return result;
+  }).catch((err) => {
+    inFlightMap.delete(key);
+    throw err;
+  });
+
+  inFlightMap.set(key, promise);
+  return promise;
 }

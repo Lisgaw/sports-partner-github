@@ -5,6 +5,10 @@ import { createLogger } from "@/lib/logger";
 
 const log = createLogger("sse:notifications");
 
+// SSE bağlantı başına maksimum ömür (ms). Bağlantı bu süre dolunca kapatılır;
+// istemci EventSource'u otomatik yeniden bağlar. Sunucudaki bağlantı sayısını sınırlar.
+const SSE_MAX_LIFETIME_MS = 5 * 60 * 1000; // 5 dakika
+
 // GET /api/notifications/stream — Server-Sent Events ile gerçek zamanlı bildirim
 export async function GET(req: NextRequest) {
   const userId = await getCurrentUserId();
@@ -27,7 +31,9 @@ export async function GET(req: NextRequest) {
         }
       };
 
-      // Her 8 saniyede yeni bildirim ve mesajları kontrol et
+      // 8s → 20s: 500 SSE bağlantısında DB yük 125 sorgu/sn → 50 sorgu/sn'ye düşer.
+      // Her tick'te: yalnızca okunmamış mesaj sayısı (tek hafif sorgu).
+      // Bildirimler: yalnızca yeni bildirim varsa gönderilir (ikinci sorgu, koşullu).
       const interval = setInterval(async () => {
         if (req.signal.aborted) {
           clearInterval(interval);
@@ -56,11 +62,21 @@ export async function GET(req: NextRequest) {
         } catch (err) {
           log.error("SSE polling hatası", err);
         }
-      }, 8000);
+      }, 20000); // 8s → 20s
+
+      // Maksimum bağlantı ömrü: SSE_MAX_LIFETIME_MS sonra kapat, istemci yeniden bağlanır.
+      const lifetimeTimer = setTimeout(() => {
+        clearInterval(interval);
+        try {
+          controller.enqueue(`data: ${JSON.stringify({ type: "reconnect" })}\n\n`);
+          controller.close();
+        } catch { /* ignore */ }
+      }, SSE_MAX_LIFETIME_MS);
 
       // Bağlantı kesilince temizle
       req.signal.addEventListener("abort", () => {
         clearInterval(interval);
+        clearTimeout(lifetimeTimer);
         try { controller.close(); } catch { /* ignore */ }
       });
     },

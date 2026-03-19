@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/api-utils";
+import { withCache, cacheKey, CACHE_TTL } from "@/lib/cache";
 import { createLogger } from "@/lib/logger";
 
 const log = createLogger("search");
@@ -22,20 +23,26 @@ export async function GET(request: Request) {
     const cityId = searchParams.get("cityId") ?? undefined;
     const level = searchParams.get("level") ?? undefined;
 
-    // Engellenen kullanıcıların ID'lerini topla
+    // Engellenen kullanıcıların ID'lerini topla — cache ile per-request DB sorgusu önlenir
     let blockedIds: string[] = [];
     if (currentUserId) {
-      const blocks = await prisma.userBlock.findMany({
-        where: {
-          OR: [
-            { blockerId: currentUserId },
-            { blockedId: currentUserId },
-          ],
-        },
-        select: { blockerId: true, blockedId: true },
-      });
-      blockedIds = blocks.map(b =>
-        b.blockerId === currentUserId ? b.blockedId : b.blockerId
+      blockedIds = await withCache(
+        cacheKey.blocklist(currentUserId),
+        CACHE_TTL.BLOCKLIST,
+        async () => {
+          const blocks = await prisma.userBlock.findMany({
+            where: {
+              OR: [
+                { blockerId: currentUserId },
+                { blockedId: currentUserId },
+              ],
+            },
+            select: { blockerId: true, blockedId: true },
+          });
+          return blocks.map(b =>
+            b.blockerId === currentUserId ? b.blockedId : b.blockerId
+          );
+        }
       );
     }
 

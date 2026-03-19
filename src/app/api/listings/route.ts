@@ -108,15 +108,21 @@ export async function GET(request: Request) {
       });
       viewerGender = viewerProfile?.gender ?? null;
 
-      // Engellenen kullanıcı ID'lerini al (her iki yön: ben engellediğim + beni engelleyen)
-      const blocks = await prisma.userBlock.findMany({
-        where: {
-          OR: [{ blockerId: userId }, { blockedId: userId }],
-          type: "BLOCK",
-        },
-        select: { blockerId: true, blockedId: true },
-      });
-      blockedUserIds = blocks.map(b => b.blockerId === userId ? b.blockedId : b.blockerId);
+      // Engellenen kullanıcı ID'lerini al — 60s cache ile per-request DB sorgusu önlenir
+      blockedUserIds = await withCache(
+        cacheKey.blocklist(userId),
+        CACHE_TTL.BLOCKLIST,
+        async () => {
+          const blocks = await prisma.userBlock.findMany({
+            where: {
+              OR: [{ blockerId: userId }, { blockedId: userId }],
+              type: "BLOCK",
+            },
+            select: { blockerId: true, blockedId: true },
+          });
+          return blocks.map(b => b.blockerId === userId ? b.blockedId : b.blockerId);
+        }
+      );
     }
 
     const where: Prisma.ListingWhereInput = {
