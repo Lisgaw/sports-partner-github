@@ -1,0 +1,45 @@
+config:
+  target: "https://sports-partner-github.vercel.app"
+  phases:
+    - duration: 60
+      arrivalRate: 10
+      name: "10 concurrent users - Homepage"
+    - duration: 60
+      arrivalRate: 50
+      name: "50 concurrent users - Homepage"
+    - duration: 60
+      arrivalRate: 100
+      name: "100 concurrent users - Homepage"
+    - duration: 60
+      arrivalRate: 200
+      name: "200 concurrent users - Homepage"
+    - duration: 60
+      arrivalRate: 10
+      name: "10 concurrent users - Listings API"
+    - duration: 60
+      arrivalRate: 50
+      name: "50 concurrent users - Listings API"
+    - duration: 60
+      arrivalRate: 100
+      name: "100 concurrent users - Listings API"
+    - duration: 60
+      arrivalRate: 200
+      name: "200 concurrent users - Listings API"
+  http:
+    timeout: 10
+  processor: "./loadtest-processor.js"
+
+scenarios:
+  - name: "Homepage Load Test"
+    weight: 50
+    flow:
+      - get:
+          url: "/"
+      - think: 1
+
+  - name: "Listings API Load Test"
+    weight: 50
+    flow:
+      - get:
+          url: "/api/listings"
+      - think: 1

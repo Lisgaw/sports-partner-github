@@ -8,6 +8,7 @@ import { createLogger } from "@/lib/logger";
 import { withCache, cacheDel, cacheKey, CACHE_TTL, cacheDelPattern } from "@/lib/cache";
 import { sendPushToUser } from "@/lib/push";
 import { containsProfanity } from "@/lib/content-filter";
+import { EDGE_CACHE, withCacheHeaders } from "@/lib/http-cache";
 
 const log = createLogger("listings");
 
@@ -231,8 +232,10 @@ export async function GET(request: Request) {
       }
     }
 
+    const audienceScope = userId ? `user:${userId}` : "public";
+
     const [total, listings] = await withCache(
-      cacheKey.listings({ sportId, districtId, cityId, level, type, upcoming, quickOnly, isRecurring, dateFrom, dateTo, minPrice, maxPrice, page, pageSize, gender: viewerGender ?? "ANY" }),
+      cacheKey.listings({ sportId, districtId, cityId, level, type, upcoming, quickOnly, isRecurring, dateFrom, dateTo, minPrice, maxPrice, page, pageSize, gender: viewerGender ?? "ANY", audienceScope }),
       CACHE_TTL.LISTINGS,
       async () => {
         return Promise.all([
@@ -302,7 +305,7 @@ export async function GET(request: Request) {
 
     const totalPages = Math.ceil(total / pageSize);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       data: sortedListings,
       pagination: {
@@ -314,6 +317,12 @@ export async function GET(request: Request) {
         hasPrev: page > 1,
       },
     });
+
+    if (userId) {
+      return withCacheHeaders(response, EDGE_CACHE.PRIVATE_FEED, "Accept-Encoding, Cookie");
+    }
+
+    return withCacheHeaders(response, EDGE_CACHE.LISTINGS);
   } catch (error) {
     log.error("İlanlar listelenirken hata", error);
     return NextResponse.json(

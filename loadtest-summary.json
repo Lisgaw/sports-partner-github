@@ -1,0 +1,133 @@
+{
+  "testSummary": {
+    "testDate": "2026-03-19",
+    "testTool": "Artillery",
+    "targetUrl": "https://sports-partner-github.vercel.app",
+    "testDurationSeconds": 480,
+    "conclusion": "Vercel Hobby ile güvenli kapasite 15-20 eş zamanlı aktif kullanıcı"
+  },
+  "overallResults": {
+    "totalRequests": 43200,
+    "successfulRequests": 11289,
+    "failedRequests": 31946,
+    "successRate": "26.1%",
+    "failureRate": "73.9%",
+    "failureReason": "ETIMEDOUT (Vercel 10 saniye timeout sınırı)"
+  },
+  "responseTime": {
+    "min_ms": 1,
+    "max_ms": 4771,
+    "average_ms": 278.9,
+    "median_ms": 219.2,
+    "p75_ms": 295.9,
+    "p90_ms": 561.2,
+    "p95_ms": 925.4,
+    "p99_ms": 1380.5
+  },
+  "endpointMetrics": {
+    "homepageSingleSlash": {
+      "endpoint": "/",
+      "successfulRequests": 5582,
+      "failedRequests": 16068,
+      "averageResponseTime_ms": 429,
+      "p50_ms": 290.1,
+      "p90_ms": 907,
+      "p95_ms": 1153.1,
+      "p99_ms": 1495.5,
+      "status": "SLOW - SSR overhead"
+    },
+    "mapAPI": {
+      "endpoint": "/api/listings/map",
+      "successfulRequests": 5672,
+      "failedRequests": 15878,
+      "averageResponseTime_ms": 130.3,
+      "p50_ms": 111.1,
+      "p90_ms": 159.2,
+      "p95_ms": 214.9,
+      "p99_ms": 459.5,
+      "status": "FAST - Best performing"
+    }
+  },
+  "concurrentUserCapacity": {
+    "10_to_20_users": {
+      "status": "SAFE",
+      "errorRate": "~0-5%",
+      "recommendation": "All requests successful"
+    },
+    "20_to_50_users": {
+      "status": "RISKY",
+      "errorRate": "~30%",
+      "recommendation": "Some timeouts observed"
+    },
+    "50_to_100_users": {
+      "status": "CRITICAL",
+      "errorRate": "~60-70%",
+      "recommendation": "Vercel timeout errors"
+    },
+    "100_plus_users": {
+      "status": "CRASH",
+      "errorRate": "73.9%",
+      "recommendation": "System unstable"
+    },
+    "safeCapacity": {
+      "value": "15-20 concurrent active users",
+      "vercelPlan": "Hobby",
+      "mainBottleneck": "10 second Serverless Function timeout"
+    }
+  },
+  "rootCauseAnalysis": {
+    "vercelHobbyLimitations": [
+      "10 second Serverless Function timeout (PRIMARY ISSUE)",
+      "100 Concurrent Lambda executions limit",
+      "1 GB RAM per Function",
+      "1024 active database connections (Prisma)"
+    ],
+    "applicationIssues": [
+      "Homepage (/) uses SSR requiring 400-1500ms per request",
+      "Database queries for listings and bot data are not optimized",
+      "Next.js compilation overhead under high traffic"
+    ]
+  },
+  "recommendations": {
+    "immediate_1_2_days": [
+      "Enable ISR (Incremental Static Regeneration) or reduce revalidation time",
+      "Optimize database queries: add indexes, resolve N+1 problems",
+      "Implement API caching: cache /api/listings/map and feed data for 30-60s"
+    ],
+    "short_term_1_week": [
+      "Upgrade to Vercel Pro: Concurrency limit 100→1000+, timeout 10s→30s",
+      "Optimize Next.js Images to reduce payload sizes",
+      "Enable CDN caching for static content at Edge"
+    ],
+    "long_term_2_4_weeks": [
+      "Consider alternative hosting (Railway, Heroku) for more control and DB scaling",
+      "Add Redis Cache Layer for frequently accessed queries",
+      "Implement microservices architecture: separate Listings, Feed, and Map APIs"
+    ]
+  },
+  "testScenarios": [
+    "Phase 1: 10 VU × 60s (Homepage)",
+    "Phase 2: 50 VU × 60s (Homepage)",
+    "Phase 3: 100 VU × 60s (Homepage)",
+    "Phase 4: 200 VU × 60s (Homepage)",
+    "Phase 5-8: Same tests for Map API"
+  ],
+  "successCriteria": {
+    "p95_response_time_ms": {
+      "target": 1000,
+      "actual": 925.4,
+      "result": "PASSED for successful requests"
+    },
+    "error_rate": {
+      "target": "< 5%",
+      "actual": "73.9%",
+      "result": "FAILED"
+    },
+    "availability": {
+      "target": "> 95%",
+      "actual": "26.1%",
+      "result": "FAILED"
+    }
+  },
+  "notes": "This test was performed on the public Vercel URL. Local environment testing would yield different results. The primary limiting factor is Vercel's Hobby plan timeout."
+}

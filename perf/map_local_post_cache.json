@@ -1,0 +1,85 @@
+{
+  "label": "map-local-post-cache",
+  "url": "http://127.0.0.1:3100/api/listings/map",
+  "durationMs": 10000,
+  "timeoutMs": 10000,
+  "generatedAt": "2026-03-19T01:04:15.604Z",
+  "results": [
+    {
+      "concurrency": 10,
+      "durationMs": 10000,
+      "totalRequests": 318,
+      "successCount": 318,
+      "timeoutCount": 0,
+      "non2xxCount": 0,
+      "otherErrors": 0,
+      "successRate": 1,
+      "timeoutRate": 0,
+      "latencyMs": {
+        "mean": 319.002790880503,
+        "p50": 304.12670000000026,
+        "p90": 321.27049999999963,
+        "p95": 328.5448000000001,
+        "p99": 847.2862,
+        "max": 854.8480999999999
+      }
+    },
+    {
+      "concurrency": 50,
+      "durationMs": 10000,
+      "totalRequests": 586,
+      "successCount": 586,
+      "timeoutCount": 0,
+      "non2xxCount": 0,
+      "otherErrors": 0,
+      "successRate": 1,
+      "timeoutRate": 0,
+      "latencyMs": {
+        "mean": 890.2811143344718,
+        "p50": 886.6908000000003,
+        "p90": 963.7963999999993,
+        "p95": 1057.4854999999989,
+        "p99": 1203.1520999999993,
+        "max": 1342.5602999999992
+      }
+    },
+    {
+      "concurrency": 100,
+      "durationMs": 10000,
+      "totalRequests": 654,
+      "successCount": 654,
+      "timeoutCount": 0,
+      "non2xxCount": 0,
+      "otherErrors": 0,
+      "successRate": 1,
+      "timeoutRate": 0,
+      "latencyMs": {
+        "mean": 1665.627466055046,
+        "p50": 1750.375100000001,
+        "p90": 1815.7560000000012,
+        "p95": 1832.2188999999998,
+        "p99": 1925.8234000000011,
+        "max": 2101.5386
+      }
+    },
+    {
+      "concurrency": 200,
+      "durationMs": 10000,
+      "totalRequests": 752,
+      "successCount": 752,
+      "timeoutCount": 0,
+      "non2xxCount": 0,
+      "otherErrors": 0,
+      "successRate": 1,
+      "timeoutRate": 0,
+      "latencyMs": {
+        "mean": 3123.878613563828,
+        "p50": 3504.3587000000043,
+        "p90": 3621.3505000000005,
+        "p95": 3639.1249000000025,
+        "p99": 3689.6381000000038,
+        "max": 3846.377800000002
+      }
+    }
+  ]
+}

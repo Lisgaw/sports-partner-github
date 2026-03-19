@@ -1,0 +1,85 @@
+{
+  "label": "feed-local-post-cache",
+  "url": "http://127.0.0.1:3100/api/feed?page=1",
+  "durationMs": 10000,
+  "timeoutMs": 10000,
+  "generatedAt": "2026-03-19T01:06:44.718Z",
+  "results": [
+    {
+      "concurrency": 10,
+      "durationMs": 10000,
+      "totalRequests": 50,
+      "successCount": 50,
+      "timeoutCount": 0,
+      "non2xxCount": 0,
+      "otherErrors": 0,
+      "successRate": 1,
+      "timeoutRate": 0,
+      "latencyMs": {
+        "mean": 2216.5055660000007,
+        "p50": 2075.145700000001,
+        "p90": 2643.8059,
+        "p95": 2682.639,
+        "p99": 2755.6714,
+        "max": 2755.6714
+      }
+    },
+    {
+      "concurrency": 50,
+      "durationMs": 10000,
+      "totalRequests": 100,
+      "successCount": 100,
+      "timeoutCount": 0,
+      "non2xxCount": 0,
+      "otherErrors": 0,
+      "successRate": 1,
+      "timeoutRate": 0,
+      "latencyMs": {
+        "mean": 6167.255374000001,
+        "p50": 6582.938699999999,
+        "p90": 6970.951300000001,
+        "p95": 7372.335300000001,
+        "p99": 7628.047499999999,
+        "max": 7688.2433
+      }
+    },
+    {
+      "concurrency": 100,
+      "durationMs": 10000,
+      "totalRequests": 140,
+      "successCount": 40,
+      "timeoutCount": 100,
+      "non2xxCount": 0,
+      "otherErrors": 0,
+      "successRate": 0.2857142857142857,
+      "timeoutRate": 0.7142857142857143,
+      "latencyMs": {
+        "mean": 8283.167005,
+        "p50": 8228.2546,
+        "p90": 9611.806600000004,
+        "p95": 9769.932799999999,
+        "p99": 9911.124299999996,
+        "max": 9911.124299999996
+      }
+    },
+    {
+      "concurrency": 200,
+      "durationMs": 10000,
+      "totalRequests": 205,
+      "successCount": 5,
+      "timeoutCount": 200,
+      "non2xxCount": 0,
+      "otherErrors": 0,
+      "successRate": 0.024390243902439025,
+      "timeoutRate": 0.975609756097561,
+      "latencyMs": {
+        "mean": 7456.071020000001,
+        "p50": 7498.941900000005,
+        "p90": 7652.496200000001,
+        "p95": 7652.496200000001,
+        "p99": 7652.496200000001,
+        "max": 7652.496200000001
+      }
+    }
+  ]
+}
