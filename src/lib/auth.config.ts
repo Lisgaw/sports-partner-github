@@ -3,7 +3,7 @@ import type { NextAuthConfig } from "next-auth";
 /**
  * Minimal NextAuth config — Edge Runtime safe.
  * No PrismaClient, bcryptjs, or Node.js-only imports.
- * Used by src/middleware.ts.
+ * Used by src/proxy.ts.
  */
 export const authConfig: NextAuthConfig = {
   trustHost: true,
@@ -21,13 +21,18 @@ export const authConfig: NextAuthConfig = {
         session.user.id = (token.sub ?? (token as any).id) as string;
         (session.user as any).isAdmin = (token as any).isAdmin ?? false;
         (session.user as any).userType = (token as any).userType ?? "INDIVIDUAL";
-        (session.user as any).onboardingDone = (token as any).onboardingDone ?? true;
+        (session.user as any).onboardingDone = (token as any).onboardingDone ?? false;
       }
       return session;
     },
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const { pathname } = nextUrl;
+
+      // Auth pages should not be guarded by edge auth checks.
+      if (pathname.startsWith("/auth/")) {
+        return true;
+      }
 
       // Admin rotaları — isAdmin zorunlu
       if (pathname.startsWith("/admin")) {

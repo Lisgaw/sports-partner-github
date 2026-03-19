@@ -192,7 +192,7 @@ export default function GuvenlikPage() {
                     if (data.success) {
                       toast.success(t("deletedSuccess"));
                       await signOut({ redirect: false });
-                      router.push("/auth/login");
+                      router.push("/auth/giris");
                     } else {
                       toast.error(data.error || t("deleteFailed"));
                     }

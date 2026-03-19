@@ -84,7 +84,7 @@ export default function FollowRequestsPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/giris");
+      router.push("/auth/giris");
       return;
     }
     if (status !== "authenticated") return;

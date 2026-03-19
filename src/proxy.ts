@@ -12,6 +12,6 @@ export const config = {
      * - _next/image (image optimization)
      * - favicon.ico, manifest.json, icons/, service-worker.js
      */
-    "/((?!api/auth|_next/static|_next/image|favicon\\.ico|manifest\\.json|icons|service-worker\\.js).*)",
+    "/((?!api/auth|auth(?:/|$)|_next/static|_next/image|favicon\\.ico|manifest\\.json|icons|service-worker\\.js).*)",
   ],
 };
