@@ -1,9 +1,10 @@
-"use client";
+ï»¿"use client";
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-// Trainer modulu kaldirildi — eski /ayarlar/profesyonel sayfasi artik mevcut degil
+// Trainer modulu kaldirildi - eski /ayarlar/profesyonel sayfasi artik mevcut degil
+
 export default function ProfesyonelPage() {
   const router = useRouter();
 
