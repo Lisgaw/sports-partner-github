@@ -350,6 +350,10 @@ export async function PUT(request: Request) {
     if ("litmatchVisibility" in parsed.data && parsed.data.litmatchVisibility !== undefined) {
       updateData.litmatchVisibility = parsed.data.litmatchVisibility;
     }
+    if ("vk" in parsed.data) updateData.vk = parsed.data.vk ?? null;
+    if ("vkVisibility" in parsed.data && parsed.data.vkVisibility !== undefined) {
+      updateData.vkVisibility = parsed.data.vkVisibility;
+    }
 
     // Favori sporlar güncelleme
     const sportIds = "sportIds" in parsed.data ? (parsed.data as { sportIds?: string[] }).sportIds : undefined;
@@ -392,7 +396,7 @@ export async function PUT(request: Request) {
     }
 
     // Auto-verify: 3+ sosyal link varsa isVerifiedUser = true
-    const socialFields = ["instagram", "tiktok", "facebook", "twitterX", "telegram", "whatsapp", "youtube", "linkedin", "discord", "twitch", "snapchat", "litmatch"] as const;
+    const socialFields = ["instagram", "tiktok", "facebook", "twitterX", "telegram", "whatsapp", "youtube", "linkedin", "discord", "twitch", "snapchat", "litmatch", "vk"] as const;
     const currentUser = await prisma.user.findUnique({ where: { id: userId }, select: Object.fromEntries(socialFields.map((f) => [f, true])) as Record<string, true> });
     const mergedSocials = { ...currentUser, ...Object.fromEntries(socialFields.filter((f) => f in updateData).map((f) => [f, updateData[f]])) };
     const filledCount = socialFields.filter((f) => !!(mergedSocials as Record<string, unknown>)[f]).length;

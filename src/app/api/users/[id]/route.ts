@@ -68,6 +68,7 @@ export async function GET(
         twitch: true,
         snapchat: true,
         litmatch: true,
+        vk: true,
         isVerifiedUser: true,
         socialLinksVisibility: true,
         instagramVisibility: true,
@@ -82,6 +83,7 @@ export async function GET(
         twitchVisibility: true,
         snapchatVisibility: true,
         litmatchVisibility: true,
+        vkVisibility: true,
         profileVisibility: true,
         whoCanMessage: true,
         whoCanChallenge: true,
@@ -226,6 +228,7 @@ export async function GET(
             twitch: canSee(user.twitchVisibility) ? (user.twitch ?? null) : null,
             snapchat: canSee(user.snapchatVisibility) ? (user.snapchat ?? null) : null,
             litmatch: canSee(user.litmatchVisibility) ? (user.litmatch ?? null) : null,
+            vk: canSee(user.vkVisibility) ? (user.vk ?? null) : null,
             isVerifiedUser: user.isVerifiedUser ?? false,
             socialLinksVisibility: user.socialLinksVisibility ?? "EVERYONE",
           };

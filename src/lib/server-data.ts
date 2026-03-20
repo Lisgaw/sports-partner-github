@@ -19,7 +19,7 @@ export async function getInitialListings(countryId?: string): Promise<{
       status: "OPEN" as const,
       AND: [
         { OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
-        { OR: [{ type: { in: ["TRAINER", "EQUIPMENT", "VENUE_MEMBERSHIP", "VENUE_CLASS", "VENUE_PRODUCT", "VENUE_SERVICE"] as Prisma.EnumListingTypeFilter["in"] } }, { dateTime: { gte: now } }] },
+        { OR: [{ type: { in: ["EQUIPMENT", "VENUE_MEMBERSHIP", "VENUE_CLASS", "VENUE_PRODUCT", "VENUE_SERVICE"] as Prisma.EnumListingTypeFilter["in"] } }, { dateTime: { gte: now } }] },
       ],
       ...(countryId
         ? {
@@ -117,7 +117,7 @@ export async function getPopularListings(limit = 6): Promise<ListingSummary[]> {
         status: "OPEN",
         AND: [
           { OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
-          { OR: [{ type: { in: ["TRAINER", "EQUIPMENT", "VENUE_MEMBERSHIP", "VENUE_CLASS", "VENUE_PRODUCT", "VENUE_SERVICE"] as Prisma.EnumListingTypeFilter["in"] } }, { dateTime: { gte: now } }] },
+          { OR: [{ type: { in: ["EQUIPMENT", "VENUE_MEMBERSHIP", "VENUE_CLASS", "VENUE_PRODUCT", "VENUE_SERVICE"] as Prisma.EnumListingTypeFilter["in"] } }, { dateTime: { gte: now } }] },
         ],
       },
       include: {

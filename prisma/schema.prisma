@@ -78,6 +78,7 @@ model User {
   twitch         String?                              // Twitch kullanıcı adı
   snapchat       String?                              // Snapchat kullanıcı adı
   litmatch       String?                              // Litmatch kullanıcı adı
+  vk             String?                              // VKontakte kullanıcı adı
   // Sosyal Link Gizlilik (global + per-platform)
   socialLinksVisibility    PrivacyLevel @default(EVERYONE) // Sosyal linkleri kimler görebilir (global)
   instagramVisibility      PrivacyLevel @default(EVERYONE)
@@ -92,6 +93,7 @@ model User {
   twitchVisibility         PrivacyLevel @default(EVERYONE)
   snapchatVisibility       PrivacyLevel @default(EVERYONE)
   litmatchVisibility       PrivacyLevel @default(EVERYONE)
+  vkVisibility             PrivacyLevel @default(EVERYONE)
   // Onaylı Kullanıcı
   isVerifiedUser   Boolean      @default(false)      // ≥3 sosyal link bağlandığında otomatik
   verifiedUserAt   DateTime?                         // Doğrulama tarihi

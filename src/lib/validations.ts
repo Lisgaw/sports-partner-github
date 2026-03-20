@@ -326,6 +326,8 @@ export const updateProfileSchema = z
     twitchVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
     snapchatVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
     litmatchVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
+    vk: z.string().max(50).regex(/^[a-zA-Z0-9_.]{1,50}$/, "VK kullanıcı adı geçersiz").optional().nullable(),
+    vkVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
   })
   .refine(
     (data) => {

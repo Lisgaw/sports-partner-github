@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 
-type SocialPlatform = "instagram" | "tiktok" | "facebook" | "twitterX" | "telegram" | "whatsapp" | "youtube" | "linkedin" | "discord" | "twitch" | "snapchat" | "litmatch";
+type SocialPlatform = "instagram" | "tiktok" | "facebook" | "twitterX" | "telegram" | "whatsapp" | "youtube" | "linkedin" | "discord" | "twitch" | "snapchat" | "litmatch" | "vk";
 
 type SocialLinks = Partial<Record<SocialPlatform, string | null | undefined>>;
 
@@ -59,6 +59,10 @@ function LitmatchIcon() {
   return <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 2c1.79 0 3.45.497 4.863 1.356L5.356 16.863A7.963 7.963 0 014 12c0-4.418 3.582-8 8-8zm0 16c-1.79 0-3.45-.497-4.863-1.356L18.644 7.137A7.963 7.963 0 0120 12c0 4.418-3.582 8-8 8z"/></svg>;
 }
 
+function VKIcon() {
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M15.684 0H8.316C1.592 0 0 1.592 0 8.316v7.368C0 22.408 1.592 24 8.316 24h7.368C22.408 24 24 22.408 24 15.684V8.316C24 1.592 22.408 0 15.684 0zm3.692 17.123h-1.744c-.66 0-.864-.525-2.05-1.727-1.033-1.01-1.49-1.135-1.744-1.135-.356 0-.458.101-.458.593v1.575c0 .424-.135.678-1.253.678-1.846 0-3.896-1.118-5.335-3.202C4.624 10.857 4.03 8.57 4.03 8.096c0-.254.101-.491.593-.491h1.744c.44 0 .61.203.78.677.864 2.49 2.303 4.675 2.896 4.675.22 0 .322-.102.322-.66V9.721c-.068-1.186-.695-1.287-.695-1.71 0-.203.17-.407.44-.407h2.744c.373 0 .508.203.508.643v3.473c0 .372.169.508.271.508.22 0 .407-.136.813-.542 1.271-1.422 2.17-3.608 2.17-3.608.119-.254.322-.491.762-.491h1.744c.525 0 .643.271.525.643-.22 1.017-2.354 4.031-2.354 4.031-.186.305-.254.44 0 .78.186.254.796.779 1.203 1.253.745.847 1.32 1.558 1.473 2.05.152.474-.085.711-.576.711z"/></svg>;
+}
+
 const PLATFORM_CONFIG: Record<SocialPlatform, { label: string; color: string; icon: ReactNode; toUrl: (value: string) => string | null }> = {
   instagram: { label: "Instagram", color: "bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#FCAF45] text-white", icon: <InstagramIcon />, toUrl: (value) => `https://instagram.com/${value.replace(/^@/, "")}` },
   tiktok: { label: "TikTok", color: "bg-black text-white", icon: <TiktokIcon />, toUrl: (value) => `https://tiktok.com/@${value.replace(/^@/, "")}` },
@@ -75,6 +79,7 @@ const PLATFORM_CONFIG: Record<SocialPlatform, { label: string; color: string; ic
   twitch: { label: "Twitch", color: "bg-[#9146FF] text-white", icon: <TwitchIcon />, toUrl: (value) => `https://twitch.tv/${value}` },
   snapchat: { label: "Snapchat", color: "bg-[#FFFC00] text-black", icon: <SnapchatIcon />, toUrl: (value) => `https://snapchat.com/add/${value}` },
   litmatch: { label: "Litmatch", color: "bg-gradient-to-br from-[#FF6B6B] to-[#FF8E53] text-white", icon: <LitmatchIcon />, toUrl: (value) => `https://litmatch.net/user/${value}` },
+  vk: { label: "VK", color: "bg-[#0077FF] text-white", icon: <VKIcon />, toUrl: (value) => `https://vk.com/${value}` },
 };
 
 export default function SocialLinksRow({

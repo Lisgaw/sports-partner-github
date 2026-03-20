@@ -47,7 +47,32 @@ export async function GET(
 
     const myRating = match.ratings.find((r) => r.ratedById === userId);
     const iHaveConfirmed =
-      match.approvedById === userId || match.status === "COMPLETED";
+      match.approvedById === userId || match.status === "COMPLETED" ||
+      (match.user1Id === userId ? (match as any).u1Approved : (match as any).u2Approved);
+
+    // Maç tarihi geçmiş ama henüz tamamlanmamışsa → her iki tarafa otomatik "oynadınız mı?" bildirimi gönder
+    setImmediate(async () => {
+      try {
+        const matchDate = match.listing?.dateTime;
+        const isDatePassed = matchDate && new Date(matchDate) < new Date();
+        if (isDatePassed && match.status === "SCHEDULED") {
+          const [n1, n2] = await Promise.all([
+            prisma.notification.findFirst({ where: { userId: match.user1Id, type: "MATCH_STATUS_CHANGED", link: `/eslesmeler/${matchId}` } }),
+            prisma.notification.findFirst({ where: { userId: match.user2Id, type: "MATCH_STATUS_CHANGED", link: `/eslesmeler/${matchId}` } }),
+          ]);
+          const sport = match.listing?.sport;
+          const sportLabel = sport ? `${sport.icon ?? ""} ${sport.name}` : "Maç";
+          if (!n1) {
+            const { createNotification } = await import("@/lib/notifications");
+            await createNotification({ userId: match.user1Id, type: "MATCH_STATUS_CHANGED", title: "Maçınız Nasıl Geçti? ⚽", body: `${sportLabel} maçının tarihi geçti. Maçı oynadıysanız onaylamayı unutmayın!`, link: `/eslesmeler/${matchId}` });
+          }
+          if (!n2) {
+            const { createNotification } = await import("@/lib/notifications");
+            await createNotification({ userId: match.user2Id, type: "MATCH_STATUS_CHANGED", title: "Maçınız Nasıl Geçti? ⚽", body: `${sportLabel} maçının tarihi geçti. Maçı oynadıysanız onaylamayı unutmayın!`, link: `/eslesmeler/${matchId}` });
+          }
+        }
+      } catch { /* sessizce */ }
+    });
 
     return NextResponse.json({
       success: true,

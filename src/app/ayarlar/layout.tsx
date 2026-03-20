@@ -27,12 +27,6 @@ export default function AyarlarLayout({ children }: { children: React.ReactNode 
       desc: t("securityDesc"),
     },
     {
-      href: "/ayarlar/profesyonel",
-      icon: "⭐",
-      label: t("professional"),
-      desc: t("professionalDesc"),
-    },
-    {
       href: "/ayarlar/gizlilik",
       icon: "🛡️",
       label: t("privacy"),
