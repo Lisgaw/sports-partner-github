@@ -52,7 +52,7 @@ export default function Navbar() {
   const { notifications, unreadCount, unreadMessages, markAllRead, refresh: refreshNotifs } = useNotifications();
   const activityCount = useActivityCount(!!session);
   const [actionedFollowIds, setActionedFollowIds] = useState<Map<string, "accepted" | "rejected">>(new Map());
-  const [notifTab, setNotifTab] = useState<"all" | "match" | "message" | "follow" | "other">("all");
+  const [notifTab, setNotifTab] = useState<"all" | "match" | "follow" | "other">("all");
 
   useEffect(() => {
     if (!session) return;
@@ -473,8 +473,8 @@ export default function Navbar() {
             </div>
             {/* Tabs */}
             <div className="flex gap-1 px-3 py-2 border-b border-gray-100 dark:border-gray-700 shrink-0 overflow-x-auto scrollbar-none">
-              {(["all", "match", "message", "follow", "other"] as const).map((tab) => {
-                const labels = { all: "Hepsi", match: "🤝 Eşleşme", message: "💬 Mesaj", follow: "👤 Takip", other: "🔔 Diğer" };
+              {(["all", "match", "follow", "other"] as const).map((tab) => {
+                const labels = { all: "Hepsi", match: "🤝 Eşleşme", follow: "👤 Takip", other: "🔔 Diğer" };
                 return (
                   <button
                     key={tab}
@@ -491,7 +491,6 @@ export default function Navbar() {
                 const filtered = notifications.filter((n) => {
                   if (notifTab === "all") return true;
                   if (notifTab === "match") return ["NEW_MATCH", "NEW_RATING"].includes(n.type);
-                  if (notifTab === "message") return n.type === "NEW_MESSAGE";
                   if (notifTab === "follow") return ["FOLLOW_REQUEST", "NEW_FOLLOWER"].includes(n.type);
                   return !["NEW_MATCH", "NEW_RATING", "NEW_MESSAGE", "FOLLOW_REQUEST", "NEW_FOLLOWER"].includes(n.type);
                 });

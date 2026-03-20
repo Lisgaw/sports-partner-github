@@ -55,21 +55,6 @@ export async function GET(
         ratingsReceived: {
           select: { score: true },
         },
-        trainerProfile: {
-          select: {
-            isVerified: true,
-            hourlyRate: true,
-            gymName: true,
-            university: true,
-            department: true,
-            experienceYears: true,
-            lessonTypes: true,
-            providesEquipment: true,
-            certNote: true,
-            trainerBadgeVisible: true,
-            specializations: { select: { sportName: true, years: true } },
-          },
-        },
         coverUrl: true,
         instagram: true,
         tiktok: true,

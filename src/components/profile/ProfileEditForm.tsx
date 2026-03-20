@@ -31,6 +31,27 @@ interface Country {
   cities?: City[];
 }
 
+function normalizeSocialHandle(raw: string): string {
+  let val = raw.trim();
+  // Strip leading @
+  while (val.startsWith("@")) val = val.slice(1);
+  // If it looks like a URL, extract the username portion
+  if (val.includes("://") || val.startsWith("www.")) {
+    try {
+      const url = new URL(val.startsWith("http") ? val : "https://" + val);
+      const parts = url.pathname.split("/").filter(Boolean);
+      if (parts.length > 0) {
+        val = parts[parts.length - 1].replace(/^@/, "");
+      }
+    } catch {
+      // Not a valid URL, keep as-is
+    }
+  }
+  // Remove query params and fragments
+  val = val.split("?")[0].split("#")[0].replace(/\/$/, "");
+  return val;
+}
+
 interface ProfileEditFormProps {
   editForm: ProfileEditForm;
   setEditForm: (form: ProfileEditForm) => void;
@@ -456,7 +477,7 @@ export default function ProfileEditFormPanel({
                   <input
                     type="text"
                     value={(editForm as unknown as Record<string, string | undefined>)[key] ?? ""}
-                    onChange={(e) => setEditForm({ ...editForm, [key]: e.target.value } as ProfileEditForm)}
+                    onChange={(e) => setEditForm({ ...editForm, [key]: normalizeSocialHandle(e.target.value) } as ProfileEditForm)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
                     placeholder={placeholder}
                   />
