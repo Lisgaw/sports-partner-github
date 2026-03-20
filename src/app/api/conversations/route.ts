@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId, unauthorized } from "@/lib/api-utils";
+import { withCache, cacheDel } from "@/lib/cache";
 import { createLogger } from "@/lib/logger";
 import { z } from "zod";
 
@@ -12,32 +13,52 @@ export async function GET(_req: NextRequest) {
     const userId = await getCurrentUserId();
     if (!userId) return unauthorized();
 
-    // 1. Match bazlı konuşmalar
-    const matches = await prisma.match.findMany({
-      where: { OR: [{ user1Id: userId }, { user2Id: userId }] },
-      select: {
-        id: true,
-        createdAt: true,
-        listing: {
-          select: {
-            id: true,
-            sport: { select: { name: true, icon: true } },
-            dateTime: true,
+    const { matches, directConvs } = await withCache(`conversations:${userId}`, 30, async () => {
+      // 1. Match bazlı konuşmalar
+      const matches = await prisma.match.findMany({
+        where: { OR: [{ user1Id: userId }, { user2Id: userId }] },
+        select: {
+          id: true,
+          createdAt: true,
+          listing: {
+            select: {
+              id: true,
+              sport: { select: { name: true, icon: true } },
+              dateTime: true,
+            },
+          },
+          user1: { select: { id: true, name: true, avatarUrl: true } },
+          user2: { select: { id: true, name: true, avatarUrl: true } },
+          messages: {
+            orderBy: { createdAt: "desc" },
+            take: 1,
+            select: { content: true, createdAt: true, senderId: true, read: true },
           },
         },
-        user1: { select: { id: true, name: true, avatarUrl: true } },
-        user2: { select: { id: true, name: true, avatarUrl: true } },
-        messages: {
-          orderBy: { createdAt: "desc" },
-          take: 1,
-          select: { content: true, createdAt: true, senderId: true, read: true },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+      });
+      // 2. Direkt konuşmalar
+      const directConvs = await prisma.directConversation.findMany({
+        where: { OR: [{ user1Id: userId }, { user2Id: userId }] },
+        select: {
+          id: true,
+          createdAt: true,
+          user1: { select: { id: true, name: true, avatarUrl: true } },
+          user2: { select: { id: true, name: true, avatarUrl: true } },
+          messages: {
+            orderBy: { createdAt: "desc" },
+            take: 1,
+            select: { content: true, createdAt: true, senderId: true, read: true },
+          },
         },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 50,
-    });
+        orderBy: { createdAt: "desc" },
+        take: 50,
+      });
+      return { matches, directConvs };
+    }); // withCache end
 
-    const matchConversations = matches.map((m) => {
+    const matchConversations = matches.map((m: any) => {
       const partner = m.user1.id === userId ? m.user2 : m.user1;
       const lastMsg = m.messages[0] ?? null;
       const hasUnread = !!(lastMsg && !lastMsg.read && lastMsg.senderId !== userId);
@@ -53,24 +74,6 @@ export async function GET(_req: NextRequest) {
         hasUnread,
         updatedAt: lastMsg?.createdAt ?? m.createdAt,
       };
-    });
-
-    // 2. Direkt konuşmalar
-    const directConvs = await prisma.directConversation.findMany({
-      where: { OR: [{ user1Id: userId }, { user2Id: userId }] },
-      select: {
-        id: true,
-        createdAt: true,
-        user1: { select: { id: true, name: true, avatarUrl: true } },
-        user2: { select: { id: true, name: true, avatarUrl: true } },
-        messages: {
-          orderBy: { createdAt: "desc" },
-          take: 1,
-          select: { content: true, createdAt: true, senderId: true, read: true },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 50,
     });
 
     const directConversations = directConvs.map((c) => {

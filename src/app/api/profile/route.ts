@@ -5,14 +5,16 @@ import { updateProfileSchema } from "@/lib/validations";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { createLogger } from "@/lib/logger";
 import bcrypt from "bcryptjs";
-import { cacheDel, cacheKey } from "@/lib/cache";
+import { withCache, cacheDel, cacheKey, CACHE_TTL } from "@/lib/cache";
 import { bumpUserFeedVersion, warmFeedSnapshot } from "@/lib/feed-snapshot";
+import { withBudget } from "@/lib/query-budget";
 
 const log = createLogger("profile");
 
 // Mevcut kullanıcının profil bilgileri
 export async function GET() {
-  try {
+  return withBudget("profile:GET", async () => {
+    try {
     const userId = await getCurrentUserId();
     if (!userId) {
       return NextResponse.json(
@@ -21,6 +23,7 @@ export async function GET() {
       );
     }
 
+    const profileData = await withCache(cacheKey.profile(userId), CACHE_TTL.PROFILE, async () => {
     const [user, myListings, myResponses, myMatches, myFavorites, unreadNotifications, followersCount, followingCount, myClubs, myGroups] = await Promise.all([
       // findUnique kullan: GET handler'da yazma işlemi OLMAZ — lastSeenAt fire-and-forget ile güncellenir
       prisma.user.findUnique({
@@ -172,47 +175,49 @@ export async function GET() {
       }),
     ]);
 
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: "Kullanıcı bulunamadı" },
-        { status: 404 }
-      );
-    }
-
-    // lastSeenAt güncelleme: yanıt yolunu bloke etme — arka planda fire-and-forget
-    setImmediate(() => {
-      prisma.user.update({ where: { id: userId }, data: { lastSeenAt: new Date() } })
-        .catch(() => { /* sessizce görmezden gel */ });
-    });
+    if (!user) return null;
 
     const avgRating = (user as any).ratingsReceived?.length > 0
       ? Math.round(((user as any).ratingsReceived.reduce((s: number, r: { score: number }) => s + r.score, 0) / (user as any).ratingsReceived.length) * 10) / 10
       : null;
     const ratedMatchIds = new Set(((user as any).ratingsGiven ?? []).map((r: { matchId: string }) => r.matchId));
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        user: {
-          ...user,
-          _count: {
-            ...(user as any)._count,
-            followers: followersCount,
-            following: followingCount,
-          },
-          avgRating,
-          ratingCount: (user as any).ratingsReceived?.length ?? 0,
+    return {
+      user: {
+        ...user,
+        _count: {
+          ...(user as any)._count,
+          followers: followersCount,
+          following: followingCount,
         },
-        ratedMatchIds: Array.from(ratedMatchIds),
-        myListings,
-        myResponses,
-        myMatches,
-        myFavorites: myFavorites.map((f) => f.listing),
-        myClubs,
-        myGroups,
-        unreadNotifications,
+        avgRating,
+        ratingCount: (user as any).ratingsReceived?.length ?? 0,
       },
+      ratedMatchIds: Array.from(ratedMatchIds),
+      myListings,
+      myResponses,
+      myMatches,
+      myFavorites: myFavorites.map((f) => f.listing),
+      myClubs,
+      myGroups,
+      unreadNotifications,
+    };
+    }); // withCache end
+
+    if (!profileData) {
+      return NextResponse.json(
+        { success: false, error: "Kullanıcı bulunamadı" },
+        { status: 404 }
+      );
+    }
+
+    // lastSeenAt: her istekte güncelle — cache'in dışında
+    setImmediate(() => {
+      prisma.user.update({ where: { id: userId }, data: { lastSeenAt: new Date() } })
+        .catch(() => { /* sessizce görmezden gel */ });
     });
+
+    return NextResponse.json({ success: true, data: profileData });
   } catch (error) {
     log.error("Profil yüklenirken hata", error);
     return NextResponse.json(
@@ -220,6 +225,7 @@ export async function GET() {
       { status: 500 }
     );
   }
+  }); // withBudget end
 }
 
 // Profil güncelle
@@ -452,8 +458,12 @@ export async function PUT(request: Request) {
           },
         });
 
-    // Profil cache'ini temizle
-    await cacheDel(cacheKey.profile(userId));
+    // Profil cache'ini temizle (hem profil sayfası hem listings viewer profil cache'i)
+    await Promise.all([
+      cacheDel(cacheKey.profile(userId)),
+      cacheDel(`viewer-profile:${userId}`),
+      cacheDel(`aktivitelerim:${userId}`),
+    ]);
 
     const feedSignalsChanged =
       sportIds !== undefined ||

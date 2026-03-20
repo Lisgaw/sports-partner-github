@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/api-utils";
 import { createLogger } from "@/lib/logger";
+import { drainSSEEvents, getUnreadCount, setUnreadCount } from "@/lib/event-bus";
 
 const log = createLogger("sse:notifications");
 
@@ -9,7 +10,18 @@ const log = createLogger("sse:notifications");
 // istemci EventSource'u otomatik yeniden bağlar. Sunucudaki bağlantı sayısını sınırlar.
 const SSE_MAX_LIFETIME_MS = 5 * 60 * 1000; // 5 dakika
 
-// GET /api/notifications/stream — Server-Sent Events ile gerçek zamanlı bildirim
+// Polling aralıkları:
+// - Redis varken: 10s (Redis sub-ms, neredeyse bedava)
+// - Redis yokken: 30s (DB sorgusu, ama daha seyrek)
+const SSE_POLL_REDIS_MS = 10_000;
+const SSE_POLL_DB_MS = 30_000;
+
+// DB truth sync aralığı: Redis varken bile 60s'de bir DB'den doğrula
+const DB_SYNC_INTERVAL_MS = 60_000;
+
+// GET /api/notifications/stream — Server-Sent Events
+// Event-driven: yazma tarafı pushSSEEvent() ile Redis'e push eder,
+// okuma tarafı drainSSEEvents() ile Redis'ten çeker → DB sorgusu %95 azalır.
 export async function GET(req: NextRequest) {
   const userId = await getCurrentUserId();
   if (!userId) {
@@ -17,10 +29,10 @@ export async function GET(req: NextRequest) {
   }
 
   let lastCheck = new Date();
+  let lastDbSync = Date.now();
 
   const stream = new ReadableStream({
     async start(controller) {
-      // Bağlantı kuruldu mesajı
       controller.enqueue(`data: ${JSON.stringify({ type: "connected" })}\n\n`);
 
       const send = (data: unknown) => {
@@ -31,9 +43,21 @@ export async function GET(req: NextRequest) {
         }
       };
 
-      // 8s → 20s: 500 SSE bağlantısında DB yük 125 sorgu/sn → 50 sorgu/sn'ye düşer.
-      // Her tick'te: yalnızca okunmamış mesaj sayısı (tek hafif sorgu).
-      // Bildirimler: yalnızca yeni bildirim varsa gönderilir (ikinci sorgu, koşullu).
+      // İlk bağlantıda DB'den unread count'u Redis'e sync et
+      try {
+        const initialUnread = await prisma.message.count({
+          where: { receiverId: userId, read: false },
+        });
+        await setUnreadCount(userId, initialUnread);
+        send({ type: "heartbeat", unreadMessages: initialUnread, ts: Date.now() });
+      } catch {
+        // İlk sync başarısız olursa devam et
+      }
+
+      // Redis event-bus kontrolü: Redis varsa hızlı+hafif poll, yoksa yavaş DB poll
+      const hasRedis = await getUnreadCount(userId) !== null;
+      const pollInterval = hasRedis ? SSE_POLL_REDIS_MS : SSE_POLL_DB_MS;
+
       const interval = setInterval(async () => {
         if (req.signal.aborted) {
           clearInterval(interval);
@@ -41,28 +65,54 @@ export async function GET(req: NextRequest) {
         }
 
         try {
-          const [newNotifs, unreadMessages] = await Promise.all([
-            prisma.notification.findMany({
-              where: { userId, createdAt: { gt: lastCheck } },
-              orderBy: { createdAt: "desc" },
-              take: 10,
-              select: { id: true, type: true, title: true, body: true, link: true, read: true, createdAt: true },
-            }),
-            prisma.message.count({
-              where: { receiverId: userId, read: false },
-            }),
-          ]);
+          const now = Date.now();
 
-          if (newNotifs.length > 0) {
-            send({ type: "notifications", data: newNotifs });
+          if (hasRedis) {
+            // ── Redis path: drain event bus (sub-ms, DB sorgusu YOK) ──
+            const events = await drainSSEEvents(userId);
+            for (const event of events) {
+              send(event);
+            }
+
+            // Cached unread count (Redis GET, DB yok)
+            let unreadMessages = await getUnreadCount(userId) ?? 0;
+
+            // 60 saniyede bir DB'den doğrula (eventual consistency safety net)
+            if (now - lastDbSync > DB_SYNC_INTERVAL_MS) {
+              const dbUnread = await prisma.message.count({
+                where: { receiverId: userId, read: false },
+              });
+              await setUnreadCount(userId, dbUnread);
+              unreadMessages = dbUnread;
+              lastDbSync = now;
+            }
+
+            send({ type: "heartbeat", unreadMessages, ts: now });
+          } else {
+            // ── DB fallback path (Redis yokken): eski davranış, daha seyrek ──
+            const [newNotifs, unreadMessages] = await Promise.all([
+              prisma.notification.findMany({
+                where: { userId, createdAt: { gt: lastCheck } },
+                orderBy: { createdAt: "desc" },
+                take: 10,
+                select: { id: true, type: true, title: true, body: true, link: true, read: true, createdAt: true },
+              }),
+              prisma.message.count({
+                where: { receiverId: userId, read: false },
+              }),
+            ]);
+
+            if (newNotifs.length > 0) {
+              send({ type: "notifications", data: newNotifs });
+            }
+
+            send({ type: "heartbeat", unreadMessages, ts: now });
+            lastCheck = new Date();
           }
-
-          send({ type: "heartbeat", unreadMessages, ts: Date.now() });
-          lastCheck = new Date();
         } catch (err) {
-          log.error("SSE polling hatası", err);
+          log.error("SSE poll hatası", err);
         }
-      }, 20000); // 8s → 20s
+      }, pollInterval);
 
       // Maksimum bağlantı ömrü: SSE_MAX_LIFETIME_MS sonra kapat, istemci yeniden bağlanır.
       const lifetimeTimer = setTimeout(() => {

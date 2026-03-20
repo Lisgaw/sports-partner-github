@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/api-utils";
+import { withCache } from "@/lib/cache";
 import { createLogger } from "@/lib/logger";
 
 const log = createLogger("recommendations");
@@ -14,7 +15,8 @@ export async function GET(req: NextRequest) {
 
     // Giriş yapmamış kullanıcılar için popüler ilanlar göster
     if (!userId) {
-      const popular = await prisma.listing.findMany({
+      const popular = await withCache(`recommendations:popular:${limit}`, 120, () =>
+        prisma.listing.findMany({
         where: { status: "OPEN", dateTime: { gte: new Date() } },
         orderBy: [{ responses: { _count: "desc" } }, { createdAt: "desc" }],
         take: limit,
@@ -35,28 +37,30 @@ export async function GET(req: NextRequest) {
           user: { select: { id: true, name: true, avatarUrl: true, gender: true, birthDate: true } },
           _count: { select: { responses: true } },
         },
-      });
+      }));
       return NextResponse.json({ success: true, data: popular, reason: "popular" });
     }
 
     // Kullanıcının geçmişine bak
-    const me = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        cityId: true,
-        sports: { select: { id: true } },
-        listings: {
-          orderBy: { createdAt: "desc" },
-          take: 5,
-          select: { sportId: true, type: true, level: true, districtId: true },
+    const me = await withCache(`recommendations:me:${userId}`, 120, () =>
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          cityId: true,
+          sports: { select: { id: true } },
+          listings: {
+            orderBy: { createdAt: "desc" },
+            take: 5,
+            select: { sportId: true, type: true, level: true, districtId: true },
+          },
+          responses: {
+            orderBy: { createdAt: "desc" },
+            take: 5,
+            select: { listing: { select: { sportId: true, type: true, level: true } } },
+          },
         },
-        responses: {
-          orderBy: { createdAt: "desc" },
-          take: 5,
-          select: { listing: { select: { sportId: true, type: true, level: true } } },
-        },
-      },
-    });
+      })
+    );
 
     if (!me) {
       return NextResponse.json({ success: true, data: [], reason: "no_data" });

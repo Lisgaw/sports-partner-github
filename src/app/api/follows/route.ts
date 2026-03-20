@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId, unauthorized } from "@/lib/api-utils";
+import { withCache } from "@/lib/cache";
 
 // GET /api/follows?type=followers|following
 // Returns paginated list of followers or following for the current user
@@ -13,7 +14,8 @@ export async function GET(req: NextRequest) {
     const type = searchParams.get("type") ?? "followers"; // "followers" | "following"
 
     if (type === "followers") {
-      const rows = await prisma.follow.findMany({
+      const rows = await withCache(`follows:followers:${userId}`, 60, () =>
+        prisma.follow.findMany({
         where: { followingId: userId, status: "ACCEPTED" },
         orderBy: { createdAt: "desc" },
         take: 100,
@@ -29,14 +31,15 @@ export async function GET(req: NextRequest) {
             },
           },
         },
-      });
+      }));
       return NextResponse.json({
         success: true,
         users: rows.map((r) => ({ ...r.follower, followId: r.id })),
       });
     } else {
       // following
-      const rows = await prisma.follow.findMany({
+      const rows = await withCache(`follows:following:${userId}`, 60, () =>
+        prisma.follow.findMany({
         where: { followerId: userId, status: "ACCEPTED" },
         orderBy: { createdAt: "desc" },
         take: 100,
@@ -52,7 +55,7 @@ export async function GET(req: NextRequest) {
             },
           },
         },
-      });
+      }));
       return NextResponse.json({
         success: true,
         users: rows.map((r) => ({ ...r.following, followId: r.id })),

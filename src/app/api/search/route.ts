@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { prismaRead } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/api-utils";
 import { withCache, cacheKey, CACHE_TTL } from "@/lib/cache";
 import { createLogger } from "@/lib/logger";
+import { withBudget } from "@/lib/query-budget";
 
 const log = createLogger("search");
 
 export async function GET(request: Request) {
+  return withBudget("search:GET", async () => {
   try {
     const { searchParams } = new URL(request.url);
     const q = searchParams.get("q")?.trim();
@@ -46,9 +49,10 @@ export async function GET(request: Request) {
       );
     }
 
-    const [listings, users, sports, clubs, groups] = await Promise.all([
+    const searchCacheKey = `search:${currentUserId ?? "anon"}:${term}:${sportId ?? ""}:${cityId ?? ""}:${level ?? ""}`;
+    const [listings, users, sports, clubs, groups] = await withCache(searchCacheKey, 30, () => Promise.all([
       // İlanlar: spor adı, ilçe/şehir adı, mekan adı, açıklama
-      prisma.listing.findMany({
+      prismaRead.listing.findMany({
         where: {
           status: "OPEN",
           dateTime: { gte: new Date() },
@@ -75,7 +79,7 @@ export async function GET(request: Request) {
       }),
 
       // Kullanıcılar: isim, bio (engellenenleri hariç tut)
-      prisma.user.findMany({
+      prismaRead.user.findMany({
         where: {
           AND: [
             {
@@ -99,14 +103,14 @@ export async function GET(request: Request) {
       }),
 
       // Sporlar
-      prisma.sport.findMany({
+      prismaRead.sport.findMany({
         where: { name: { contains: term, mode: "insensitive" } },
         select: { id: true, name: true, icon: true },
         take: 5,
       }),
 
       // Kulüpler
-      prisma.club.findMany({
+      prismaRead.club.findMany({
         where: {
           OR: [
             { name: { contains: term, mode: "insensitive" } },
@@ -126,7 +130,7 @@ export async function GET(request: Request) {
       }),
 
       // Gruplar
-      prisma.group.findMany({
+      prismaRead.group.findMany({
         where: {
           isPublic: true,
           OR: [
@@ -144,7 +148,7 @@ export async function GET(request: Request) {
         },
         take: 5,
       }),
-    ]);
+    ]));
 
     log.info("Arama yapıldı", { q, results: listings.length + users.length + clubs.length + groups.length });
 
@@ -156,4 +160,5 @@ export async function GET(request: Request) {
     log.error("Arama hatası", error);
     return NextResponse.json({ success: false, error: "Arama yapılamadı" }, { status: 500 });
   }
+  }); // withBudget end
 }

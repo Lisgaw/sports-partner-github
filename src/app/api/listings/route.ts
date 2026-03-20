@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { createListingSchema, listingFilterSchema } from "@/lib/validations";
@@ -10,6 +11,9 @@ import { sendPushToUser } from "@/lib/push";
 import { containsProfanity } from "@/lib/content-filter";
 import { EDGE_CACHE, withCacheHeaders } from "@/lib/http-cache";
 import { bumpGlobalFeedVersion } from "@/lib/feed-snapshot";
+import { pushSSEEvent } from "@/lib/event-bus";
+import { backgroundInvalidateFeeds } from "@/lib/background";
+import { withBudget } from "@/lib/query-budget";
 
 const log = createLogger("listings");
 
@@ -64,6 +68,7 @@ function listingPriority(item: { type: string; status: string }) {
 
 // İlan listele (filtreleme + pagination ile)
 export async function GET(request: Request) {
+  return withBudget("listings:GET", async () => {
   try {
     const { searchParams } = new URL(request.url);
     const userId = await getCurrentUserId();
@@ -95,17 +100,21 @@ export async function GET(request: Request) {
     let blockedUserIds: string[] = [];
 
     if (userId) {
-      viewerProfile = await prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-          gender: true,
-          cityId: true,
-          preferredTime: true,
-          preferredStyle: true,
-          userLevel: true,
-          sports: { select: { id: true } },
-        },
-      });
+      viewerProfile = await withCache(
+        `viewer-profile:${userId}`,
+        CACHE_TTL.PROFILE,
+        () => prisma.user.findUnique({
+          where: { id: userId },
+          select: {
+            gender: true,
+            cityId: true,
+            preferredTime: true,
+            preferredStyle: true,
+            userLevel: true,
+            sports: { select: { id: true } },
+          },
+        })
+      );
       viewerGender = viewerProfile?.gender ?? null;
 
       // Engellenen kullanıcı ID'lerini al — 60s cache ile per-request DB sorgusu önlenir
@@ -337,6 +346,7 @@ export async function GET(request: Request) {
       { status: 500 }
     );
   }
+  }); // withBudget end
 }
 
 // İlan oluştur
@@ -566,17 +576,15 @@ export async function POST(request: Request) {
 
     log.info("İlan oluşturuldu", { listingId: listing.id, userId, isQuick: listing.isQuick, isUrgent: listing.isUrgent, isAnonymous: listing.isAnonymous });
 
-    // İlan listesi cache'ini temizle - yeni ilan eklendi
-    await Promise.all([
-      cacheDelPattern("listings:*"),
-      bumpGlobalFeedVersion(),
-    ]);
+    // ─── Background: response gönderildikten SONRA çalışır ──────────
+    // Feed cache invalidation + acil ilan broadcast response'u bloke etmez
+    after(() => backgroundInvalidateFeeds());
 
-    // --- ACİL EŞLEŞME: aynı semt + spor kullanıcılarına push yolla ---
     if (listing.isUrgent && listing.districtId) {
-      // Fire-and-forget: cevap bekleme
-      broadcastUrgentListing(listing, userId).catch((e) =>
-        log.error("Acil ilan broadcast hatası", e)
+      after(() =>
+        broadcastUrgentListing(listing, userId).catch((e) =>
+          log.error("Acil ilan broadcast hatası", e)
+        )
       );
     }
 
@@ -636,6 +644,17 @@ async function broadcastUrgentListing(
     })),
     skipDuplicates: true,
   });
+
+  // SSE event bus'a push: istemciler anında alır
+  await Promise.allSettled(
+    targets.map((u) =>
+      pushSSEEvent(u.id, {
+        type: "notification",
+        data: { type: "URGENT_LISTING_NEARBY", title, body, link },
+        ts: Date.now(),
+      })
+    )
+  );
 
   // Push bildirimleri gönder
   await Promise.allSettled(

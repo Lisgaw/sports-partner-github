@@ -4,6 +4,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/api-utils";
+import { withCache } from "@/lib/cache";
 import { createLogger } from "@/lib/logger";
 import { z } from "zod";
 
@@ -26,7 +27,9 @@ export async function GET(request: Request) {
     const sportId = searchParams.get("sportId");
     const search = searchParams.get("search");
 
-    const clubs = await prisma.club.findMany({
+    const clubsCacheKey = `clubs:${cityId ?? "all"}:${sportId ?? "all"}:${search ?? ""}`;
+    const clubs = await withCache(clubsCacheKey, 120, () =>
+      prisma.club.findMany({
       where: {
         ...(cityId && { cityId }),
         ...(sportId && { sportId }),
@@ -39,7 +42,7 @@ export async function GET(request: Request) {
       },
       orderBy: { createdAt: "desc" },
       take: 50,
-    });
+    }));
 
     return NextResponse.json({ success: true, data: clubs });
   } catch (error) {

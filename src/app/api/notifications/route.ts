@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/api-utils";
+import { withCache, cacheDel, CACHE_TTL } from "@/lib/cache";
 import { createLogger } from "@/lib/logger";
 
 const log = createLogger("notifications");
@@ -16,14 +17,18 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const onlyUnread = searchParams.get("unread") === "true";
 
-    const [notifications, unreadCount] = await Promise.all([
-      prisma.notification.findMany({
-        where: { userId, ...(onlyUnread ? { read: false } : {}) },
-        orderBy: { createdAt: "desc" },
-        take: 30,
-      }),
-      prisma.notification.count({ where: { userId, read: false } }),
-    ]);
+    const notifKey = `notifications:${userId}:${onlyUnread ? "unread" : "all"}`;
+    const { notifications, unreadCount } = await withCache(notifKey, CACHE_TTL.NOTIFICATIONS, async () => {
+      const [notifications, unreadCount] = await Promise.all([
+        prisma.notification.findMany({
+          where: { userId, ...(onlyUnread ? { read: false } : {}) },
+          orderBy: { createdAt: "desc" },
+          take: 30,
+        }),
+        prisma.notification.count({ where: { userId, read: false } }),
+      ]);
+      return { notifications, unreadCount };
+    });
 
     return NextResponse.json({ success: true, data: notifications, unreadCount });
   } catch (error) {
@@ -55,6 +60,8 @@ export async function PATCH(request: Request) {
       });
     }
 
+    await cacheDel(`notifications:${userId}:all`);
+    await cacheDel(`notifications:${userId}:unread`);
     return NextResponse.json({ success: true });
   } catch (error) {
     log.error("Bildirim güncelleme hatası", error);

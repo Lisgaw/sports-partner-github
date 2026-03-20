@@ -5,6 +5,7 @@ import { createLogger } from "@/lib/logger";
 import { createNotification } from "@/lib/notifications";
 import type { NotificationType } from "@prisma/client";
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { incrUnreadCount, decrUnreadCount } from "@/lib/event-bus";
 import { z } from "zod";
 
 const log = createLogger("conversations:messages");
@@ -54,10 +55,15 @@ export async function GET(
     if (hasMore) messages.pop();
 
     // Okunmamış mesajları okundu olarak işaretle
-    await prisma.message.updateMany({
+    const readResult = await prisma.message.updateMany({
       where: { conversationId: id, receiverId: userId, read: false },
       data: { read: true },
     });
+
+    // Redis unread counter'ı güncelle
+    if (readResult.count > 0) {
+      await decrUnreadCount(userId, readResult.count);
+    }
 
     return NextResponse.json({
       success: true,
@@ -121,15 +127,18 @@ export async function POST(
       },
     });
 
-    // Bildirim gönder
+    // Bildirim gönder + unread counter artır
     try {
-      await createNotification({
-        userId: receiverId,
-        type: "NEW_MESSAGE" as NotificationType,
-        title: `${message.sender.name ?? "Biri"} mesaj gönderdi`,
-        body: content.slice(0, 80),
-        link: `/mesajlar/dm/${id}`,
-      });
+      await Promise.all([
+        createNotification({
+          userId: receiverId,
+          type: "NEW_MESSAGE" as NotificationType,
+          title: `${message.sender.name ?? "Biri"} mesaj gönderdi`,
+          body: content.slice(0, 80),
+          link: `/mesajlar/dm/${id}`,
+        }),
+        incrUnreadCount(receiverId),
+      ]);
     } catch {
       // Bildirim hatası mesaj gönderimini engellemez
     }

@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { withCache, CACHE_TTL, cacheKey } from "@/lib/cache";
 import { createLogger } from "@/lib/logger";
 
 const log = createLogger("sports");
 
 export async function GET() {
   try {
-    const sports = await prisma.sport.findMany({ orderBy: { name: "asc" } });
+    const sports = await withCache(
+      cacheKey.sports(),
+      CACHE_TTL.SPORTS,
+      () => prisma.sport.findMany({ orderBy: { name: "asc" } })
+    );
     return NextResponse.json({ success: true, data: sports });
   } catch (error) {
     log.error("Sporlar yüklenirken hata", error);

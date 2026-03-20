@@ -4,6 +4,7 @@ import { getCurrentUserId, unauthorized, notFound, isValidId, sanitizeText } fro
 import { createLogger } from "@/lib/logger";
 import { createNotification, NOTIF } from "@/lib/notifications";
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { incrUnreadCount, decrUnreadCount } from "@/lib/event-bus";
 import { z } from "zod";
 
 const log = createLogger("messages:match");
@@ -54,10 +55,15 @@ export async function GET(
     if (hasMore) messages.pop();
 
     // Okunmamış mesajları okundu yap
-    await prisma.message.updateMany({
+    const readResult = await prisma.message.updateMany({
       where: { matchId, receiverId: userId, read: false },
       data: { read: true },
     });
+
+    // Redis unread counter'ı güncelle
+    if (readResult.count > 0) {
+      await decrUnreadCount(userId, readResult.count);
+    }
 
     return NextResponse.json({
       success: true,
@@ -136,11 +142,14 @@ export async function POST(
       },
     });
 
-    // Bildirim gönder (karşı tarafa)
+    // Bildirim gönder (karşı tarafa) + unread counter artır
     const sender = await prisma.user.findUnique({ where: { id: userId }, select: { name: true } });
-    await createNotification(
-      NOTIF.newMessage(receiverId, sender?.name ?? "Biri", matchId, content.slice(0, 60))
-    );
+    await Promise.all([
+      createNotification(
+        NOTIF.newMessage(receiverId, sender?.name ?? "Biri", matchId, content.slice(0, 60))
+      ),
+      incrUnreadCount(receiverId),
+    ]);
 
     log.info("Mesaj gönderildi", { matchId, senderId: userId });
     return NextResponse.json({ success: true, data: message });

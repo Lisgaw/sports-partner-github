@@ -1,8 +1,12 @@
 /**
  * Uygulama içi bildirim oluşturma yardımcı fonksiyonu.
  * API route'larından çağrılır — eşleşme, yanıt, puan gibi olaylarda.
+ *
+ * Her bildirim otomatik olarak SSE event bus'a push edilir:
+ * DB yazma + Redis push = istemci anında alır, polling'e gerek yok.
  */
 import { prisma } from "@/lib/prisma";
+import { pushSSEEvent } from "@/lib/event-bus";
 import type { NotificationType } from "@prisma/client";
 
 interface CreateNotificationInput {
@@ -15,7 +19,22 @@ interface CreateNotificationInput {
 
 export async function createNotification(input: CreateNotificationInput) {
   try {
-    return await prisma.notification.create({ data: input });
+    const result = await prisma.notification.create({ data: input });
+
+    // SSE event bus'a push: istemci anında alır
+    await pushSSEEvent(input.userId, {
+      type: "notification",
+      data: {
+        id: result.id,
+        type: input.type,
+        title: input.title,
+        body: input.body,
+        link: input.link,
+      },
+      ts: Date.now(),
+    });
+
+    return result;
   } catch {
     // Bildirim başarısız olursa ana işlemi engelleme
     console.error("[notifications] Bildirim oluşturulamadı:", input);

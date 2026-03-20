@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId, sanitizeText } from "@/lib/api-utils";
 import { createLogger } from "@/lib/logger";
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { containsProfanity } from "@/lib/content-filter";
 import { withCache } from "@/lib/cache";
+import { pushSSEEvent } from "@/lib/event-bus";
 import { z } from "zod";
 
 const log = createLogger("api:posts");
@@ -143,55 +145,86 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Group/club post notifications (non-blocking)
-    try {
-      if (groupId) {
-        const [group, members] = await Promise.all([
-          prisma.group.findUnique({ where: { id: groupId }, select: { name: true } }),
-          prisma.groupMembership.findMany({
-            where: { groupId, status: "APPROVED", userId: { not: userId } },
-            select: { userId: true },
-          }),
-        ]);
+    // Group/club post notifications → after() ile background'a taşı
+    // Response gönderildikten SONRA çalışır, API süresini bloke etmez
+    if (groupId || clubId) {
+      const postUserName = post.user.name;
+      const postContent = content;
+      after(async () => {
+        try {
+          if (groupId) {
+            const [group, members] = await Promise.all([
+              prisma.group.findUnique({ where: { id: groupId }, select: { name: true } }),
+              prisma.groupMembership.findMany({
+                where: { groupId, status: "APPROVED", userId: { not: userId } },
+                select: { userId: true },
+              }),
+            ]);
 
-        if (members.length > 0) {
-          const actor = post.user.name || "Bir kullanıcı";
-          const preview = content ? `: \"${content.slice(0, 80)}${content.length > 80 ? "..." : ""}\"` : ".";
-          await prisma.notification.createMany({
-            data: members.map((m) => ({
-              userId: m.userId,
-              type: "COMMUNITY_UPDATE",
-              title: "Yeni Grup Gönderisi",
-              body: `${actor}, ${group?.name ?? "grup"} içinde yeni bir gönderi paylaştı${preview}`,
-              link: `/gruplar/${groupId}`,
-            })),
-          });
-        }
-      } else if (clubId) {
-        const [club, members] = await Promise.all([
-          prisma.club.findUnique({ where: { id: clubId }, select: { name: true } }),
-          prisma.userClubMembership.findMany({
-            where: { clubId, status: "APPROVED", userId: { not: userId } },
-            select: { userId: true },
-          }),
-        ]);
+            if (members.length > 0) {
+              const actor = postUserName || "Bir kullanıcı";
+              const preview = postContent ? `: \"${postContent.slice(0, 80)}${postContent.length > 80 ? "..." : ""}\"` : ".";
+              const notifTitle = "Yeni Grup Gönderisi";
+              const notifBody = `${actor}, ${group?.name ?? "grup"} içinde yeni bir gönderi paylaştı${preview}`;
+              const notifLink = `/gruplar/${groupId}`;
+              await prisma.notification.createMany({
+                data: members.map((m) => ({
+                  userId: m.userId,
+                  type: "COMMUNITY_UPDATE",
+                  title: notifTitle,
+                  body: notifBody,
+                  link: notifLink,
+                })),
+              });
+              await Promise.allSettled(
+                members.map((m) =>
+                  pushSSEEvent(m.userId, {
+                    type: "notification",
+                    data: { type: "COMMUNITY_UPDATE", title: notifTitle, body: notifBody, link: notifLink },
+                    ts: Date.now(),
+                  })
+                )
+              );
+            }
+          } else if (clubId) {
+            const [club, members] = await Promise.all([
+              prisma.club.findUnique({ where: { id: clubId }, select: { name: true } }),
+              prisma.userClubMembership.findMany({
+                where: { clubId, status: "APPROVED", userId: { not: userId } },
+                select: { userId: true },
+              }),
+            ]);
 
-        if (members.length > 0) {
-          const actor = post.user.name || "Bir kullanıcı";
-          const preview = content ? `: \"${content.slice(0, 80)}${content.length > 80 ? "..." : ""}\"` : ".";
-          await prisma.notification.createMany({
-            data: members.map((m) => ({
-              userId: m.userId,
-              type: "COMMUNITY_UPDATE",
-              title: "Yeni Kulüp Gönderisi",
-              body: `${actor}, ${club?.name ?? "kulüp"} içinde yeni bir gönderi paylaştı${preview}`,
-              link: `/kulupler/${clubId}`,
-            })),
-          });
+            if (members.length > 0) {
+              const actor = postUserName || "Bir kullanıcı";
+              const preview = postContent ? `: \"${postContent.slice(0, 80)}${postContent.length > 80 ? "..." : ""}\"` : ".";
+              const notifTitle = "Yeni Kulüp Gönderisi";
+              const notifBody = `${actor}, ${club?.name ?? "kulüp"} içinde yeni bir gönderi paylaştı${preview}`;
+              const notifLink = `/kulupler/${clubId}`;
+              await prisma.notification.createMany({
+                data: members.map((m) => ({
+                  userId: m.userId,
+                  type: "COMMUNITY_UPDATE",
+                  title: notifTitle,
+                  body: notifBody,
+                  link: notifLink,
+                })),
+              });
+              await Promise.allSettled(
+                members.map((m) =>
+                  pushSSEEvent(m.userId, {
+                    type: "notification",
+                    data: { type: "COMMUNITY_UPDATE", title: notifTitle, body: notifBody, link: notifLink },
+                    ts: Date.now(),
+                  })
+                )
+              );
+            }
+          }
+        } catch (notifyErr) {
+          log.error("Post notification create error", notifyErr);
         }
-      }
-    } catch (notifyErr) {
-      log.error("Post notification create error", notifyErr);
+      });
     }
 
     return NextResponse.json(post, { status: 201 });

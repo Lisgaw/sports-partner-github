@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { withCache, CACHE_TTL, cacheKey } from "@/lib/cache";
 import type { ListingSummary, Country, Sport } from "@/types";
 
 // Server-side data fetching functions (no cache, direct DB access for SSR)
@@ -74,27 +75,37 @@ export async function getInitialListings(countryId?: string): Promise<{
 }
 
 export async function getInitialLocations(): Promise<Country[]> {
-  const countries = await prisma.country.findMany({
-    include: {
-      cities: {
+  return withCache(
+    cacheKey.locations(),
+    CACHE_TTL.LOCATIONS,
+    async () => {
+      const countries = await prisma.country.findMany({
         include: {
-          districts: true,
+          cities: {
+            include: {
+              districts: true,
+            },
+            orderBy: { name: "asc" },
+          },
         },
         orderBy: { name: "asc" },
-      },
-    },
-    orderBy: { name: "asc" },
-  });
-
-  return countries as unknown as Country[];
+      });
+      return countries as unknown as Country[];
+    }
+  );
 }
 
 export async function getInitialSports(): Promise<Sport[]> {
-  const sports = await prisma.sport.findMany({
-    orderBy: { name: "asc" },
-  });
-
-  return sports as unknown as Sport[];
+  return withCache(
+    cacheKey.sports(),
+    CACHE_TTL.SPORTS,
+    async () => {
+      const sports = await prisma.sport.findMany({
+        orderBy: { name: "asc" },
+      });
+      return sports as unknown as Sport[];
+    }
+  );
 }
 
 export async function getPopularListings(limit = 6): Promise<ListingSummary[]> {

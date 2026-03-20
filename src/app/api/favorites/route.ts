@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/api-utils";
+import { withCache, cacheDel } from "@/lib/cache";
 import { createLogger } from "@/lib/logger";
 
 const log = createLogger("favorites");
@@ -13,7 +14,8 @@ export async function GET() {
       return NextResponse.json({ success: false, error: "Giriş yapmanız gerekiyor" }, { status: 401 });
     }
 
-    const favorites = await prisma.favorite.findMany({
+    const favorites = await withCache(`favorites:${userId}`, 60, () =>
+      prisma.favorite.findMany({
       where: { userId },
       include: {
         listing: {
@@ -28,7 +30,7 @@ export async function GET() {
       },
       orderBy: { createdAt: "desc" },
       take: 50,
-    });
+    }));
 
     return NextResponse.json({
       success: true,
@@ -68,11 +70,13 @@ export async function POST(request: Request) {
     if (existing) {
       // Favoriden kaldır
       await prisma.favorite.delete({ where: { id: existing.id } });
+      await cacheDel(`favorites:${userId}`);
       log.info("Favoriden kaldırıldı", { userId, listingId });
       return NextResponse.json({ success: true, favorited: false });
     } else {
       // Favoriye ekle
       await prisma.favorite.create({ data: { userId, listingId } });
+      await cacheDel(`favorites:${userId}`);
       log.info("Favoriye eklendi", { userId, listingId });
       return NextResponse.json({ success: true, favorited: true });
     }

@@ -54,12 +54,14 @@ export const CACHE_TTL = {
   VENUES: 60 * 60 * 24, // Mekan listesi: 24 saat
   PLACES: 60 * 60 * 24, // Google Places sonuçları: 24 saat
   SPORTS: 60 * 60,       // Spor listesi: 1 saat
+  LOCATIONS: 60 * 60 * 24, // Ülke/şehir/ilçe: 24 saat (statik data)
   LEADERBOARD: 60 * 5,   // Liderlik tablosu: 5 dakika
   PROFILE: 60 * 5,       // Profil: 5 dakika
   FEED_SNAPSHOT: 60,
   FEED_SNAPSHOT_LATEST: 60 * 5,
   FEED_VERSION: 60 * 60 * 24 * 30,
   BLOCKLIST: 60,         // Engelleme listesi: 1 dakika (blok oluşturulunca invalidate edilecek)
+  NOTIFICATIONS: 30,     // Bildirimler: 30 saniye (SSE gerçek zamanlı, bu REST fallback)
 } as const;
 
 // Cache key oluşturucu - tutarlı key formatı
@@ -71,7 +73,8 @@ export const cacheKey = {
   googlePlaces: (query: string, lat: number, lng: number) =>
     `places:${query}:${lat.toFixed(3)}:${lng.toFixed(3)}`,
   sports: () => "sports:all",
-  leaderboard: (sportId?: string) => `leaderboard:${sportId ?? "all"}`,
+  locations: () => "locations:all",
+  leaderboard: (sportId?: string) => `leaderboard:${sportId ?? "all"}`,  
   profile: (userId: string) => `profile:${userId}`,
   userListings: (userId: string) => `user-listings:${userId}`,
   blocklist: (userId: string) => `blocklist:${userId}`,

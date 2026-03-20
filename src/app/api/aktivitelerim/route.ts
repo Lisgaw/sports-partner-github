@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/api-utils";
+import { withCache } from "@/lib/cache";
 import { createLogger } from "@/lib/logger";
 
 const log = createLogger("aktivitelerim");
@@ -15,7 +16,7 @@ export async function GET() {
     if (!userId)
       return NextResponse.json({ error: "Giriş yapmanız gerekiyor" }, { status: 401 });
 
-    const [listings, responses, matches] = await Promise.all([
+    const [listings, responses, matches] = await withCache(`aktivitelerim:${userId}`, 30, () => Promise.all([
       // Kullanıcının kendi ilanları
       prisma.listing.findMany({
         where: { userId },
@@ -107,7 +108,7 @@ export async function GET() {
           user2Id: true,
         },
       }),
-    ]);
+    ]));
 
     // Her maç için kullanıcının onaylayıp onaylamadığını ve puan verip vermediğini ekle
     const matchesWithMeta = matches.map((m) => {
