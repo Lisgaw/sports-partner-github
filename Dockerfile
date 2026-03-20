@@ -27,6 +27,8 @@ ENV NODE_ENV=production
 ARG DATABASE_URL
 ARG NEXTAUTH_SECRET
 ARG NEXTAUTH_URL
+ARG DOCKER_BUILD
+ENV DOCKER_BUILD=$DOCKER_BUILD
 
 RUN npm run build
 
@@ -48,7 +50,8 @@ COPY --from=builder /app/public ./public
 # Standalone output (next.config.ts'de output:"standalone" gerekmez — kendi kendine yetişiyor)
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
+# Cluster wrapper — tek process'in ötesinde CPU'ları kullanmak için
+COPY --from=builder --chown=nextjs:nodejs /app/server-cluster.js ./server-cluster.js
 # Prisma şema ve migration dosyaları
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
@@ -58,5 +61,8 @@ USER nextjs
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+# Her worker için 512 MB heap limiti — 4 worker × 512 MB = 2 GB toplam.
+# 1000 VU OOM crash'ini önler; cluster izolasyonu sayesinde 1 worker crash'i diğerlerini etkilemez.
+ENV NODE_OPTIONS="--max-old-space-size=512"
 
-CMD ["node", "server.js"]
+CMD ["node", "server-cluster.js"]

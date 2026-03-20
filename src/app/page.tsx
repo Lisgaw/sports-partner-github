@@ -6,17 +6,17 @@ import {
   getPopularListings,
 } from "@/lib/server-data";
 
-// v1.1.2 - Force deployment trigger
+// v1.2.0 - All data fetches parallel; all functions cached
 export default async function HomePage() {
-  // Batch 1: bağımsız sorgular paralel çalışır (hiçbiri diğerini beklemez)
-  const [locations, sports, recommendations] = await Promise.all([
+  // 4 bağımsız sorgu aynı anda başlar — hiçbiri diğerini beklemez.
+  // getInitialListings ve getPopularListings artık withCache ile sarılı:
+  // DB'ye max 1 kez/60s vurur, kalan tüm istekler bellekten (<1ms) döner.
+  const [locations, sports, recommendations, listingsData] = await Promise.all([
     getInitialLocations(),
     getInitialSports(),
     getPopularListings(6),
+    getInitialListings(),
   ]);
-
-  // Varsayılan açılış: dünya genelindeki ilanlar
-  const listingsData = await getInitialListings();
 
   return (
     <HomeClient

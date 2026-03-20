@@ -51,6 +51,7 @@ function getRedisClient(): Redis | null {
 // Cache TTL değerleri (saniye)
 export const CACHE_TTL = {
   LISTINGS: 60,          // İlan listesi: 1 dakika
+  POPULAR: 120,          // Popüler ilanlar: 2 dakika
   VENUES: 60 * 60 * 24, // Mekan listesi: 24 saat
   PLACES: 60 * 60 * 24, // Google Places sonuçları: 24 saat
   SPORTS: 60 * 60,       // Spor listesi: 1 saat

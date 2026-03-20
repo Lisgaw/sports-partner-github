@@ -311,6 +311,8 @@ model Listing {
   @@index([cityId])
   @@index([countryId])
   @@index([type])
+  @@index([status, isQuick(sort: Desc), dateTime(sort: Asc)]) // getInitialListings ORDER BY
+  @@index([status, createdAt(sort: Desc)])                    // getPopularListings ORDER BY
 }
 
 // ========== KARŞILIK ==========
