@@ -140,8 +140,8 @@ export async function GET(request: Request) {
       AND: [
         // Süresi dolmuş hızlı ilanları gizle
         { OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
-        // TRAINER, EQUIPMENT ve trainer-only tipler için tarih kısıtı yok; RIVAL/PARTNER yalnızca gelecektekiler
-        { OR: [{ type: { in: ["TRAINER", "EQUIPMENT", "VENUE_MEMBERSHIP", "VENUE_CLASS", "VENUE_PRODUCT", "VENUE_SERVICE"] } }, { dateTime: { gte: now } }] },
+        // EQUIPMENT ve venue tipler için tarih kısıtı yok; RIVAL/PARTNER yalnızca gelecektekiler
+        { OR: [{ type: { in: ["EQUIPMENT", "VENUE_MEMBERSHIP", "VENUE_CLASS", "VENUE_PRODUCT", "VENUE_SERVICE"] } }, { dateTime: { gte: now } }] },
       ],
     };
 
@@ -212,34 +212,11 @@ export async function GET(request: Request) {
       });
     }
     if (minPrice !== undefined || maxPrice !== undefined) {
-      // Price filter applies to EQUIPMENT (equipmentDetail.price) or TRAINER (trainerProfile.hourlyRate)
+      // Price filter applies to EQUIPMENT (equipmentDetail.price)
       if (!type || type === "EQUIPMENT") {
         (where.AND as Prisma.ListingWhereInput[]).push({
-          OR: [
-            {
-              equipmentDetail: {
-                price: {
-                  ...(minPrice !== undefined ? { gte: minPrice } : {}),
-                  ...(maxPrice !== undefined ? { lte: maxPrice } : {}),
-                },
-              },
-            },
-            ...(!type
-              ? [{
-                  trainerProfile: {
-                    hourlyRate: {
-                      ...(minPrice !== undefined ? { gte: minPrice } : {}),
-                      ...(maxPrice !== undefined ? { lte: maxPrice } : {}),
-                    },
-                  },
-                }]
-              : []),
-          ],
-        });
-      } else if (type === "TRAINER") {
-        (where.AND as Prisma.ListingWhereInput[]).push({
-          trainerProfile: {
-            hourlyRate: {
+          equipmentDetail: {
+            price: {
               ...(minPrice !== undefined ? { gte: minPrice } : {}),
               ...(maxPrice !== undefined ? { lte: maxPrice } : {}),
             },
@@ -283,7 +260,6 @@ export async function GET(request: Request) {
                 } 
               },
               equipmentDetail: { select: { price: true, isSold: true } },
-              trainerProfile: { select: { hourlyRate: true } },
             },
             orderBy: [{ isQuick: "desc" }, { dateTime: "asc" }],
             skip: (page - 1) * pageSize,
@@ -366,7 +342,6 @@ export async function POST(request: Request) {
       select: {
         isBanned: true, currentStreak: true, userType: true,
         name: true, birthDate: true, sports: { select: { id: true } },
-        trainerProfile: { select: { id: true, isVerified: true } },
       },
     });
 
@@ -418,20 +393,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // Sadece TRAINER tipindeki kullanıcılar Eğitmen ilanı verebilir
-    const isTrainer = user?.userType === "TRAINER" || !!user?.trainerProfile;
-    if (parsed.data.type === "TRAINER" && !isTrainer) {
+    // Üyelik/ürün/hizmet/ders ilanları sadece VENUE kullanıcıları açabilir
+    const venueOnlyTypes = ["VENUE_MEMBERSHIP", "VENUE_CLASS", "VENUE_PRODUCT", "VENUE_SERVICE"];
+    if (venueOnlyTypes.includes(parsed.data.type) && user?.userType !== "VENUE") {
       return NextResponse.json(
-        { success: false, error: "Eğitmen ilanı verebilmek için profil sayfanızdan eğitmen başvurusu yapmanız gerekir." },
-        { status: 403 }
-      );
-    }
-
-    // Üyelik/ürün/hizmet/ders ilanları sadece onaylı antrenörlerde açılır
-    const trainerOnlyTypes = ["VENUE_MEMBERSHIP", "VENUE_CLASS", "VENUE_PRODUCT", "VENUE_SERVICE"];
-    if (trainerOnlyTypes.includes(parsed.data.type) && !user?.trainerProfile?.isVerified) {
-      return NextResponse.json(
-        { success: false, error: "Bu ilan tipi sadece onaylı antrenörler için kullanılabilir." },
+        { success: false, error: "Bu ilan tipi sadece mekan/işletme hesapları için kullanılabilir." },
         { status: 403 }
       );
     }
@@ -544,7 +510,6 @@ export async function POST(request: Request) {
         city: true,
         district: { include: { city: true } },
         venue: true,
-        trainerProfile: { include: { specializations: true } },
         equipmentDetail: true,
         venueMembershipDetail: true,
         venueClassDetail: true,
@@ -552,27 +517,6 @@ export async function POST(request: Request) {
         venueServiceDetail: true,
       },
     });
-
-    // TRAINER ilanı: mevcut TrainerProfile kaydını bu ilana bağla (userId @unique olduğu için create değil upsert)
-    if (parsed.data.type === "TRAINER") {
-      const tp = parsed.data.trainerProfile;
-      await prisma.trainerProfile.upsert({
-        where: { userId },
-        update: {
-          listingId: listing.id,
-          ...(tp?.hourlyRate !== undefined ? { hourlyRate: tp.hourlyRate ?? null } : {}),
-          ...(tp?.gymName !== undefined ? { gymName: tp.gymName || null } : {}),
-          ...(tp?.gymAddress !== undefined ? { gymAddress: tp.gymAddress || null } : {}),
-        },
-        create: {
-          userId,
-          listingId: listing.id,
-          hourlyRate: tp?.hourlyRate ?? null,
-          gymName: tp?.gymName || null,
-          gymAddress: tp?.gymAddress || null,
-        },
-      });
-    }
 
     log.info("İlan oluşturuldu", { listingId: listing.id, userId, isQuick: listing.isQuick, isUrgent: listing.isUrgent, isAnonymous: listing.isAnonymous });
 

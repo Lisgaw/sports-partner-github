@@ -104,7 +104,7 @@ export default function CreateListingPage() {
     if (!session) return;
     fetch("/api/profile")
       .then((r) => r.json())
-      .then((data) => setIsVerifiedTrainer(Boolean(data?.data?.user?.trainerProfile?.isVerified)))
+      .then((data) => setIsVerifiedTrainer(Boolean(data?.data?.user?.userType === "VENUE")))
       .catch(() => {});
   }, [session]);
 
@@ -138,8 +138,7 @@ export default function CreateListingPage() {
         venueId: null,
         latitude: form.latitude ?? undefined,
         longitude: form.longitude ?? undefined,
-        ...(!isTrainerOnlyType && form.type !== "EQUIPMENT" && form.type !== "TRAINER" && { dateTime: form.dateTime }),
-        ...(form.type === "TRAINER" && form.dateTime ? { dateTime: form.dateTime } : {}),
+        ...(!isTrainerOnlyType && form.type !== "EQUIPMENT" && { dateTime: form.dateTime }),
         level: (form.type === "EQUIPMENT" || isTrainerOnlyType) ? "BEGINNER" : form.level as string,
         description: form.description || undefined,
         maxParticipants: form.maxParticipants,
@@ -151,14 +150,6 @@ export default function CreateListingPage() {
         maxAge: form.maxAge ?? undefined,
         groupId: form.groupId ?? undefined,
       };
-      if (form.type === "TRAINER") {
-        payload.trainerProfile = {
-          experience: trainerForm.experience ? parseInt(trainerForm.experience) : undefined,
-          specialization: trainerForm.specialization || undefined,
-          gymName: trainerForm.gymName || undefined,
-          gymAddress: trainerForm.gymAddress || undefined,
-        };
-      }
       if (form.type === "EQUIPMENT") {
         payload.equipmentDetail = {
           price: equipForm.price ? parseFloat(equipForm.price) : undefined,
@@ -277,16 +268,7 @@ export default function CreateListingPage() {
               </button>
             ))}
           </div>
-          {/* TRAINER role info */}
-          {form.type === "TRAINER" && (session?.user as any)?.userType !== "TRAINER" && (
-            <div className="mt-3 flex items-start gap-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 p-3 text-sm text-blue-800 dark:text-blue-300">
-              <span className="flex-shrink-0 text-base">ℹ️</span>
-              <span>
-                {t("trainerRequired")}
-                {" "}<Link href="/profil" className="underline font-medium">{t("profileLink")}</Link>
-              </span>
-            </div>
-          )}
+          {/* TRAINER role info - removed */}
 
           {!isVerifiedTrainer && (
             <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-300">
@@ -417,45 +399,18 @@ export default function CreateListingPage() {
         {form.type !== "EQUIPMENT" && !isTrainerOnlyType && (
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {t("dateTime")} {form.type !== "TRAINER" ? "*" : <span className="text-gray-400 font-normal">{t("dateTimeTrainer")}</span>}
+              {t("dateTime")} *
             </label>
             <input
               id="dateTime"
               type="datetime-local"
-              required={form.type !== "TRAINER"}
+              required
               value={form.dateTime}
               onChange={(e) => setForm({ ...form, dateTime: e.target.value })}
               min={new Date().toISOString().slice(0, 16)}
               className={selectClass}
               aria-label={t("dateTime")}
             />
-          </div>
-        )}
-
-        {/* ── Eğitmen Alanları ── */}
-        {form.type === "TRAINER" && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 space-y-3">
-            <p className="font-semibold text-blue-800 dark:text-blue-200 text-sm">🎓 {t("trainerInfo")}</p>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("experience")}</label>
-                <input type="number" min="0" value={trainerForm.experience} onChange={(e) => setTrainerForm({ ...trainerForm, experience: e.target.value })} className={selectClass} placeholder="5" />
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("specialization")}</label>
-              <input type="text" value={trainerForm.specialization} onChange={(e) => setTrainerForm({ ...trainerForm, specialization: e.target.value })} className={selectClass} placeholder={t("specializationPh")} />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("gymName")}</label>
-                <input type="text" value={trainerForm.gymName} onChange={(e) => setTrainerForm({ ...trainerForm, gymName: e.target.value })} className={selectClass} placeholder="Opsiyonel" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">{t("gymAddress")}</label>
-                <input type="text" value={trainerForm.gymAddress} onChange={(e) => setTrainerForm({ ...trainerForm, gymAddress: e.target.value })} className={selectClass} placeholder="Opsiyonel" />
-              </div>
-            </div>
           </div>
         )}
 
@@ -822,8 +777,8 @@ export default function CreateListingPage() {
         </div>
         )}
 
-        {/* Hızlı İlan Modu (EQUIPMENT, TRAINER ve trainer-only tipler için gizle) */}
-        {form.type !== "EQUIPMENT" && form.type !== "TRAINER" && !isTrainerOnlyType && (
+        {/* Hızlı İlan Modu (EQUIPMENT ve trainer-only tipler için gizle) */}
+        {form.type !== "EQUIPMENT" && !isTrainerOnlyType && (
         <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -852,7 +807,7 @@ export default function CreateListingPage() {
         )}
 
         {/* ⚡ ACİL EŞleşme — 30 dakika, yakındakilere push bildirim */}
-        {form.type !== "EQUIPMENT" && form.type !== "TRAINER" && (
+        {form.type !== "EQUIPMENT" && !isTrainerOnlyType && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -888,7 +843,7 @@ export default function CreateListingPage() {
         )}
 
         {/* 🕵️ KÖR MAÇ — Anonim İlan */}
-        {form.type !== "EQUIPMENT" && form.type !== "TRAINER" && !isTrainerOnlyType && (
+        {form.type !== "EQUIPMENT" && !isTrainerOnlyType && (
         <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -924,7 +879,7 @@ export default function CreateListingPage() {
         )}
 
         {/* Tekrarlayan Etkinlik */}
-        {!form.isQuick && form.type !== "EQUIPMENT" && form.type !== "TRAINER" && !isTrainerOnlyType && (
+        {!form.isQuick && form.type !== "EQUIPMENT" && !isTrainerOnlyType && (
           <div className="bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 rounded-xl p-4">
             <div className="flex items-center justify-between mb-3">
               <div>

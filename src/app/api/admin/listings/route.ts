@@ -91,13 +91,7 @@ async function cascadeDeleteListings(listingIds: string[]) {
     await tx.noShowReport.deleteMany({ where: { listingId: { in: listingIds } } });
     await tx.equipmentDetail.deleteMany({ where: { listingId: { in: listingIds } } });
 
-    // 3) TrainerProfile listingId bağlantısını kopar (opsiyonel FK)
-    await tx.trainerProfile.updateMany({
-      where: { listingId: { in: listingIds } },
-      data: { listingId: null },
-    });
-
-    // 4) Story linkedListingId null yap (string alan, FK değil)
+    // 3) Story linkedListingId null yap (string alan, FK değil)
     await tx.story.updateMany({
       where: { linkedListingId: { in: listingIds } },
       data: { linkedListingId: null },

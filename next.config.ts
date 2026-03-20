@@ -15,6 +15,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  output: process.env.DOCKER_BUILD === "1" ? "standalone" : undefined,
+
   reactCompiler: true,
 
   typescript: { ignoreBuildErrors: false },

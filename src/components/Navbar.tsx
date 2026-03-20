@@ -52,6 +52,7 @@ export default function Navbar() {
   const { notifications, unreadCount, unreadMessages, markAllRead, refresh: refreshNotifs } = useNotifications();
   const activityCount = useActivityCount(!!session);
   const [actionedFollowIds, setActionedFollowIds] = useState<Map<string, "accepted" | "rejected">>(new Map());
+  const [notifTab, setNotifTab] = useState<"all" | "match" | "message" | "follow" | "other">("all");
 
   useEffect(() => {
     if (!session) return;
@@ -381,8 +382,6 @@ export default function Navbar() {
                             {([
                               { href: "/ayarlar/profil", icon: "👤", label: tSettings("profile") },
                               { href: "/ayarlar/guvenlik", icon: "🔒", label: tSettings("security") },
-                              { href: "/ayarlar/profesyonel", icon: "⭐", label: tSettings("professional") },
-                              ...((session.user as any)?.userType === "TRAINER" ? [{ href: "/antrenor/derslerim", icon: "📚", label: t("lessons") }] : []),
                               { href: "/ayarlar/gizlilik", icon: "🛡️", label: tSettings("privacy") },
                             ] as Array<{ href: string; icon: string; label: string }>).map((item) => (
                               <Link
@@ -472,14 +471,37 @@ export default function Navbar() {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
+            {/* Tabs */}
+            <div className="flex gap-1 px-3 py-2 border-b border-gray-100 dark:border-gray-700 shrink-0 overflow-x-auto scrollbar-none">
+              {(["all", "match", "message", "follow", "other"] as const).map((tab) => {
+                const labels = { all: "Hepsi", match: "🤝 Eşleşme", message: "💬 Mesaj", follow: "👤 Takip", other: "🔔 Diğer" };
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setNotifTab(tab)}
+                    className={`shrink-0 px-3 py-1 rounded-full text-xs font-semibold transition ${notifTab === tab ? "bg-emerald-600 text-white" : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"}`}
+                  >
+                    {labels[tab]}
+                  </button>
+                );
+              })}
+            </div>
             <div className="flex-1 overflow-y-auto">
-              {notifications.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 gap-3">
-                  <span className="text-5xl">🔕</span>
-                  <p className="text-gray-400 dark:text-gray-500 text-sm font-medium">{t("noNotifications")}</p>
-                </div>
-              ) : (
-                        notifications.map((n) => (
+              {(() => {
+                const filtered = notifications.filter((n) => {
+                  if (notifTab === "all") return true;
+                  if (notifTab === "match") return ["NEW_MATCH", "NEW_RATING"].includes(n.type);
+                  if (notifTab === "message") return n.type === "NEW_MESSAGE";
+                  if (notifTab === "follow") return ["FOLLOW_REQUEST", "NEW_FOLLOWER"].includes(n.type);
+                  return !["NEW_MATCH", "NEW_RATING", "NEW_MESSAGE", "FOLLOW_REQUEST", "NEW_FOLLOWER"].includes(n.type);
+                });
+                if (filtered.length === 0) return (
+                  <div className="flex flex-col items-center justify-center py-16 gap-3">
+                    <span className="text-5xl">🔕</span>
+                    <p className="text-gray-400 dark:text-gray-500 text-sm font-medium">{t("noNotifications")}</p>
+                  </div>
+                );
+                return filtered.map((n) => (
                           <div
                             key={n.id}
                             onClick={() => {
@@ -491,7 +513,7 @@ export default function Navbar() {
                             className={`w-full text-left flex gap-3 px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition border-b border-gray-50 dark:border-gray-700/50 last:border-0 cursor-pointer ${!n.read ? "bg-emerald-50/70 dark:bg-emerald-900/10" : ""}`}
                           >
                             <div className="shrink-0 w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-base">
-                              {n.type === "NEW_MESSAGE" ? "💬" : n.type === "FOLLOW_REQUEST" ? "📩" : n.type === "NEW_MATCH" ? "🤝" : n.type === "NEW_RATING" ? "⭐" : n.type === "NEW_FOLLOWER" ? "👤" : n.type === "NO_SHOW_WARNING" ? "⚠️" : n.type === "TRAINER_VERIFIED" ? "✓" : "🔔"}
+                              {n.type === "NEW_MESSAGE" ? "💬" : n.type === "FOLLOW_REQUEST" ? "📩" : n.type === "NEW_MATCH" ? "🤝" : n.type === "NEW_RATING" ? "⭐" : n.type === "NEW_FOLLOWER" ? "👤" : n.type === "NO_SHOW_WARNING" ? "⚠️" : n.type === "USER_VERIFIED" ? "✓" : n.type === "LISTING_INTEREST_MILESTONE" ? "📊" : "🔔"}
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 leading-snug">{n.title}</p>
@@ -572,7 +594,7 @@ export default function Navbar() {
                             {!n.read && <span className="shrink-0 w-2 h-2 bg-emerald-500 rounded-full mt-1.5" />}
                           </div>
                         ))
-              )}
+              })()}
             </div>
             {notifications.length > 0 && (
               <div className="px-5 py-3 border-t border-gray-100 dark:border-gray-700 shrink-0">

@@ -13,7 +13,6 @@ import type { PublicProfile, Rating, Badge } from "@/types";
 import { LEVEL_LABELS, LEVEL_COLORS } from "@/types";
 import BadgeComp from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
-import TrainerBadgePopup from "@/components/profile/TrainerBadgePopup";
 import PostCard from "@/components/profile/PostCard";
 import SocialLinksRow from "@/components/social/SocialLinksRow";
 import { getDateFnsLocale, localizeListingType, localizeSportName, resolveAppLocale } from "@/lib/localized-ui";
@@ -712,7 +711,7 @@ export default function PublicProfilePage({
                     disabled={messagingLoading}
                     title={copy.message}
                     className="inline-flex items-center gap-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition text-sm px-3 h-9"
-                  ><span>💬</span><span>{copy.message}</span></button>
+                  ><span>💬</span></button>
                 )}
                 {/* Teklif butonu: engellenmemiş VE gizlilik izni varsa göster */}
                 {session && blockStatus !== "BLOCK" && canChallenge && (
@@ -720,14 +719,14 @@ export default function PublicProfilePage({
                     onClick={() => setShowChallengeModal(true)}
                     title={copy.challenge}
                     className="inline-flex items-center gap-2 rounded-lg bg-orange-50 dark:bg-orange-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/50 transition text-sm text-orange-600 dark:text-orange-400 px-3 h-9"
-                  ><span>⚔️</span><span>{copy.challenge}</span></button>
+                  ><span>⚔️</span></button>
                 )}
                 {session && !isRestricted && (
                   <button
                     onClick={() => setRatingModal(true)}
                     title={copy.rate}
                     className="inline-flex items-center gap-2 rounded-lg bg-yellow-50 dark:bg-yellow-900/30 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 transition text-sm text-yellow-600 dark:text-yellow-400 px-3 h-9"
-                  ><span>⭐</span><span>{copy.rate}</span></button>
+                  ><span>⭐</span></button>
                 )}
                 <button
                   onClick={() => setDotMenuOpen(v => !v)}
@@ -767,17 +766,8 @@ export default function PublicProfilePage({
         <div className="mb-3">
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white leading-tight">{profile.name}</h1>
-            {(profile as any).trainerProfile?.isVerified && (
-              <TrainerBadgePopup
-                trainerProfile={(profile as any).trainerProfile}
-                user={{
-                  name: profile.name,
-                  avatarUrl: profile.avatarUrl,
-                  birthDate: (profile as any).birthDate,
-                  city: profile.city as any,
-                }}
-                isOwn={profile.isOwnProfile}
-              />
+            {profile.isVerifiedUser && (
+              <span title="Doğrulanmış Kullanıcı" className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500 text-white text-[11px] font-bold shrink-0" aria-label="Doğrulanmış Kullanıcı">✓</span>
             )}
           </div>
           <div className="flex items-center gap-2 mt-0.5 text-sm text-gray-500 dark:text-gray-400">
@@ -801,7 +791,6 @@ export default function PublicProfilePage({
             tiktok: (profile as any).tiktok,
             facebook: (profile as any).facebook,
             twitterX: (profile as any).twitterX,
-            vk: (profile as any).vk,
             telegram: (profile as any).telegram,
             whatsapp: (profile as any).whatsapp,
           }}
@@ -971,7 +960,7 @@ export default function PublicProfilePage({
                     <div className="flex items-center gap-2">
                       <span className="text-xl">{listing.sport?.icon || "🏆"}</span>
                       <span className="font-semibold text-gray-800 dark:text-gray-100">{listing.sport?.name ? localizeSportName(listing.sport.name, locale) : ""}</span>
-                      <BadgeComp variant={listing.type === "RIVAL" ? "orange" : listing.type === "TRAINER" ? "blue" : listing.type === "EQUIPMENT" ? "purple" : "emerald"} size="sm">
+                      <BadgeComp variant={listing.type === "RIVAL" ? "orange" : listing.type === "EQUIPMENT" ? "purple" : "emerald"} size="sm">
                         {localizeListingType(listing.type, locale)}
                       </BadgeComp>
                     </div>

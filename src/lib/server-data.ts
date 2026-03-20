@@ -53,7 +53,6 @@ export async function getInitialListings(countryId?: string): Promise<{
           },
           _count: { select: { responses: true } },
           equipmentDetail: { select: { price: true, isSold: true } },
-          trainerProfile: { select: { hourlyRate: true } },
         },
         orderBy: [{ isQuick: "desc" }, { dateTime: "asc" }],
         take: pageSize,
@@ -139,7 +138,6 @@ export async function getPopularListings(limit = 6): Promise<ListingSummary[]> {
         },
         _count: { select: { responses: true } },
         equipmentDetail: { select: { price: true, isSold: true } },
-        trainerProfile: { select: { hourlyRate: true } },
       },
       orderBy: [
         { responses: { _count: "desc" } },

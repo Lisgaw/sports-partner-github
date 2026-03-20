@@ -176,7 +176,6 @@ export default function FilterBar({ onFilterChange, initialLocations, initialSpo
           <optgroup label={t("individual")}>
             <option value="RIVAL">{t("rival")}</option>
             <option value="PARTNER">{t("partner")}</option>
-            <option value="TRAINER">{t("trainer")}</option>
             <option value="EQUIPMENT">{t("equipment")}</option>
           </optgroup>
           <optgroup label={t("verifiedTrainer")}>
@@ -209,7 +208,7 @@ export default function FilterBar({ onFilterChange, initialLocations, initialSpo
         </div>
 
         {/* Fiyat Aralığı — yalnızca EQUIPMENT veya TRAINER seçiliyken ya da tip seçilmemişse */}
-        {(!selectedType || selectedType === "EQUIPMENT" || selectedType === "TRAINER" || selectedType.startsWith("VENUE_")) && (
+        {(!selectedType || selectedType === "EQUIPMENT" || selectedType.startsWith("VENUE_")) && (
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{t("price")}</span>
             <input

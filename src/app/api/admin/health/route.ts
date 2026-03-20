@@ -38,7 +38,7 @@ export async function GET() {
       clubCount, groupCount, communityCount,
       postCount, commentCount, messageCount, notificationCount,
       favoriteCount, noShowCount, storyCount, botCount,
-      trainerCount, sportCount, cityCount, countryCount,
+      sportCount, cityCount, countryCount,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.listing.count(),
@@ -56,7 +56,6 @@ export async function GET() {
       prisma.noShowReport.count(),
       prisma.story.count(),
       prisma.user.count({ where: { isBot: true } }),
-      prisma.trainerProfile.count(),
       prisma.sport.count(),
       prisma.city.count(),
       prisma.country.count(),
@@ -65,7 +64,7 @@ export async function GET() {
     checks.push({
       name: "Tablo Kayıt Sayıları",
       status: "ok",
-      detail: `Kullanıcı: ${userCount} (${botCount} bot) | İlan: ${listingCount} | Maç: ${matchCount} | Yanıt: ${responseCount} | Değerlendirme: ${ratingCount} | Kulüp: ${clubCount} | Grup: ${groupCount} | Topluluk: ${communityCount} | Gönderi: ${postCount} | Yorum: ${commentCount} | Mesaj: ${messageCount} | Bildirim: ${notificationCount} | Favori: ${favoriteCount} | NoShow: ${noShowCount} | Hikaye: ${storyCount} | Antrenör: ${trainerCount} | Spor: ${sportCount} | Şehir: ${cityCount} | Ülke: ${countryCount}`,
+      detail: `Kullanıcı: ${userCount} (${botCount} bot) | İlan: ${listingCount} | Maç: ${matchCount} | Yanıt: ${responseCount} | Değlendirme: ${ratingCount} | Kulüb: ${clubCount} | Grup: ${groupCount} | Topluluk: ${communityCount} | Gönderi: ${postCount} | Yorum: ${commentCount} | Mesaj: ${messageCount} | Bildirim: ${notificationCount} | Favori: ${favoriteCount} | NoShow: ${noShowCount} | Hikaye: ${storyCount} | Spor: ${sportCount} | Şehir: ${cityCount} | Ülke: ${countryCount}`,
     });
 
     // ===== 3) YETİM (ORPHAN) KAYITLAR =====

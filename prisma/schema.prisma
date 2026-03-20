@@ -11,7 +11,6 @@ datasource db {
 // ========== KULLANICI ==========
 enum UserType {
   INDIVIDUAL  // Bireysel Sporcu
-  TRAINER     // Profesyonel Eğitmen
   VENUE       // Mekan / Kurumsal
 }
 
@@ -71,24 +70,38 @@ model User {
   tiktok         String?                              // TikTok kullanıcı adı
   facebook       String?                              // Facebook URL
   twitterX       String?                              // X (Twitter) kullanıcı adı
-  vk             String?                              // VK URL
+  youtube        String?                              // YouTube kanal URL/kullanıcı adı
   telegram       String?                              // Telegram kullanıcı adı
   whatsapp       String?                              // WhatsApp numarası (uluslararası formatta)
+  linkedin       String?                              // LinkedIn profil URL
+  discord        String?                              // Discord kullanıcı adı
+  twitch         String?                              // Twitch kullanıcı adı
+  snapchat       String?                              // Snapchat kullanıcı adı
+  litmatch       String?                              // Litmatch kullanıcı adı
   // Sosyal Link Gizlilik (global + per-platform)
   socialLinksVisibility    PrivacyLevel @default(EVERYONE) // Sosyal linkleri kimler görebilir (global)
   instagramVisibility      PrivacyLevel @default(EVERYONE)
   tiktokVisibility         PrivacyLevel @default(EVERYONE)
   facebookVisibility       PrivacyLevel @default(EVERYONE)
   twitterXVisibility       PrivacyLevel @default(EVERYONE)
-  vkVisibility             PrivacyLevel @default(EVERYONE)
+  youtubeVisibility        PrivacyLevel @default(EVERYONE)
   telegramVisibility       PrivacyLevel @default(EVERYONE)
   whatsappVisibility       PrivacyLevel @default(EVERYONE)
+  linkedinVisibility       PrivacyLevel @default(EVERYONE)
+  discordVisibility        PrivacyLevel @default(EVERYONE)
+  twitchVisibility         PrivacyLevel @default(EVERYONE)
+  snapchatVisibility       PrivacyLevel @default(EVERYONE)
+  litmatchVisibility       PrivacyLevel @default(EVERYONE)
+  // Onaylı Kullanıcı
+  isVerifiedUser   Boolean      @default(false)      // ≥3 sosyal link bağlandığında otomatik
+  verifiedUserAt   DateTime?                         // Doğrulama tarihi
   // Gizlilik Ayarları
   whoCanMessage   PrivacyLevel  @default(EVERYONE)   // Bana kim mesaj yazabilir
   whoCanChallenge PrivacyLevel  @default(EVERYONE)   // Bana kim teklif gönderebilir
   profileVisibility PrivacyLevel @default(EVERYONE)  // Profilim kimler tarafından görülebilir
   showOnLeaderboard Boolean     @default(true)       // Liderlik tablosunda göster
   isPrivateProfile  Boolean     @default(false)      // Kapalı profil: takipçi onayı gerektirir
+  whoCanSeeMyInterests PrivacyLevel @default(FOLLOWERS) // İlan ilgilerimi kimler görebilir
   lastSeenAt   DateTime? @default(now())             // Son görülme
   // Bot alanları
   isBot        Boolean   @default(false)             // Bot kullanıcı mı?
@@ -114,7 +127,6 @@ model User {
   dirConvsAsUser2   DirectConversation[] @relation("DirConvUser2")
   noShowsReported   NoShowReport[]  @relation("NoShowReporter")
   noShowsReceived   NoShowReport[]  @relation("NoShowReceived")
-  trainerProfile    TrainerProfile?
   venueProfile      VenueProfile?
   posts             Post[]
   postLikes         PostLike[]
@@ -138,9 +150,8 @@ model User {
   blocksReceived       UserBlock[]       @relation("BlockTarget")
   reportsGiven         UserReport[]      @relation("ReportSource")
   reportsReceived      UserReport[]      @relation("ReportTarget")
-  enrollmentsAsTrainer TrainerEnrollment[] @relation("TrainerEnrollments")
-  enrollmentsAsStudent TrainerEnrollment[] @relation("StudentEnrollments")
   commentLikes         CommentLike[]
+  listingInterests     ListingInterest[]
   botTasksAsLister     BotTask[]           @relation("BotTaskLister")
   botTasksAsResponder  BotTask[]           @relation("BotTaskResponder")
   referralCode         String?             @unique   // Benzersiz davet kodu
@@ -223,7 +234,6 @@ model Venue {
 enum ListingType {
   RIVAL
   PARTNER
-  TRAINER          // Eğitmen ilanı
   EQUIPMENT        // Satılık spor malzemesi
   // İşletme ilan tipleri
   VENUE_RENTAL     // Saha/Kort/Salon Kiralama
@@ -292,8 +302,8 @@ model Listing {
   responses   Response[]
   match       Match?
   favorites   Favorite[]
+  interests   ListingInterest[]
   noShows         NoShowReport[]
-  trainerProfile  TrainerProfile?
   equipmentDetail EquipmentDetail?
   venueRentalDetail   VenueRentalDetail?
   venueMembershipDetail VenueMembershipDetail?
@@ -423,7 +433,8 @@ enum NotificationType {
   NO_SHOW_WARNING
   NEW_POST_LIKE         // Gönderi beğenildi
   NEW_POST_COMMENT      // Gönderiye yorum yapıldı
-  TRAINER_VERIFIED      // Eğitmen profili onaylandı
+  USER_VERIFIED          // Onaylı kullanıcı rozeti kazanıldı
+  LISTING_INTEREST_MILESTONE // İlana ilgi eşiği aşıldı (5/10/25/50)
   MATCH_STATUS_CHANGED  // Maç durumu değişti
   STREAK_MILESTONE      // Seri rekoru kırıldı
   LEVEL_UP              // Seviye atlandı
@@ -559,46 +570,6 @@ model Message {
   @@index([receiverId, read])
 }
 
-// ========== EĞİTMEN PROFİLİ ==========
-model TrainerProfile {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  user            User     @relation(fields: [userId], references: [id])
-  listingId       String?  @unique
-  listing         Listing? @relation(fields: [listingId], references: [id])
-  hourlyRate      Float?                          // Saatlik ücret (₺)
-  gymName         String?                         // Çalıştığı salon
-  gymAddress      String?
-  university      String?                         // Üniversite adı
-  department      String?                         // Bölüm adı
-  experienceYears Int?                            // Genel deneyim yılı
-  lessonTypes     String[] @default([])           // ["birebir","grup","cocuk","performans"]
-  providesEquipment Boolean?                      // Ekipman sağlıyor mu?
-  trainerBadgeVisible Boolean @default(true)      // Rozet popup herkese görünür mü?
-  certificates    String[] @default([])           // Sertifika URL'leri (Supabase Storage)
-  certNote        String?                         // Sertifika notu (serbest metin)
-  isVerified      Boolean  @default(false)        // Admin onayı
-  verifiedAt      DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  specializations TrainerSpecialization[]
-
-  @@index([userId])
-}
-
-// Eğitmenin branş + deneyim çiftleri (birden fazla olabilir)
-model TrainerSpecialization {
-  id        String         @id @default(cuid())
-  profileId String
-  profile   TrainerProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  sportName String         // Örn: "Futbol", "Fitness", "Yüzme"
-  years     Int            @default(0)  // Deneyim yılı
-  createdAt DateTime       @default(now())
-
-  @@index([profileId])
-  @@index([sportName])
-}
 
 // ========== OTP DOĞRULAMA ==========
 model MatchOtp {
@@ -972,6 +943,7 @@ model PostComment {
   replies   PostComment[] @relation("CommentReplies")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime?                       // Soft delete — içerik gizlenir ama alt yanıtlar korunur
 
   likes     CommentLike[]
 
@@ -1259,58 +1231,6 @@ model UserReport {
   @@index([resolved])
 }
 
-// ========== ANTRENÖR DERS TAKİP ==========
-enum EnrollmentStatus {
-  ACTIVE
-  COMPLETED
-  CANCELLED
-}
-
-enum LessonStatus {
-  SCHEDULED
-  COMPLETED
-  CANCELLED
-  NO_SHOW
-}
-
-model TrainerEnrollment {
-  id           String           @id @default(cuid())
-  trainerId    String
-  trainer      User             @relation("TrainerEnrollments", fields: [trainerId], references: [id])
-  studentId    String
-  student      User             @relation("StudentEnrollments", fields: [studentId], references: [id])
-  sportName    String?                              // Hangi spor dalı
-  totalLessons Int              @default(1)         // Pakette toplam ders sayısı
-  usedLessons  Int              @default(0)         // Tamamlanan ders sayısı
-  notes        String?          @db.Text            // Genel notlar
-  status       EnrollmentStatus @default(ACTIVE)
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
-
-  lessons      TrainerLesson[]
-
-  @@unique([trainerId, studentId])
-  @@index([trainerId])
-  @@index([studentId])
-  @@index([status])
-}
-
-model TrainerLesson {
-  id             String         @id @default(cuid())
-  enrollmentId   String
-  enrollment     TrainerEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
-  scheduledAt    DateTime?                          // Planlanan tarih/saat
-  completedAt    DateTime?                          // Tamamlandığında doldurulur
-  status         LessonStatus   @default(SCHEDULED)
-  trainerNotes   String?        @db.Text            // Antrenörün ders notu
-  homeworkText   String?        @db.Text            // Ödev / egzersiz
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-
-  @@index([enrollmentId])
-  @@index([status])
-}
-
 // ========== BOT GÖREV SİSTEMİ ==========
 model BotTask {
   id              String        @id @default(cuid())
@@ -1351,4 +1271,19 @@ enum BotTaskStatus {
   RESPONSE_SENT
   MATCH_DONE
   FAILED
+}
+
+// ========== İLAN İLGİ SİSTEMİ ==========
+model ListingInterest {
+  id        String   @id @default(cuid())
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([listingId, userId])  // 1 kişi 1 ilgi
+  @@index([listingId])
+  @@index([userId])
+  @@index([listingId, createdAt]) // Günün popüler ilanı sorgusu için
 }

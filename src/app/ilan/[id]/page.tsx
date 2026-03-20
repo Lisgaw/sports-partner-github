@@ -14,6 +14,7 @@ import { getListingDetail, sendResponse, handleResponse as handleResponseApi, cl
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import Modal from "@/components/ui/Modal";
+import ListingInterestButton from "@/components/listing/ListingInterestButton";
 import { getDateFnsLocale, resolveAppLocale } from "@/lib/localized-ui";
 
 const LISTING_DETAIL_COPY = {
@@ -463,7 +464,7 @@ export default function ListingDetailPage({
               <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
                 {listing.sport?.name}
               </h1>
-              <Badge variant={listing.type === "RIVAL" ? "orange" : listing.type === "TRAINER" ? "blue" : listing.type === "EQUIPMENT" ? "purple" : "emerald"} size="md">
+              <Badge variant={listing.type === "RIVAL" ? "orange" : listing.type === "EQUIPMENT" ? "purple" : "emerald"} size="md">
                 {copy[LISTING_TYPE_LABEL_KEYS[listing.type] ?? "typePartner"]}
               </Badge>
             </div>
@@ -577,48 +578,6 @@ export default function ListingDetailPage({
         {listing.description && (
           <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <p className="text-gray-700 dark:text-gray-300">{listing.description}</p>
-          </div>
-        )}
-
-        {/* ── Eğitmen Bilgileri ── */}
-        {listing.type === "TRAINER" && listing.trainerProfile && (
-          <div className="mt-5 p-5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
-            <h2 className="font-bold text-blue-800 dark:text-blue-200 mb-3 text-base flex items-center gap-2">
-              🎓 {copy.trainerInfo}
-              {listing.trainerProfile.isVerified && (
-                <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">✓ {copy.verified}</span>
-              )}
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {listing.trainerProfile.hourlyRate != null && (
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-3 text-center sm:col-span-2">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{copy.hourlyRate}</p>
-                  <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">
-                    {listing.trainerProfile.hourlyRate.toLocaleString("tr-TR")} ₺
-                    <span className="text-sm font-normal text-gray-500 dark:text-gray-400"> {copy.perHour}</span>
-                  </p>
-                </div>
-              )}
-              {listing.trainerProfile.specializations?.map((s) => (
-                <div key={s.id} className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
-                  <span>🏅</span>
-                  <span className="font-medium">{s.sportName}</span>
-                  {s.years > 0 && <span className="text-sm text-blue-500 dark:text-blue-400">({s.years} {copy.years})</span>}
-                </div>
-              ))}
-              {listing.trainerProfile.gymName && (
-                <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300 sm:col-span-2">
-                  <span>🏢</span>
-                  <span className="font-medium">{listing.trainerProfile.gymName}</span>
-                </div>
-              )}
-              {listing.trainerProfile.gymAddress && (
-                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 sm:col-span-2">
-                  <span>📍</span>
-                  <span className="text-sm">{listing.trainerProfile.gymAddress}</span>
-                </div>
-              )}
-            </div>
           </div>
         )}
 
@@ -830,6 +789,16 @@ export default function ListingDetailPage({
               </div>
             );
           })()}
+        </div>
+      )}
+
+      {/* İlgi Göster Butonu */}
+      {!isOwner && !isMatched && !isClosed && (
+        <div className="mb-4">
+          <ListingInterestButton
+            listingId={listing.id}
+            ownerId={listing.userId}
+          />
         </div>
       )}
 

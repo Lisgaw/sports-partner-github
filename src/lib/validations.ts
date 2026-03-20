@@ -40,13 +40,13 @@ export const loginSchema = z.object({
 // ========== LISTING ==========
 export const createListingSchema = z
   .object({
-  type: z.enum(["RIVAL", "PARTNER", "TRAINER", "EQUIPMENT", "VENUE_MEMBERSHIP", "VENUE_CLASS", "VENUE_PRODUCT", "VENUE_SERVICE"], { message: "İlan tipi seçiniz" }),
+  type: z.enum(["RIVAL", "PARTNER", "EQUIPMENT", "VENUE_MEMBERSHIP", "VENUE_CLASS", "VENUE_PRODUCT", "VENUE_SERVICE"], { message: "İlan tipi seçiniz" }),
   sportId: z.string().min(1, "Spor dalı seçiniz"),
   countryId: z.string().optional().nullable(),
   cityId: z.string().optional().nullable(),
   districtId: z.string().optional().nullable(),
   venueId: z.string().optional().nullable(),
-  // dateTime: RIVAL ve PARTNER için zorunlu ve gelecekte olmalı; TRAINER opsiyonel; EQUIPMENT gerekmez
+  // dateTime: RIVAL ve PARTNER için zorunlu ve gelecekte olmalı; EQUIPMENT gerekmez
   dateTime: z.string().optional().nullable(),
   level: z.enum(["BEGINNER", "INTERMEDIATE", "ADVANCED"]).optional(),
   description: z.string().max(1000, "Açıklama en fazla 1000 karakter olabilir").optional(),
@@ -70,14 +70,6 @@ export const createListingSchema = z
   groupId: z.string().optional().nullable(),
   latitude: z.number().optional().nullable(),
   longitude: z.number().optional().nullable(),
-  // Eğitmen ilanı için ek alanlar
-  trainerProfile: z.object({
-    hourlyRate: z.number().min(0).optional(),
-    experience: z.number().int().min(0).optional(),
-    specialization: z.string().max(200).optional(),
-    gymName: z.string().max(200).optional(),
-    gymAddress: z.string().max(500).optional(),
-  }).optional(),
   // Spor malzemesi ilanı için ek alanlar
   equipmentDetail: z.object({
     price: z.number().min(0).optional(),
@@ -135,18 +127,11 @@ export const createListingSchema = z
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Seviye seçiniz", path: ["level"] });
     }
   }
-  // TRAINER için tarih seçildiyse gelecekte olmalı (opsiyonel)
-  if (data.type === "TRAINER" && data.dateTime && data.dateTime.trim() !== "") {
-    const date = new Date(data.dateTime);
-    if (isNaN(date.getTime()) || date <= new Date()) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Tarih gelecekte olmalıdır", path: ["dateTime"] });
-    }
-  }
-  // EQUIPMENT ve trainer-only tipler için tarih/seviye zorunlu değil
+  // EQUIPMENT ve venue tipler için tarih/seviye zorunlu değil
 });
 
 export const updateListingSchema = z.object({
-  type: z.enum(["RIVAL", "PARTNER", "TRAINER", "EQUIPMENT", "VENUE_MEMBERSHIP", "VENUE_CLASS", "VENUE_PRODUCT", "VENUE_SERVICE"], { message: "İlan tipi seçiniz" }).optional(),
+  type: z.enum(["RIVAL", "PARTNER", "EQUIPMENT", "VENUE_MEMBERSHIP", "VENUE_CLASS", "VENUE_PRODUCT", "VENUE_SERVICE"], { message: "İlan tipi seçiniz" }).optional(),
   sportId: z.string().min(1).optional(),
   countryId: z.string().optional().nullable(),
   cityId: z.string().optional().nullable(),
@@ -214,7 +199,7 @@ export const listingFilterSchema = z.object({
   lon: z.string().optional(),
   radius: z.string().optional(),
   level: z.enum(["BEGINNER", "INTERMEDIATE", "ADVANCED"]).optional(),
-  type: z.enum(["RIVAL", "PARTNER", "TRAINER", "EQUIPMENT", "VENUE_MEMBERSHIP", "VENUE_CLASS", "VENUE_PRODUCT", "VENUE_SERVICE"]).optional(),
+  type: z.enum(["RIVAL", "PARTNER", "EQUIPMENT", "VENUE_MEMBERSHIP", "VENUE_CLASS", "VENUE_PRODUCT", "VENUE_SERVICE"]).optional(),
   userId: z.string().optional(),
   upcoming: z.string().optional(),
   quickOnly: z.string().optional(),  // "true" for hızlı ilan filter
@@ -281,10 +266,39 @@ export const updateProfileSchema = z
       .regex(/^[a-zA-Z0-9_]{1,15}$/, "X (Twitter) kullanıcı adı yalnızca harf, rakam ve alt çizgi içerebilir (max 15 karakter)")
       .optional()
       .nullable(),
-    vk: z
+    youtube: z
       .string()
-      .max(32)
-      .regex(/^[a-zA-Z0-9_.]{1,32}$/, "VK kullanıcı adı yalnızca harf, rakam, nokta ve alt çizgi içerebilir (max 32 karakter)")
+      .max(100)
+      .regex(/^[a-zA-Z0-9_.-]{1,100}$/, "YouTube kullanıcı adı geçersiz")
+      .optional()
+      .nullable(),
+    linkedin: z
+      .string()
+      .max(100)
+      .regex(/^[a-zA-Z0-9-]{3,100}$/, "LinkedIn kullanıcı adı geçersiz")
+      .optional()
+      .nullable(),
+    discord: z
+      .string()
+      .max(37)
+      .regex(/^.{3,32}(#[0-9]{4})?$/, "Discord kullanıcı adı geçersiz")
+      .optional()
+      .nullable(),
+    twitch: z
+      .string()
+      .max(25)
+      .regex(/^[a-zA-Z0-9_]{4,25}$/, "Twitch kullanıcı adı geçersiz")
+      .optional()
+      .nullable(),
+    snapchat: z
+      .string()
+      .max(15)
+      .regex(/^[a-zA-Z0-9_.-]{3,15}$/, "Snapchat kullanıcı adı geçersiz")
+      .optional()
+      .nullable(),
+    litmatch: z
+      .string()
+      .max(50)
       .optional()
       .nullable(),
     telegram: z
@@ -304,25 +318,14 @@ export const updateProfileSchema = z
     tiktokVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
     facebookVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
     twitterXVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
-    vkVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
     telegramVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
     whatsappVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
-    trainerUniversity: z.string().max(120).optional().nullable(),
-    trainerDepartment: z.string().max(120).optional().nullable(),
-    trainerGymName: z.string().max(120).optional().nullable(),
-    trainerExperienceYears: z.number().int().min(0).max(80).optional().nullable(),
-    trainerLessonTypes: z.array(z.enum(["birebir", "grup", "cocuk", "performans"])).max(4).optional(),
-    trainerProvidesEquipment: z.boolean().optional().nullable(),
-    trainerCertNote: z.string().max(500).optional().nullable(),
-    trainerSpecializations: z
-      .array(
-        z.object({
-          sportName: z.string().min(2).max(80),
-          years: z.number().int().min(0).max(80),
-        })
-      )
-      .max(10)
-      .optional(),
+    youtubeVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
+    linkedinVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
+    discordVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
+    twitchVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
+    snapchatVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
+    litmatchVisibility: z.enum(["EVERYONE", "FOLLOWERS", "NOBODY"]).optional(),
   })
   .refine(
     (data) => {

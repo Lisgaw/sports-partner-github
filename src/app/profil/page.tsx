@@ -80,18 +80,13 @@ export default function ProfilePage() {
   const [editForm, setEditForm] = useState<ProfileEditForm>({
     name: "", phone: "", currentPassword: "", newPassword: "",
     bio: "", cityId: "", districtId: "", gender: "", birthDate: "", sportIds: [],
-    instagram: "", tiktok: "", facebook: "", twitterX: "", vk: "", telegram: "", whatsapp: "",
+    instagram: "", tiktok: "", facebook: "", twitterX: "", telegram: "", whatsapp: "",
+    youtube: "", linkedin: "", discord: "", twitch: "", snapchat: "", litmatch: "",
     socialLinksVisibility: "EVERYONE",
     instagramVisibility: "EVERYONE", tiktokVisibility: "EVERYONE", facebookVisibility: "EVERYONE",
-    twitterXVisibility: "EVERYONE", vkVisibility: "EVERYONE", telegramVisibility: "EVERYONE", whatsappVisibility: "EVERYONE",
-    trainerUniversity: "",
-    trainerDepartment: "",
-    trainerGymName: "",
-    trainerExperienceYears: "",
-    trainerLessonTypes: [],
-    trainerProvidesEquipment: "",
-    trainerCertNote: "",
-    trainerSpecializations: [],
+    twitterXVisibility: "EVERYONE", telegramVisibility: "EVERYONE", whatsappVisibility: "EVERYONE",
+    youtubeVisibility: "EVERYONE", linkedinVisibility: "EVERYONE", discordVisibility: "EVERYONE",
+    twitchVisibility: "EVERYONE", snapchatVisibility: "EVERYONE", litmatchVisibility: "EVERYONE",
   });
   const [saving, setSaving] = useState(false);
 
@@ -194,33 +189,27 @@ export default function ProfilePage() {
       tiktok: (data.user as any).tiktok ?? "",
       facebook: (data.user as any).facebook ?? "",
       twitterX: (data.user as any).twitterX ?? "",
-      vk: (data.user as any).vk ?? "",
       telegram: (data.user as any).telegram ?? "",
       whatsapp: (data.user as any).whatsapp ?? "",
+      youtube: (data.user as any).youtube ?? "",
+      linkedin: (data.user as any).linkedin ?? "",
+      discord: (data.user as any).discord ?? "",
+      twitch: (data.user as any).twitch ?? "",
+      snapchat: (data.user as any).snapchat ?? "",
+      litmatch: (data.user as any).litmatch ?? "",
       socialLinksVisibility: (data.user as any).socialLinksVisibility ?? "EVERYONE",
       instagramVisibility: (data.user as any).instagramVisibility ?? "EVERYONE",
       tiktokVisibility: (data.user as any).tiktokVisibility ?? "EVERYONE",
       facebookVisibility: (data.user as any).facebookVisibility ?? "EVERYONE",
       twitterXVisibility: (data.user as any).twitterXVisibility ?? "EVERYONE",
-      vkVisibility: (data.user as any).vkVisibility ?? "EVERYONE",
       telegramVisibility: (data.user as any).telegramVisibility ?? "EVERYONE",
       whatsappVisibility: (data.user as any).whatsappVisibility ?? "EVERYONE",
-      trainerUniversity: (data.user as any).trainerProfile?.university ?? "",
-      trainerDepartment: (data.user as any).trainerProfile?.department ?? "",
-      trainerGymName: (data.user as any).trainerProfile?.gymName ?? "",
-      trainerExperienceYears: (data.user as any).trainerProfile?.experienceYears?.toString() ?? "",
-      trainerLessonTypes: (data.user as any).trainerProfile?.lessonTypes ?? [],
-      trainerProvidesEquipment:
-        (data.user as any).trainerProfile?.providesEquipment === true
-          ? "yes"
-          : (data.user as any).trainerProfile?.providesEquipment === false
-          ? "no"
-          : "",
-      trainerCertNote: (data.user as any).trainerProfile?.certNote ?? "",
-      trainerSpecializations: ((data.user as any).trainerProfile?.specializations ?? []).map((s: any) => ({
-        sportName: s.sportName,
-        years: s.years,
-      })),
+      youtubeVisibility: (data.user as any).youtubeVisibility ?? "EVERYONE",
+      linkedinVisibility: (data.user as any).linkedinVisibility ?? "EVERYONE",
+      discordVisibility: (data.user as any).discordVisibility ?? "EVERYONE",
+      twitchVisibility: (data.user as any).twitchVisibility ?? "EVERYONE",
+      snapchatVisibility: (data.user as any).snapchatVisibility ?? "EVERYONE",
+      litmatchVisibility: (data.user as any).litmatchVisibility ?? "EVERYONE",
     });
     setEditMode(true);
   };
@@ -294,9 +283,14 @@ export default function ProfilePage() {
       if ((editForm.tiktok ?? "") !== (u.tiktok ?? "")) payload.tiktok = editForm.tiktok || null;
       if ((editForm.facebook ?? "") !== (u.facebook ?? "")) payload.facebook = editForm.facebook || null;
       if ((editForm.twitterX ?? "") !== (u.twitterX ?? "")) payload.twitterX = editForm.twitterX || null;
-      if ((editForm.vk ?? "") !== (u.vk ?? "")) payload.vk = editForm.vk || null;
       if ((editForm.telegram ?? "") !== (u.telegram ?? "")) payload.telegram = editForm.telegram || null;
       if ((editForm.whatsapp ?? "") !== (u.whatsapp ?? "")) payload.whatsapp = editForm.whatsapp || null;
+      if ((editForm.youtube ?? "") !== (u.youtube ?? "")) payload.youtube = editForm.youtube || null;
+      if ((editForm.linkedin ?? "") !== (u.linkedin ?? "")) payload.linkedin = editForm.linkedin || null;
+      if ((editForm.discord ?? "") !== (u.discord ?? "")) payload.discord = editForm.discord || null;
+      if ((editForm.twitch ?? "") !== (u.twitch ?? "")) payload.twitch = editForm.twitch || null;
+      if ((editForm.snapchat ?? "") !== (u.snapchat ?? "")) payload.snapchat = editForm.snapchat || null;
+      if ((editForm.litmatch ?? "") !== (u.litmatch ?? "")) payload.litmatch = editForm.litmatch || null;
       if ((editForm.socialLinksVisibility ?? "EVERYONE") !== (u.socialLinksVisibility ?? "EVERYONE")) {
         payload.socialLinksVisibility = editForm.socialLinksVisibility;
       }
@@ -312,61 +306,29 @@ export default function ProfilePage() {
       if ((editForm.twitterXVisibility ?? "EVERYONE") !== (u.twitterXVisibility ?? "EVERYONE")) {
         payload.twitterXVisibility = editForm.twitterXVisibility;
       }
-      if ((editForm.vkVisibility ?? "EVERYONE") !== (u.vkVisibility ?? "EVERYONE")) {
-        payload.vkVisibility = editForm.vkVisibility;
-      }
       if ((editForm.telegramVisibility ?? "EVERYONE") !== (u.telegramVisibility ?? "EVERYONE")) {
         payload.telegramVisibility = editForm.telegramVisibility;
       }
       if ((editForm.whatsappVisibility ?? "EVERYONE") !== (u.whatsappVisibility ?? "EVERYONE")) {
         payload.whatsappVisibility = editForm.whatsappVisibility;
       }
-
-      const isTrainer = (u.userType === "TRAINER") || !!u.trainerProfile;
-      if (isTrainer) {
-        const trainerProfile = u.trainerProfile ?? {};
-        if ((editForm.trainerUniversity ?? "") !== (trainerProfile.university ?? "")) {
-          payload.trainerUniversity = editForm.trainerUniversity || null;
-        }
-        if ((editForm.trainerDepartment ?? "") !== (trainerProfile.department ?? "")) {
-          payload.trainerDepartment = editForm.trainerDepartment || null;
-        }
-        if ((editForm.trainerGymName ?? "") !== (trainerProfile.gymName ?? "")) {
-          payload.trainerGymName = editForm.trainerGymName || null;
-        }
-
-        const currentExp = trainerProfile.experienceYears?.toString() ?? "";
-        if ((editForm.trainerExperienceYears ?? "") !== currentExp) {
-          payload.trainerExperienceYears = editForm.trainerExperienceYears
-            ? parseInt(editForm.trainerExperienceYears, 10)
-            : null;
-        }
-
-        const currentLessonTypes = trainerProfile.lessonTypes ?? [];
-        const nextLessonTypes = editForm.trainerLessonTypes ?? [];
-        if (JSON.stringify([...currentLessonTypes].sort()) !== JSON.stringify([...nextLessonTypes].sort())) {
-          payload.trainerLessonTypes = nextLessonTypes;
-        }
-
-        const currentEquip = trainerProfile.providesEquipment;
-        const nextEquip = editForm.trainerProvidesEquipment === "yes"
-          ? true
-          : editForm.trainerProvidesEquipment === "no"
-          ? false
-          : null;
-        if ((currentEquip ?? null) !== nextEquip) {
-          payload.trainerProvidesEquipment = nextEquip;
-        }
-
-        if ((editForm.trainerCertNote ?? "") !== (trainerProfile.certNote ?? "")) {
-          payload.trainerCertNote = editForm.trainerCertNote || null;
-        }
-
-        const currentSpecs = (trainerProfile.specializations ?? []).map((s: any) => ({ sportName: s.sportName, years: s.years }));
-        const nextSpecs = (editForm.trainerSpecializations ?? []).filter((s) => s.sportName.trim());
-        if (JSON.stringify(currentSpecs) !== JSON.stringify(nextSpecs)) {
-          payload.trainerSpecializations = nextSpecs;
-        }
+      if ((editForm.youtubeVisibility ?? "EVERYONE") !== (u.youtubeVisibility ?? "EVERYONE")) {
+        payload.youtubeVisibility = editForm.youtubeVisibility;
+      }
+      if ((editForm.linkedinVisibility ?? "EVERYONE") !== (u.linkedinVisibility ?? "EVERYONE")) {
+        payload.linkedinVisibility = editForm.linkedinVisibility;
+      }
+      if ((editForm.discordVisibility ?? "EVERYONE") !== (u.discordVisibility ?? "EVERYONE")) {
+        payload.discordVisibility = editForm.discordVisibility;
+      }
+      if ((editForm.twitchVisibility ?? "EVERYONE") !== (u.twitchVisibility ?? "EVERYONE")) {
+        payload.twitchVisibility = editForm.twitchVisibility;
+      }
+      if ((editForm.snapchatVisibility ?? "EVERYONE") !== (u.snapchatVisibility ?? "EVERYONE")) {
+        payload.snapchatVisibility = editForm.snapchatVisibility;
+      }
+      if ((editForm.litmatchVisibility ?? "EVERYONE") !== (u.litmatchVisibility ?? "EVERYONE")) {
+        payload.litmatchVisibility = editForm.litmatchVisibility;
       }
 
       if (Object.keys(payload).length === 0) {
@@ -429,7 +391,6 @@ export default function ProfilePage() {
               setEditForm={setEditForm}
               sports={sports}
               locations={locations}
-              isTrainer={((data.user as any)?.userType === "TRAINER") || !!(data.user as any)?.trainerProfile}
               saving={saving}
               onSave={handleSaveProfile}
               onCancel={() => setEditMode(false)}
@@ -567,8 +528,8 @@ export default function ProfilePage() {
                       {listing.sport?.icon} {localizeSportFromDbName(listing.sport?.name ?? "", locale)}
                     </Link>
                     <div className="flex gap-2 mt-1">
-                      <Badge variant={listing.type === "RIVAL" ? "orange" : listing.type === "TRAINER" ? "blue" : listing.type === "EQUIPMENT" ? "purple" : "emerald"}>
-                        {listing.type === "RIVAL" ? t("typeRival") : listing.type === "TRAINER" ? t("typeTrainer") : listing.type === "EQUIPMENT" ? t("typeEquipment") : t("typePartner")}
+                      <Badge variant={listing.type === "RIVAL" ? "orange" : listing.type === "EQUIPMENT" ? "purple" : "emerald"}>
+                        {listing.type === "RIVAL" ? t("typeRival") : listing.type === "EQUIPMENT" ? t("typeEquipment") : t("typePartner")}
                       </Badge>
                       <Badge variant={
                         listing.status === "OPEN" ? "blue" :

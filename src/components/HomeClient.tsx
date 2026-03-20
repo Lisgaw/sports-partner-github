@@ -7,13 +7,13 @@ import { useTranslations } from "next-intl";
 import FilterBar from "@/components/FilterBar";
 import ListingCard from "@/components/ListingCard";
 import Pagination from "@/components/ui/Pagination";
+import FeaturedListingsWidget from "@/components/home/FeaturedListingsWidget";
 import { getListings, getFeed, getRecommendations } from "@/services/api";
 import type { ListingSummary, Country, Sport } from "@/types";
 
 const TYPE_LABELS: Record<string, string> = {
   RIVAL: "🥊 Rakip",
   PARTNER: "🤝 Partner",
-  TRAINER: "🎓 Eğitmen",
   EQUIPMENT: "🛒 Malzeme",
 };
 
@@ -151,6 +151,9 @@ export default function HomeClient({
           )}
         </div>
       </div>
+
+      {/* Günün Öne Çıkanları */}
+      <FeaturedListingsWidget />
 
       {/* Öneri bölümü */}
       {recommendations.length > 0 && (

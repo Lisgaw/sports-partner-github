@@ -13,6 +13,7 @@ interface PrivacySettings {
   showOnLeaderboard: boolean;
   isPrivateProfile: boolean;
   socialLinksVisibility: PrivacyLevel;
+  whoCanSeeMyInterests: PrivacyLevel;
 }
 
 interface BlockedUser {
@@ -128,6 +129,7 @@ export default function GizlilikPage() {
     showOnLeaderboard: true,
     isPrivateProfile: false,
     socialLinksVisibility: "EVERYONE",
+    whoCanSeeMyInterests: "EVERYONE",
   });
   const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
   const [followRequests, setFollowRequests] = useState<FollowRequest[]>([]);
@@ -280,6 +282,16 @@ export default function GizlilikPage() {
           icon="🔗"
           value={settings.socialLinksVisibility}
           onChange={(v) => setSettings((s) => ({ ...s, socialLinksVisibility: v }))}
+          disabled={saving}
+          t={t}
+        />
+
+        <PrivacySelector
+          label="İlgi Gösterdiğim İlanlar"
+          description="Hangi ilanlara ilgi gösterdiğinizi kimler görebilir?"
+          icon="⭐"
+          value={settings.whoCanSeeMyInterests}
+          onChange={(v) => setSettings((s) => ({ ...s, whoCanSeeMyInterests: v }))}
           disabled={saving}
           t={t}
         />

@@ -13,7 +13,6 @@ import type {
   Conversation,
   Message,
   LeaderboardEntry,
-  TrainerSportExperience,
 } from "@/types";
 
 const BASE_URL = "";

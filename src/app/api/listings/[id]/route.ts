@@ -25,9 +25,6 @@ export async function GET(
         district: { include: { city: { include: { country: true } } } },
         venue: true,
         user: { select: { id: true, name: true, avatarUrl: true, phone: true, email: true } },
-        trainerProfile: {
-          include: { specializations: true },
-        },
         equipmentDetail: true,
         venueMembershipDetail: true,
         venueClassDetail: true,
@@ -287,7 +284,6 @@ export async function PUT(
           city: true,
           district: { include: { city: { include: { country: true } } } },
           venue: true,
-          trainerProfile: { include: { specializations: true } },
           equipmentDetail: true,
           venueMembershipDetail: true,
           venueClassDetail: true,

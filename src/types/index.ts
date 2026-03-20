@@ -3,7 +3,7 @@
 // =============================================
 
 // --- Enum Types ---
-export type ListingType = "RIVAL" | "PARTNER" | "TRAINER" | "EQUIPMENT" | "VENUE_MEMBERSHIP" | "VENUE_CLASS" | "VENUE_PRODUCT" | "VENUE_SERVICE";
+export type ListingType = "RIVAL" | "PARTNER" | "EQUIPMENT" | "VENUE_MEMBERSHIP" | "VENUE_CLASS" | "VENUE_PRODUCT" | "VENUE_SERVICE";
 export type Level = "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
 export type ListingStatus = "OPEN" | "CLOSED" | "MATCHED" | "EXPIRED";
 export type ResponseStatus = "PENDING" | "ACCEPTED" | "REJECTED";
@@ -121,9 +121,8 @@ export interface ListingSummary {
   // GPS koordinatları
   latitude?: number | null;
   longitude?: number | null;
-  // Fiyat bilgisi (EQUIPMENT ve TRAINER ilanları için)
+  // Fiyat bilgisi (EQUIPMENT ilanları için)
   equipmentDetail?: { price: number; isSold: boolean } | null;
-  trainerProfile?: { hourlyRate?: number | null } | null;
   // Feed extras
   isFromFollowing?: boolean;
   isGroup?: boolean;
@@ -151,19 +150,6 @@ export interface ListingDetail {
   responses: ListingResponse[];
   match?: Match | null;
   createdAt: string;
-  // Eğitmen ilanı için ek bilgiler
-  trainerProfile?: {
-    id: string;
-    hourlyRate?: number | null;
-    gymName?: string | null;
-    gymAddress?: string | null;
-    isVerified: boolean;
-    specializations: {
-      id: string;
-      sportName: string;
-      years: number;
-    }[];
-  } | null;
   // Spor malzemesi ilanı için ek bilgiler
   equipmentDetail?: {
     id: string;
@@ -310,13 +296,6 @@ export interface LoginForm {
   password: string;
 }
 
-export interface TrainerSportExperience {
-  sportId: string;
-  sportName: string;
-  years: number;
-  certUrl?: string; // Her spor dalı için ayrı sertifika
-}
-
 export interface RegisterForm {
   name: string;
   email: string;
@@ -344,25 +323,27 @@ export interface ProfileEditForm {
   tiktok?: string;
   facebook?: string;
   twitterX?: string;
-  vk?: string;
   telegram?: string;
   whatsapp?: string;
+  youtube?: string;
+  linkedin?: string;
+  discord?: string;
+  twitch?: string;
+  snapchat?: string;
+  litmatch?: string;
   socialLinksVisibility?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
   instagramVisibility?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
   tiktokVisibility?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
   facebookVisibility?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
   twitterXVisibility?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
-  vkVisibility?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
   telegramVisibility?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
   whatsappVisibility?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
-  trainerUniversity?: string;
-  trainerDepartment?: string;
-  trainerGymName?: string;
-  trainerExperienceYears?: string;
-  trainerLessonTypes?: string[];
-  trainerProvidesEquipment?: "yes" | "no" | "";
-  trainerCertNote?: string;
-  trainerSpecializations?: { sportName: string; years: number }[];
+  youtubeVisibility?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
+  linkedinVisibility?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
+  discordVisibility?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
+  twitchVisibility?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
+  snapchatVisibility?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
+  litmatchVisibility?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
 }
 
 // --- Notification Types ---
@@ -379,7 +360,8 @@ export type NotificationType =
   | "NO_SHOW_WARNING"
   | "NEW_POST_LIKE"
   | "NEW_POST_COMMENT"
-  | "TRAINER_VERIFIED"
+  | "USER_VERIFIED"
+  | "LISTING_INTEREST_MILESTONE"
   | "MATCH_STATUS_CHANGED"
   | "STREAK_MILESTONE"
   | "LEVEL_UP"
@@ -499,6 +481,13 @@ export interface PublicProfile {
   pendingFollow?: boolean;
   telegram?: string | null;
   whatsapp?: string | null;
+  youtube?: string | null;
+  linkedin?: string | null;
+  discord?: string | null;
+  twitch?: string | null;
+  snapchat?: string | null;
+  litmatch?: string | null;
+  isVerifiedUser?: boolean;
   socialLinksVisibility?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
 }
 

@@ -223,12 +223,6 @@ const LISTING_TYPE_CONFIG = {
     badgeVariant: "emerald" as const,
     badgeCls: "text-emerald-600 dark:text-emerald-400",
   },
-  TRAINER: {
-    label: "🎓 Eğitmen",
-    accentColor: "border-l-blue-500",
-    badgeVariant: "blue" as const,
-    badgeCls: "text-blue-600 dark:text-blue-400",
-  },
   EQUIPMENT: {
     label: "🛒 Satılık",
     accentColor: "border-l-purple-500",
@@ -375,7 +369,6 @@ export default function ListingCard({ listing }: ListingCardProps) {
         <span className={`text-sm font-bold px-2.5 py-1 rounded-lg ${
           listing.type === "RIVAL" ? "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300" :
           listing.type === "PARTNER" ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300" :
-          listing.type === "TRAINER" ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300" :
           "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
         }`}>
           {typeConfig.label}
@@ -517,7 +510,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
             {listing.maxParticipants > 2 ? (
               <>👥 {listing._count.responses + 1}/{listing.maxParticipants}</>
             ) : (
-              <>💬 {listing._count.responses} {listing.type === "TRAINER" ? text.responseTrainer : text.responseDefault}</>
+              <>💬 {listing._count.responses} {text.responseDefault}</>
             )}
           </span>
           {listing.maxParticipants > 2 && (
@@ -530,11 +523,6 @@ export default function ListingCard({ listing }: ListingCardProps) {
           {listing.type === "EQUIPMENT" && listing.equipmentDetail && (
             <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
               💰 {listing.equipmentDetail.price.toLocaleString(locale === "tr" ? "tr-TR" : "en-US")} ₺
-            </span>
-          )}
-          {listing.type === "TRAINER" && listing.trainerProfile?.hourlyRate && (
-            <span className="text-sm font-bold text-blue-700 dark:text-blue-400">
-              {listing.trainerProfile.hourlyRate.toLocaleString(locale === "tr" ? "tr-TR" : "en-US")} ₺<span className="text-xs font-normal opacity-70">{text.perHour}</span>
             </span>
           )}
           <span className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg ${typeConfig.badgeCls} bg-gray-50 dark:bg-gray-700/60 group-hover:brightness-110 transition`}>

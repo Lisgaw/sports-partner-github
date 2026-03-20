@@ -115,11 +115,11 @@ export const NOTIF = {
     body: `${commenterName}: ${comment.substring(0, 60)}`,
     link: `/profil/${postOwnerProfileId}`,
   }),
-  trainerVerified: (userId: string) => ({
+  userVerified: (userId: string) => ({
     userId,
-    type: "TRAINER_VERIFIED" as NotificationType,
-    title: "Eğitmen Profili Onaylandı ✅",
-    body: "Eğitmen profiliniz onaylandı. Artık doğrulanmış rozet gösteriliyor.",
+    type: "USER_VERIFIED" as NotificationType,
+    title: "Onaylanmış Kullanıcı ✅",
+    body: "3 veya daha fazla sosyal medya hesabını bağladığın için Onaylanmış Kullanıcı rozeti kazandın!",
     link: `/profil`,
   }),
 };

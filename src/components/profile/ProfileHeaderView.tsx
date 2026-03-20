@@ -4,7 +4,6 @@ import { differenceInYears } from "date-fns";
 import { useLocale, useTranslations } from "next-intl";
 import toast from "@/lib/toast";
 import Button from "@/components/ui/Button";
-import TrainerBadgePopup from "@/components/profile/TrainerBadgePopup";
 import SocialLinksRow from "@/components/social/SocialLinksRow";
 import { getCompetitiveLevelLabel } from "@/lib/localized-ui";
 
@@ -120,9 +119,14 @@ export default function ProfileHeaderView({
               tiktok: user.tiktok,
               facebook: user.facebook,
               twitterX: user.twitterX,
-              vk: user.vk,
               telegram: user.telegram,
               whatsapp: user.whatsapp,
+              youtube: user.youtube,
+              linkedin: user.linkedin,
+              discord: user.discord,
+              twitch: user.twitch,
+              snapchat: user.snapchat,
+              litmatch: user.litmatch,
             }}
             className="justify-end pb-1"
           />
@@ -132,17 +136,8 @@ export default function ProfileHeaderView({
         <div className="mb-3">
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white leading-tight">{user.name}</h1>
-            {(user.userType === "TRAINER" || user.trainerProfile) && (
-              <TrainerBadgePopup
-                trainerProfile={user.trainerProfile ?? { isVerified: false }}
-                user={{
-                  name: user.name,
-                  avatarUrl: user.avatarUrl,
-                  birthDate: user.birthDate,
-                  city: user.city,
-                }}
-                isOwn={true}
-              />
+            {user.isVerifiedUser && (
+              <span title="Doğrulanmış Kullanıcı" className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500 text-white text-[11px] font-bold shrink-0" aria-label="Doğrulanmış Kullanıcı">✓</span>
             )}
             <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${levelCfg.cls}`}>
               {getCompetitiveLevelLabel(lvl, locale)}

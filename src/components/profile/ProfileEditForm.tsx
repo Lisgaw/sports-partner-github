@@ -36,7 +36,6 @@ interface ProfileEditFormProps {
   setEditForm: (form: ProfileEditForm) => void;
   sports: Sport[];
   locations: Country[];
-  isTrainer: boolean;
   saving: boolean;
   onSave: () => void;
   onCancel: () => void;
@@ -47,7 +46,6 @@ export default function ProfileEditFormPanel({
   setEditForm,
   sports,
   locations,
-  isTrainer,
   saving,
   onSave,
   onCancel,
@@ -138,11 +136,46 @@ export default function ProfileEditFormPanel({
       iconClass: "bg-black text-white",
     },
     {
-      key: "vk",
-      visibilityKey: "vkVisibility",
-      placeholder: `VK ${t("userHandle")}`,
-      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M15.07 2H8.93C3.33 2 2 3.33 2 8.93v6.14C2 20.67 3.33 22 8.93 22h6.14C20.67 22 22 20.67 22 15.07V8.93C22 3.33 20.67 2 15.07 2zm3.08 13.5h-1.64c-.63 0-.82-.52-1.93-1.63-.96-.96-1.39-.96-1.39 0 0 1.63-.43 1.63-1.08 1.63-1.67 0-3.52-1.04-4.82-2.84-1.96-2.73-2.5-4.72-2.5-5.12 0-.18.15-.35.35-.35h1.64c.26 0 .35.15.44.38.51 1.57 1.39 2.95 1.74 2.95.14 0 .2-.06.2-.38V9.35c-.04-.62-.35-.67-.35-.89 0-.15.12-.3.3-.3h2.57c.22 0 .3.12.3.35v2.74c0 .22.09.3.16.3.14 0 .27-.08.55-.38.87-.99 1.5-2.51 1.5-2.51.09-.2.25-.38.5-.38h1.64c.49 0 .6.25.49.56-.21.64-2.08 2.66-2.08 2.66-.16.24-.22.35 0 .61.16.2.69.74 1.05 1.17.65.73 1.14 1.35 1.27 1.78.14.42-.08.64-.49.64z"/></svg>,
-      iconClass: "bg-[#4C75A3] text-white",
+      key: "youtube",
+      visibilityKey: "youtubeVisibility",
+      placeholder: `YouTube ${t("userHandle")}`,
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>,
+      iconClass: "bg-[#FF0000] text-white",
+    },
+    {
+      key: "linkedin",
+      visibilityKey: "linkedinVisibility",
+      placeholder: `LinkedIn ${t("userHandle")}`,
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>,
+      iconClass: "bg-[#0A66C2] text-white",
+    },
+    {
+      key: "discord",
+      visibilityKey: "discordVisibility",
+      placeholder: `Discord ${t("userHandle")}`,
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.003.024.015.045.031.057a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>,
+      iconClass: "bg-[#5865F2] text-white",
+    },
+    {
+      key: "twitch",
+      visibilityKey: "twitchVisibility",
+      placeholder: `Twitch ${t("userHandle")}`,
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>,
+      iconClass: "bg-[#9146FF] text-white",
+    },
+    {
+      key: "snapchat",
+      visibilityKey: "snapchatVisibility",
+      placeholder: `Snapchat ${t("userHandle")}`,
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.012.18-.022.345-.03.51.07.03.194.083.345.083.22 0 .49-.087.739-.292.108-.085.249-.107.373-.057.124.051.2.168.2.31 0 .25-.156.49-.484.707-.21.137-.557.255-.876.369-.19.074-.382.136-.527.214.11.23.304.525.615.84.532.538 1.3.951 2.14 1.032.176.019.315.156.32.331.003.12-.005.279-.047.342-.17.292-.463.447-.773.587-.265.12-.607.212-1.025.32-.19.044-.45.1-.668.143-.27.055-.48.208-.51.381-.03.17-.04.32.004.427.025.067.045.122.051.147.044.082.077.164.072.228-.007.15-.152.277-.313.277-.086 0-.144-.017-.208-.042-.3-.106-.562-.172-.821-.192-.24-.017-.481.006-.733.071-.396.098-.778.337-1.145.562-.566.348-1.155.711-1.932.711-.756 0-1.334-.35-1.89-.685-.376-.226-.753-.466-1.158-.567-.261-.066-.512-.09-.762-.07-.26.02-.525.088-.832.196-.064.025-.117.038-.195.038-.168 0-.313-.13-.32-.285-.006-.074.026-.157.073-.24.007-.021.026-.074.051-.141.044-.104.032-.25.005-.421-.04-.175-.248-.327-.52-.381-.21-.04-.47-.097-.652-.142-.427-.11-.768-.2-1.028-.32-.31-.14-.604-.295-.773-.587-.042-.063-.05-.222-.047-.342.005-.175.144-.312.32-.33.84-.082 1.607-.495 2.14-1.033.31-.315.504-.61.614-.84-.145-.078-.337-.14-.527-.215-.32-.113-.666-.23-.876-.368-.328-.218-.484-.458-.484-.707 0-.142.076-.26.2-.31.123-.05.265-.027.372.057.25.205.52.292.739.292.152 0 .275-.053.346-.084l-.03-.51c-.104-1.628-.23-3.654.3-4.847C7.858 1.069 11.215.793 12.206.793z"/></svg>,
+      iconClass: "bg-[#FFFC00] text-black",
+    },
+    {
+      key: "litmatch",
+      visibilityKey: "litmatchVisibility",
+      placeholder: `Litmatch ${t("userHandle")}`,
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>,
+      iconClass: "bg-gradient-to-br from-[#FF6B6B] to-[#FF8E53] text-white",
     },
     {
       key: "telegram",
@@ -481,142 +514,6 @@ export default function ProfileEditFormPanel({
           )}
         </div>
       </div>
-
-      {/* Trainer Info */}
-      {isTrainer && (
-        <div className="space-y-4 border border-blue-100 dark:border-blue-900/40 rounded-xl p-4 bg-blue-50/60 dark:bg-blue-950/20">
-          <h3 className="text-sm font-semibold text-blue-800 dark:text-blue-300">{t("trainerSection")}</h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <input
-              type="text"
-              value={editForm.trainerUniversity ?? ""}
-              onChange={(e) => setEditForm({ ...editForm, trainerUniversity: e.target.value })}
-              className={inputCls}
-              placeholder={tProf("university")}
-            />
-            <input
-              type="text"
-              value={editForm.trainerDepartment ?? ""}
-              onChange={(e) => setEditForm({ ...editForm, trainerDepartment: e.target.value })}
-              className={inputCls}
-              placeholder={tProf("department")}
-            />
-            <input
-              type="text"
-              value={editForm.trainerGymName ?? ""}
-              onChange={(e) => setEditForm({ ...editForm, trainerGymName: e.target.value })}
-              className={inputCls}
-              placeholder={tProf("gymName")}
-            />
-            <input
-              type="number"
-              min={0}
-              value={editForm.trainerExperienceYears ?? ""}
-              onChange={(e) => setEditForm({ ...editForm, trainerExperienceYears: e.target.value })}
-              className={inputCls}
-              placeholder={tProf("experience")}
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1.5">{t("lessonTypes")}</label>
-            <div className="flex flex-wrap gap-2">
-              {lessonTypeOptions.map((opt) => {
-                const selected = (editForm.trainerLessonTypes ?? []).includes(opt.id);
-                return (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() => {
-                      const current = editForm.trainerLessonTypes ?? [];
-                      setEditForm({
-                        ...editForm,
-                        trainerLessonTypes: selected ? current.filter((x) => x !== opt.id) : [...current, opt.id],
-                      });
-                    }}
-                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition ${selected ? "bg-blue-600 border-blue-600 text-white" : "border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300"}`}
-                  >
-                    {opt.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <select
-              value={editForm.trainerProvidesEquipment ?? ""}
-              onChange={(e) => setEditForm({ ...editForm, trainerProvidesEquipment: e.target.value as "yes" | "no" | "" })}
-              className={inputCls}
-            >
-              <option value="">{t("equipmentUnspecified")}</option>
-              <option value="yes">{t("equipmentYes")}</option>
-              <option value="no">{t("equipmentNo")}</option>
-            </select>
-            <input
-              type="text"
-              value={editForm.trainerCertNote ?? ""}
-              onChange={(e) => setEditForm({ ...editForm, trainerCertNote: e.target.value })}
-              className={inputCls}
-              placeholder={t("certNote")}
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1.5">{t("branchExperience")}</label>
-            <div className="space-y-2">
-              {(editForm.trainerSpecializations ?? []).map((sp, idx) => (
-                <div key={`${sp.sportName}-${idx}`} className="grid grid-cols-[1fr_auto_auto] gap-2 items-center">
-                  <input
-                    type="text"
-                    value={sp.sportName}
-                    onChange={(e) => {
-                      const next = [...(editForm.trainerSpecializations ?? [])];
-                      next[idx] = { ...next[idx], sportName: e.target.value };
-                      setEditForm({ ...editForm, trainerSpecializations: next });
-                    }}
-                    className={inputCls}
-                    placeholder={t("branchName")}
-                  />
-                  <input
-                    type="number"
-                    min={0}
-                    value={sp.years}
-                    onChange={(e) => {
-                      const next = [...(editForm.trainerSpecializations ?? [])];
-                      next[idx] = { ...next[idx], years: parseInt(e.target.value || "0", 10) || 0 };
-                      setEditForm({ ...editForm, trainerSpecializations: next });
-                    }}
-                    className="w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const next = [...(editForm.trainerSpecializations ?? [])];
-                      next.splice(idx, 1);
-                      setEditForm({ ...editForm, trainerSpecializations: next });
-                    }}
-                    className="px-3 py-2 rounded-lg border border-red-300 text-red-600 text-xs font-semibold"
-                  >
-                    {t("deleteBranch")}
-                  </button>
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={() => setEditForm({
-                  ...editForm,
-                  trainerSpecializations: [...(editForm.trainerSpecializations ?? []), { sportName: "", years: 0 }],
-                })}
-                className="text-xs font-semibold text-blue-700 dark:text-blue-300 hover:underline"
-              >
-                {t("addBranch")}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Buttons */}
       <div className="flex gap-2">

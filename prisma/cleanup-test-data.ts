@@ -200,13 +200,6 @@ async function main() {
     );
   } catch { /* Cascade varsa zaten silinecek */ }
 
-  // TrainerEnrollment: trainerId + studentId (userId değil)
-  await chunkDelete(ids, (batch) =>
-    prisma.trainerEnrollment.deleteMany({
-      where: { OR: [{ trainerId: { in: batch } }, { studentId: { in: batch } }] },
-    })
-  );
-
   // BotTask: listingBotId + responderBotId
   try {
     await chunkDelete(ids, (batch) =>
@@ -215,19 +208,6 @@ async function main() {
       })
     );
   } catch { /* opsiyonel */ }
-
-  // TrainerProfile (varsa bağlı TrainerSpecialization önce silinmeli)
-  const trainerProfileIds = (
-    await prisma.trainerProfile.findMany({ where: { userId: { in: ids } }, select: { id: true } })
-  ).map((t) => t.id);
-  if (trainerProfileIds.length > 0) {
-    await chunkDelete(trainerProfileIds, (batch) =>
-      prisma.trainerSpecialization.deleteMany({ where: { profileId: { in: batch } } })
-    );
-  }
-  await chunkDelete(ids, (batch) =>
-    prisma.trainerProfile.deleteMany({ where: { userId: { in: batch } } })
-  );
 
   // VenueProfile
   await chunkDelete(ids, (batch) =>

@@ -1,107 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { getCurrentUserId } from "@/lib/api-utils";
-import { createLogger } from "@/lib/logger";
-import { z } from "zod";
+import { NextResponse } from "next/server";
 
-const log = createLogger("api:trainer-profile");
-
-const trainerProfileSchema = z.object({
-  hourlyRate: z.number().min(0).max(10000).optional(),
-  experience: z.number().min(0).max(50).optional(),
-  specialization: z.string().max(100).optional(),
-  gymName: z.string().max(200).optional(),
-  gymAddress: z.string().max(500).optional(),
-  certificates: z.array(z.string()).max(10).default([]),
-});
-
-// GET /api/trainer-profile
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const userId = searchParams.get("userId");
-
-  if (!userId) {
-    return NextResponse.json({ error: "userId zorunlu" }, { status: 400 });
-  }
-
-  try {
-    const profile = await prisma.trainerProfile.findUnique({
-      where: { userId },
-      include: {
-        user: {
-          select: { id: true, name: true, avatarUrl: true, bio: true },
-        },
-      },
-    });
-
-    if (!profile) {
-      return NextResponse.json({ error: "Eğitmen profili bulunamadı" }, { status: 404 });
-    }
-
-    return NextResponse.json(profile);
-  } catch (err) {
-    log.error("Eğitmen profili getirme hatası", err);
-    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
-  }
+// Trainer modülü kaldırıldı
+export async function GET() {
+  return NextResponse.json({ success: false, error: "Bu özellik artık mevcut değil" }, { status: 410 });
+}
+export async function PUT() {
+  return NextResponse.json({ success: false, error: "Bu özellik artık mevcut değil" }, { status: 410 });
+}
+export async function DELETE() {
+  return NextResponse.json({ success: false, error: "Bu özellik artık mevcut değil" }, { status: 410 });
 }
 
-// POST /api/trainer-profile → oluştur / güncelle
-export async function POST(req: NextRequest) {
-  const currentUserId = await getCurrentUserId();
-  if (!currentUserId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  try {
-    const body = await req.json();
-    const parsed = trainerProfileSchema.safeParse(body);
-    if (!parsed.success) {
-      return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
-    }
-
-    const profile = await prisma.trainerProfile.upsert({
-      where: { userId: currentUserId },
-      create: { userId: currentUserId, ...parsed.data },
-      update: parsed.data,
-    });
-
-    return NextResponse.json(profile);
-  } catch (err) {
-    log.error("Eğitmen profili oluşturma hatası", err);
-    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
-  }
-}
-
-// PATCH /api/trainer-profile → kısmi güncelle (örn. badge görünürlüğü)
-export async function PATCH(req: NextRequest) {
-  const currentUserId = await getCurrentUserId();
-  if (!currentUserId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  try {
-    const body = await req.json();
-    const updatableFields: Record<string, unknown> = {};
-
-    if (typeof body.trainerBadgeVisible === "boolean") {
-      updatableFields.trainerBadgeVisible = body.trainerBadgeVisible;
-    }
-    if (typeof body.hourlyRate === "number") {
-      updatableFields.hourlyRate = body.hourlyRate;
-    }
-
-    if (Object.keys(updatableFields).length === 0) {
-      return NextResponse.json({ error: "Güncellenecek alan bulunamadı" }, { status: 400 });
-    }
-
-    const profile = await prisma.trainerProfile.update({
-      where: { userId: currentUserId },
-      data: updatableFields,
-    });
-
-    return NextResponse.json({ success: true, data: profile });
-  } catch (err) {
-    log.error("Eğitmen profili güncelleme hatası", err);
-    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
-  }
-}

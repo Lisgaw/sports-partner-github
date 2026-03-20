@@ -54,22 +54,32 @@ export async function GET() {
           sports: { select: { id: true, name: true, icon: true } },
           ratingsReceived: { select: { score: true } },
           ratingsGiven: { select: { matchId: true } },
-          trainerProfile: { select: { isVerified: true, gymName: true, university: true, department: true, experienceYears: true, lessonTypes: true, providesEquipment: true, certNote: true, trainerBadgeVisible: true, specializations: { select: { sportName: true, years: true } } } },
           instagram: true,
           tiktok: true,
           facebook: true,
           twitterX: true,
-          vk: true,
           telegram: true,
           whatsapp: true,
+          youtube: true,
+          linkedin: true,
+          discord: true,
+          twitch: true,
+          snapchat: true,
+          litmatch: true,
           socialLinksVisibility: true,
           instagramVisibility: true,
           tiktokVisibility: true,
           facebookVisibility: true,
           twitterXVisibility: true,
-          vkVisibility: true,
           telegramVisibility: true,
           whatsappVisibility: true,
+          youtubeVisibility: true,
+          linkedinVisibility: true,
+          discordVisibility: true,
+          twitchVisibility: true,
+          snapchatVisibility: true,
+          litmatchVisibility: true,
+          isVerifiedUser: true,
           _count: {
             select: {
               followers: true,
@@ -289,14 +299,18 @@ export async function PUT(request: Request) {
     if ("onboardingDone" in parsed.data && parsed.data.onboardingDone !== undefined) {
       updateData.onboardingDone = parsed.data.onboardingDone;
     }
-    // Sosyal Medya linkleri
     if ("instagram" in parsed.data) updateData.instagram = parsed.data.instagram ?? null;
     if ("tiktok" in parsed.data) updateData.tiktok = parsed.data.tiktok ?? null;
     if ("facebook" in parsed.data) updateData.facebook = parsed.data.facebook ?? null;
     if ("twitterX" in parsed.data) updateData.twitterX = parsed.data.twitterX ?? null;
-    if ("vk" in parsed.data) updateData.vk = parsed.data.vk ?? null;
     if ("telegram" in parsed.data) updateData.telegram = parsed.data.telegram ?? null;
     if ("whatsapp" in parsed.data) updateData.whatsapp = parsed.data.whatsapp ?? null;
+    if ("youtube" in parsed.data) updateData.youtube = parsed.data.youtube ?? null;
+    if ("linkedin" in parsed.data) updateData.linkedin = parsed.data.linkedin ?? null;
+    if ("discord" in parsed.data) updateData.discord = parsed.data.discord ?? null;
+    if ("twitch" in parsed.data) updateData.twitch = parsed.data.twitch ?? null;
+    if ("snapchat" in parsed.data) updateData.snapchat = parsed.data.snapchat ?? null;
+    if ("litmatch" in parsed.data) updateData.litmatch = parsed.data.litmatch ?? null;
     if ("socialLinksVisibility" in parsed.data && parsed.data.socialLinksVisibility !== undefined) {
       updateData.socialLinksVisibility = parsed.data.socialLinksVisibility;
     }
@@ -312,14 +326,29 @@ export async function PUT(request: Request) {
     if ("twitterXVisibility" in parsed.data && parsed.data.twitterXVisibility !== undefined) {
       updateData.twitterXVisibility = parsed.data.twitterXVisibility;
     }
-    if ("vkVisibility" in parsed.data && parsed.data.vkVisibility !== undefined) {
-      updateData.vkVisibility = parsed.data.vkVisibility;
-    }
     if ("telegramVisibility" in parsed.data && parsed.data.telegramVisibility !== undefined) {
       updateData.telegramVisibility = parsed.data.telegramVisibility;
     }
     if ("whatsappVisibility" in parsed.data && parsed.data.whatsappVisibility !== undefined) {
       updateData.whatsappVisibility = parsed.data.whatsappVisibility;
+    }
+    if ("youtubeVisibility" in parsed.data && parsed.data.youtubeVisibility !== undefined) {
+      updateData.youtubeVisibility = parsed.data.youtubeVisibility;
+    }
+    if ("linkedinVisibility" in parsed.data && parsed.data.linkedinVisibility !== undefined) {
+      updateData.linkedinVisibility = parsed.data.linkedinVisibility;
+    }
+    if ("discordVisibility" in parsed.data && parsed.data.discordVisibility !== undefined) {
+      updateData.discordVisibility = parsed.data.discordVisibility;
+    }
+    if ("twitchVisibility" in parsed.data && parsed.data.twitchVisibility !== undefined) {
+      updateData.twitchVisibility = parsed.data.twitchVisibility;
+    }
+    if ("snapchatVisibility" in parsed.data && parsed.data.snapchatVisibility !== undefined) {
+      updateData.snapchatVisibility = parsed.data.snapchatVisibility;
+    }
+    if ("litmatchVisibility" in parsed.data && parsed.data.litmatchVisibility !== undefined) {
+      updateData.litmatchVisibility = parsed.data.litmatchVisibility;
     }
 
     // Favori sporlar güncelleme
@@ -362,67 +391,12 @@ export async function PUT(request: Request) {
       updateData.passwordHash = await bcrypt.hash(parsed.data.newPassword, 12);
     }
 
-    const trainerFieldsTouched = [
-      "trainerUniversity",
-      "trainerDepartment",
-      "trainerGymName",
-      "trainerExperienceYears",
-      "trainerLessonTypes",
-      "trainerProvidesEquipment",
-      "trainerCertNote",
-      "trainerSpecializations",
-    ].some((k) => k in parsed.data);
-
-    if (trainerFieldsTouched) {
-      const canEditTrainer = userBefore?.userType === "TRAINER" || !!(await prisma.trainerProfile.findUnique({ where: { userId } }));
-      if (!canEditTrainer) {
-        return NextResponse.json(
-          { success: false, error: "Antrenör bilgileri yalnızca antrenör hesaplarda güncellenebilir" },
-          { status: 403 }
-        );
-      }
-
-      const trainerUpdate: Record<string, unknown> = {};
-      if ("trainerUniversity" in parsed.data) trainerUpdate.university = parsed.data.trainerUniversity ?? null;
-      if ("trainerDepartment" in parsed.data) trainerUpdate.department = parsed.data.trainerDepartment ?? null;
-      if ("trainerGymName" in parsed.data) trainerUpdate.gymName = parsed.data.trainerGymName ?? null;
-      if ("trainerExperienceYears" in parsed.data) trainerUpdate.experienceYears = parsed.data.trainerExperienceYears ?? null;
-      if ("trainerLessonTypes" in parsed.data) trainerUpdate.lessonTypes = parsed.data.trainerLessonTypes ?? [];
-      if ("trainerProvidesEquipment" in parsed.data) trainerUpdate.providesEquipment = parsed.data.trainerProvidesEquipment ?? null;
-      if ("trainerCertNote" in parsed.data) trainerUpdate.certNote = parsed.data.trainerCertNote ?? null;
-
-      if (Object.keys(trainerUpdate).length > 0) {
-        await prisma.trainerProfile.upsert({
-          where: { userId },
-          update: trainerUpdate,
-          create: {
-            userId,
-            university: (trainerUpdate.university as string | null | undefined) ?? null,
-            department: (trainerUpdate.department as string | null | undefined) ?? null,
-            gymName: (trainerUpdate.gymName as string | null | undefined) ?? null,
-            experienceYears: (trainerUpdate.experienceYears as number | null | undefined) ?? null,
-            lessonTypes: (trainerUpdate.lessonTypes as string[] | undefined) ?? [],
-            providesEquipment: (trainerUpdate.providesEquipment as boolean | null | undefined) ?? null,
-            certNote: (trainerUpdate.certNote as string | null | undefined) ?? null,
-          },
-        });
-        hasAnyChanges = true;
-      }
-
-      if ("trainerSpecializations" in parsed.data && Array.isArray(parsed.data.trainerSpecializations)) {
-        const profile = await prisma.trainerProfile.findUnique({ where: { userId }, select: { id: true } });
-        if (profile) {
-          await prisma.trainerSpecialization.deleteMany({ where: { profileId: profile.id } });
-          const rows = parsed.data.trainerSpecializations
-            .filter((s) => s.sportName.trim().length > 0)
-            .map((s) => ({ profileId: profile.id, sportName: s.sportName.trim(), years: s.years }));
-          if (rows.length > 0) {
-            await prisma.trainerSpecialization.createMany({ data: rows });
-          }
-          hasAnyChanges = true;
-        }
-      }
-    }
+    // Auto-verify: 3+ sosyal link varsa isVerifiedUser = true
+    const socialFields = ["instagram", "tiktok", "facebook", "twitterX", "telegram", "whatsapp", "youtube", "linkedin", "discord", "twitch", "snapchat", "litmatch"] as const;
+    const currentUser = await prisma.user.findUnique({ where: { id: userId }, select: Object.fromEntries(socialFields.map((f) => [f, true])) as Record<string, true> });
+    const mergedSocials = { ...currentUser, ...Object.fromEntries(socialFields.filter((f) => f in updateData).map((f) => [f, updateData[f]])) };
+    const filledCount = socialFields.filter((f) => !!(mergedSocials as Record<string, unknown>)[f]).length;
+    updateData.isVerifiedUser = filledCount >= 3;
 
     const hasUserChanges = Object.keys(updateData).length > 0;
     hasAnyChanges = hasAnyChanges || hasUserChanges;
@@ -433,9 +407,6 @@ export async function PUT(request: Request) {
         { status: 400 }
       );
     }
-
-
-    // Trust score update kaldırıldı (guvenPuani alanı mevcut değil)
 
     const updated = hasUserChanges
       ? await prisma.user.update({
@@ -574,14 +545,6 @@ export async function DELETE(request: Request) {
       // NoShow raporları
       await tx.noShowReport.deleteMany({ where: { OR: [{ reporterId: userId }, { reportedId: userId }] } });
 
-      // Profesyonel profiller
-      const trainerProfile = await tx.trainerProfile.findUnique({ where: { userId } });
-      if (trainerProfile) {
-        await tx.trainerSpecialization.deleteMany({ where: { profileId: trainerProfile.id } });
-        await tx.trainerEnrollment.deleteMany({ where: { OR: [{ trainerId: userId }, { studentId: userId }] } });
-        await tx.trainerProfile.delete({ where: { userId } });
-      }
-
       // İlanlar: yanıtları, eşleşmeleri, puanları, ardından ilanları sil
       const listingIds = (await tx.listing.findMany({ where: { userId }, select: { id: true } })).map(l => l.id);
       if (listingIds.length > 0) {
@@ -623,7 +586,6 @@ export async function DELETE(request: Request) {
           tiktok: null,
           facebook: null,
           twitterX: null,
-          vk: null,
           telegram: null,
           whatsapp: null,
           isBanned: true, // Giriş yapılamasın
