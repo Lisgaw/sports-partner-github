@@ -1,18 +1,16 @@
 ﻿import HomeClient from "@/components/HomeClient";
 import {
   getInitialListings,
-  getInitialLocations,
   getInitialSports,
   getPopularListings,
 } from "@/lib/server-data";
 
-// v1.2.0 - All data fetches parallel; all functions cached
+// v1.3.0 - Locations removed from SSR props (5030 cities = 1-2 MB JSON payload).
+// FilterBar loads locations client-side via /api/locations (24h cache, fast after first hit).
+// SSR now only sends: 12 listings + 6 recommendations + 20 sports → payload ~80 KB.
 export default async function HomePage() {
-  // 4 bağımsız sorgu aynı anda başlar — hiçbiri diğerini beklemez.
-  // getInitialListings ve getPopularListings artık withCache ile sarılı:
-  // DB'ye max 1 kez/60s vurur, kalan tüm istekler bellekten (<1ms) döner.
-  const [locations, sports, recommendations, listingsData] = await Promise.all([
-    getInitialLocations(),
+  // 3 bağımsız sorgu aynı anda başlar — locations artık SSR'dan kaldırıldı.
+  const [sports, recommendations, listingsData] = await Promise.all([
     getInitialSports(),
     getPopularListings(6),
     getInitialListings(),
@@ -24,7 +22,6 @@ export default async function HomePage() {
       initialTotal={listingsData.total}
       initialPageSize={listingsData.pageSize}
       initialRecommendations={recommendations}
-      initialLocations={locations}
       initialSports={sports}
     />
   );
@@ -32,3 +29,4 @@ export default async function HomePage() {
 
 // ISR: 60 saniyede bir yeniden validate et
 export const revalidate = 60;
+

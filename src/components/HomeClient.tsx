@@ -22,7 +22,7 @@ interface HomeClientProps {
   initialTotal: number;
   initialPageSize: number;
   initialRecommendations: ListingSummary[];
-  initialLocations: Country[];
+  initialLocations?: Country[]; // SSR'dan kaldırıldı — FilterBar client-side yüklüyor
   initialSports: Sport[];
 }
 
